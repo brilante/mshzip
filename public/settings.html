@@ -96,7 +96,13 @@
   <!-- ============================================ -->
   <!-- @include head-styles.html -->
   <!-- ============================================ -->
-  <script defer src="/js/modules/features/i18n-init.js?v=20260212"></script>
+  <script src="/js/i18n/ko.js"></script>
+  <script src="/js/i18n/en.js"></script>
+  <script src="/js/modules/features/i18n-init.js?v=20260212"></script>
+  <script>
+    // i18n 즉시 초기화 (settings 모듈들이 t() 사용하기 전에)
+    if (window.initI18n) { window.initI18n(); }
+  </script>
 </head>
 <body>
   <div class="settings-container">
