@@ -23,6 +23,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging(debug=settings.DEBUG)
     logger.info('서버 시작', version=settings.APP_VERSION, port=settings.PORT)
     yield
+    # DB 엔진 종료
+    from src.app.infrastructure.db.session import dispose_engine
+    await dispose_engine()
     logger.info('서버 종료')
 
 
