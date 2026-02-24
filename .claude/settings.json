@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/check-dangerous.js"}]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/protect-sensitive.js"}]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/validate-output.js"}]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/security-scan.js"}]
+      },
+      {
+        "matcher": "*",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/log-action.js"}]
+      },
+      {
+        "matcher": "*",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/cc-check-validator.js"}]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/session-summary.js"}]
+      }
+    ]
+  },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    }
+  }
+}
