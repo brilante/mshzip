@@ -331,7 +331,7 @@ Plan Mode 내 필수 산출물:
 | 순서 | Hook | matcher | 역할 | 차단 조건 |
 |------|------|---------|------|-----------|
 | 1 | `check-dangerous.js` | Bash | 위험 명령 차단/경고 | BLOCKED 11종 → exit(1), WARNED 6종 → 경고 |
-| 2 | `command-log-enforcer.js` | Write\|Edit | 명령 이력 기록 강제 | 차단 없음 (경고만), 상태 파일 없으면 경고 |
+| 2 | `command-log-enforcer.js` | Write\|Edit | 명령 이력 자동 등록 | 차단 없음, 상태 파일 없으면 날짜 경로 탐색/생성 후 명령 노드 자동 생성 |
 | 3 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
 | 4 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
 | 5 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
@@ -386,7 +386,7 @@ node .claude/hooks/cc-check-validator.js
 | protect-sensitive.js | 보호 대상 9종 (.env, .pem, .key, id_rsa, id_ed25519, credentials.json, .mymindmp3, .htpasswd, shadow) |
 | validate-output.js | JSON 검증 + 유니코드 이스케이프 + Edit(new_string) 검사 |
 | security-scan.js | BLOCK 3패턴(eval, SQL Injection, API키) + WARN 6패턴 |
-| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 경고만(exit 0) |
+| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 서버 접속 확인 + 날짜 경로 자동 생성 + 명령 노드 자동 등록(exit 0) |
 | log-action.js | 16종 도구 인식 + 25가지 Bash 분류 |
 | session-summary.js | 3단계 fallback + SSE_PORT 격리 + 상태 파일 삭제 |
 
