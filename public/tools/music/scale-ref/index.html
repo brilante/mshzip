@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스케일 레퍼런스 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .selector-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .selector-group { flex: 1; }
+    .selector-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .scale-display { text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: 12px; margin: 1rem 0; }
+    .scale-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+    .scale-notes { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+    .note-badge { padding: 0.75rem 1rem; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; min-width: 45px; text-align: center; cursor: pointer; }
+    .note-badge:hover { transform: scale(1.1); }
+    .piano-container { overflow-x: auto; padding: 1rem 0; }
+    .piano { display: flex; position: relative; height: 120px; min-width: 500px; }
+    .white-key { width: 40px; height: 120px; background: white; border: 1px solid #ccc; border-radius: 0 0 4px 4px; position: relative; cursor: pointer; }
+    .white-key:hover { background: #f0f0f0; }
+    .white-key.active { background: #667eea; }
+    .black-key { width: 24px; height: 75px; background: #333; border-radius: 0 0 3px 3px; position: absolute; z-index: 1; cursor: pointer; }
+    .black-key:hover { background: #555; }
+    .black-key.active { background: #764ba2; }
+    .key-label { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: #666; }
+    .formula-display { margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; }
+    .formula-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .formula-steps { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .step-badge { padding: 0.25rem 0.5rem; background: var(--bg-secondary); border-radius: 4px; font-size: 0.85rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">스케일 레퍼런스</h1>
+          <p class="tool-description">음계 구성음 확인</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="selector-row">
+          <div class="selector-group">
+            <div class="selector-label">근음</div>
+            <select id="rootNote" class="tool-input" onchange="ScaleRef.update()">
+              <option value="C">C</option>
+              <option value="C#">C# / Db</option>
+              <option value="D">D</option>
+              <option value="D#">D# / Eb</option>
+              <option value="E">E</option>
+              <option value="F">F</option>
+              <option value="F#">F# / Gb</option>
+              <option value="G">G</option>
+              <option value="G#">G# / Ab</option>
+              <option value="A">A</option>
+              <option value="A#">A# / Bb</option>
+              <option value="B">B</option>
+            </select>
+          </div>
+          <div class="selector-group">
+            <div class="selector-label">스케일</div>
+            <select id="scaleType" class="tool-input" onchange="ScaleRef.update()">
+              <option value="major">메이저 (장조)</option>
+              <option value="minor">마이너 (단조)</option>
+              <option value="harmonicMinor">하모닉 마이너</option>
+              <option value="melodicMinor">멜로딕 마이너</option>
+              <option value="pentatonicMajor">메이저 펜타토닉</option>
+              <option value="pentatonicMinor">마이너 펜타토닉</option>
+              <option value="blues">블루스</option>
+              <option value="dorian">도리안</option>
+              <option value="mixolydian">믹솔리디안</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="scale-display">
+        <div class="scale-name" id="scaleName">C 메이저</div>
+        <div class="scale-notes" id="scaleNotes"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">피아노 건반</h3>
+        <div class="piano-container">
+          <div class="piano" id="piano"></div>
+        </div>
+      </div>
+
+      <div class="formula-display">
+        <div class="formula-label">스케일 공식</div>
+        <div class="formula-steps" id="formulaSteps"></div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <button class="tool-btn tool-btn-primary" onclick="ScaleRef.playScale()" style="width: 100%;" aria-label="스케일 재생">
+          스케일 재생
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="scale-ref.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스크린샷 목업 | Screenshot Mockup</title>
+  <link rel="stylesheet" href="screenshot-mockup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>스크린샷 목업</h1>
+      <p>브라우저 프레임을 추가하여 전문적인 스크린샷을 만드세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="layout">
+        <div class="controls-panel">
+          <div class="upload-section">
+            <label>스크린샷 업로드</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="imageInput" accept="image/*" hidden>
+              <p>클릭하거나 드래그</p>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>프레임 스타일</label>
+            <select id="frameStyle">
+              <option value="chrome">Chrome (밝은)</option>
+              <option value="chrome-dark">Chrome (어두운)</option>
+              <option value="safari">Safari</option>
+              <option value="firefox">Firefox</option>
+              <option value="minimal">미니멀</option>
+              <option value="none">프레임 없음</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>배경색</label>
+            <input type="color" id="bgColor" value="#f0f0f0">
+          </div>
+
+          <div class="control-group">
+            <label>그림자</label>
+            <select id="shadowStyle">
+              <option value="none">없음</option>
+              <option value="soft" selected>부드러운</option>
+              <option value="hard">강한</option>
+              <option value="floating">플로팅</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>모서리 둥글기</label>
+            <input type="range" id="borderRadius" min="0" max="30" value="10">
+          </div>
+
+          <div class="control-group">
+            <label>패딩</label>
+            <input type="range" id="padding" min="0" max="100" value="40">
+          </div>
+
+          <button class="download-btn" onclick="downloadImage()" aria-label="이미지 다운로드">이미지 다운로드</button>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-container" id="previewContainer">
+            <div class="browser-frame" id="browserFrame">
+              <div class="browser-header">
+                <div class="browser-buttons">
+                  <span class="btn-close"></span>
+                  <span class="btn-minimize"></span>
+                  <span class="btn-maximize"></span>
+                </div>
+                <div class="browser-address">
+                  <span></span>
+                  <span class="url">example.com</span>
+                </div>
+              </div>
+              <div class="browser-content" id="browserContent">
+                <div class="placeholder">
+                  <p>스크린샷을 업로드하세요</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="screenshot-mockup.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

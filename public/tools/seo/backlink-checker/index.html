@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>백링크 체커 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .search-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .search-row { display: flex; gap: 1rem; }
+    .search-row input { flex: 1; }
+    .results-section { display: none; }
+    .analyzed-domain { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--primary); }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--bg-secondary); border-radius: 12px; padding: 1rem; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .ratio-bar { background: var(--bg-secondary); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; }
+    .ratio-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .ratio-track { height: 24px; background: #ef4444; border-radius: 12px; overflow: hidden; }
+    .ratio-fill { height: 100%; background: #22c55e; border-radius: 12px; }
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .anchor-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .anchor-text { flex: 1; }
+    .anchor-type { padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; }
+    .anchor-type.branded { background: #dbeafe; color: #1d4ed8; }
+    .anchor-type.generic { background: #fef3c7; color: #d97706; }
+    .anchor-count { font-weight: 600; }
+    .domain-row { display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 6px; margin-bottom: 0.5rem; }
+    .domain-name { font-weight: 500; }
+    .domain-auth { font-size: 0.75rem; color: var(--text-secondary); }
+    .domain-links { font-size: 0.85rem; color: var(--primary); }
+    .trend-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 150px; padding: 1rem 0; }
+    .trend-bar-container { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+    .trend-bar { width: 100%; background: var(--primary); border-radius: 4px 4px 0 0; transition: height 0.3s; }
+    .trend-label { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem; }
+    .loading-indicator { display: none; justify-content: center; align-items: center; padding: 3rem; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .export-row { display: flex; justify-content: flex-end; margin-top: 1rem; }
+    @media (max-width: 1200px) { .content-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">백링크 체커</h1>
+          <p class="tool-description">백링크 분석 도구</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="search-panel">
+      <div class="search-row">
+        <input type="text" id="urlInput" class="tool-input" placeholder="분석할 URL 또는 도메인을 입력하세요" onkeypress="if(event.key==='Enter')BacklinkChecker.analyze()" aria-label="분석할 URL 또는 도메인을 입력하세요">
+        <button class="tool-btn tool-btn-primary" onclick="BacklinkChecker.analyze()" aria-label="분석">분석</button>
+      </div>
+    </div>
+
+    <div class="loading-indicator" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <div class="analyzed-domain" id="analyzedDomain"></div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalBacklinks">0</div>
+          <div class="stat-label">총 백링크</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="referringDomains">0</div>
+          <div class="stat-label">참조 도메인</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="dofollowCount">0</div>
+          <div class="stat-label">Dofollow</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="nofollowCount">0</div>
+          <div class="stat-label">Nofollow</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="domainAuthority">0</div>
+          <div class="stat-label">도메인 권한</div>
+        </div>
+      </div>
+
+      <div class="ratio-bar">
+        <div class="ratio-label">
+          <span>Dofollow / Nofollow 비율</span>
+          <span id="dofollowPercent">0%</span>
+        </div>
+        <div class="ratio-track">
+          <div class="ratio-fill" id="dofollowBar"></div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="panel">
+          <div class="section-title">앵커 텍스트</div>
+          <div id="anchorsList"></div>
+        </div>
+        <div class="panel">
+          <div class="section-title">상위 참조 도메인</div>
+          <div id="topDomainsList"></div>
+        </div>
+        <div class="panel">
+          <div class="section-title">월별 추이</div>
+          <div class="trend-chart" id="trendChart"></div>
+        </div>
+      </div>
+
+      <div class="export-row">
+        <button class="tool-btn tool-btn-secondary" onclick="BacklinkChecker.exportReport()" aria-label="리포트 다운로드">리포트 다운로드</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="backlink-checker.js"></script>
+</body>
+</html>

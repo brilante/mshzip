@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이미지 → PDF - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="image-to-pdf.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">이미지 → PDF 변환</h1>
+      <p class="tool-description">여러 이미지를 하나의 PDF 파일로 변환합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- 이미지 업로드 영역 -->
+        <div class="upload-section">
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept="image/*" multiple hidden>
+            <div class="dropzone-icon"></div>
+            <div class="dropzone-text">이미지를 드래그하거나 클릭하여 선택</div>
+            <div class="dropzone-hint">PNG, JPG, WebP, GIF 지원 (여러 장 선택 가능)</div>
+          </div>
+        </div>
+
+        <!-- 이미지 목록 -->
+        <div class="images-section" id="imagesSection" style="display: none;">
+          <div class="section-header">
+            <span class="section-title">이미지 목록 (<span id="imageCount">0</span>개)</span>
+            <div class="section-actions">
+              <button class="tool-btn tool-btn-sm" onclick="ImageToPdf.addMore()" aria-label="+ 추가">+ 추가</button>
+              <button class="tool-btn tool-btn-sm tool-btn-danger" onclick="ImageToPdf.clearAll()" aria-label="전체 삭제">전체 삭제</button>
+            </div>
+          </div>
+          <div class="images-list" id="imagesList"></div>
+          <p class="images-hint">드래그하여 순서 변경 가능</p>
+        </div>
+
+        <!-- PDF 설정 -->
+        <div class="settings-section" id="settingsSection" style="display: none;">
+          <div class="section-title">PDF 설정</div>
+
+          <div class="settings-grid">
+            <div class="setting-group">
+              <label class="setting-label">페이지 크기</label>
+              <select id="pageSize" class="setting-select">
+                <option value="a4">A4 (210 × 297mm)</option>
+                <option value="letter">Letter (215.9 × 279.4mm)</option>
+                <option value="legal">Legal (215.9 × 355.6mm)</option>
+                <option value="a3">A3 (297 × 420mm)</option>
+                <option value="a5">A5 (148 × 210mm)</option>
+                <option value="fit">이미지 크기에 맞춤</option>
+              </select>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">방향</label>
+              <div class="orientation-options">
+                <label class="orientation-option">
+                  <input type="radio" name="orientation" value="portrait" checked>
+                  <span class="orientation-icon"></span>
+                  <span>세로</span>
+                </label>
+                <label class="orientation-option">
+                  <input type="radio" name="orientation" value="landscape">
+                  <span class="orientation-icon"></span>
+                  <span>가로</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">이미지 배치</label>
+              <select id="imageFit" class="setting-select">
+                <option value="contain">페이지에 맞춤 (비율 유지)</option>
+                <option value="fill">페이지 채우기 (잘릴 수 있음)</option>
+                <option value="center">원본 크기 (중앙 배치)</option>
+              </select>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">여백 (mm)</label>
+              <input type="number" id="margin" class="setting-input" value="10" min="0" max="50">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">이미지 품질</label>
+              <div class="quality-slider">
+                <input type="range" id="quality" min="0.3" max="1" step="0.1" value="0.92">
+                <span id="qualityValue">92%</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">파일명</label>
+              <input type="text" id="fileName" class="setting-input" value="images" placeholder="파일명 입력" aria-label="파일명 입력">
+            </div>
+          </div>
+
+          <button class="tool-btn tool-btn-primary tool-btn-lg convert-btn" id="convertBtn" onclick="ImageToPdf.convert()" aria-label="PDF 생성 및 다운로드">
+            PDF 생성 및 다운로드
+          </button>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사용 팁</div>
+          <div class="help-content">
+            <ul>
+              <li><strong>순서 변경</strong>: 이미지 카드를 드래그하여 원하는 순서로 정렬</li>
+              <li><strong>이미지에 맞춤</strong>: 페이지 크기를 "이미지 크기에 맞춤"으로 선택하면 각 이미지 크기로 페이지 생성</li>
+              <li><strong>품질</strong>: 낮은 품질은 파일 크기 감소, 높은 품질은 선명한 이미지</li>
+              <li><strong>투명 배경</strong>: PNG 투명 배경은 흰색으로 변환됩니다</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="image-to-pdf.js"></script>
+</body>
+</html>

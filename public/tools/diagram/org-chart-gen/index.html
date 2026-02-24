@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>조직도 생성기 | Org Chart Generator</title>
+  <link rel="stylesheet" href="org-chart-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>조직도 생성기</h1>
+      <p>조직 구조를 시각화하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="toolbar">
+        <button class="add-btn" onclick="addMember()" aria-label="구성원 추가">구성원 추가</button>
+        <button onclick="downloadImage()" aria-label="이미지 다운로드">이미지 다운로드</button>
+        <button onclick="clearChart()" aria-label="초기화">초기화</button>
+      </div>
+
+      <div class="chart-container" id="chartContainer">
+        <!-- 조직도가 여기에 렌더링됩니다 -->
+      </div>
+
+      <div class="edit-panel" id="editPanel" style="display: none;">
+        <h4>구성원 편집</h4>
+        <div class="edit-group">
+          <label>이름</label>
+          <input type="text" id="editName">
+        </div>
+        <div class="edit-group">
+          <label>직책</label>
+          <input type="text" id="editTitle">
+        </div>
+        <div class="edit-group">
+          <label>상위 구성원</label>
+          <select id="editParent"></select>
+        </div>
+        <div class="edit-group">
+          <label>색상</label>
+          <input type="color" id="editColor" value="#3498db">
+        </div>
+        <div class="edit-buttons">
+          <button onclick="saveEdit()" aria-label="저장">저장</button>
+          <button onclick="deleteMember()" class="delete-btn" aria-label="삭제">삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="org-chart-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

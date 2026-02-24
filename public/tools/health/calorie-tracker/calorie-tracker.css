@@ -1,0 +1,28 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #e17055 0%, #fdcb6e 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 500px; margin: 0 auto; }
+header { text-align: center; color: white; margin-bottom: 30px; }
+header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+.goal-setting { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+.goal-setting input { width: 80px; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; text-align: center; }
+.progress-ring { position: relative; width: 150px; height: 150px; margin: 0 auto 20px; }
+.progress-ring svg { transform: rotate(-90deg); }
+.progress-ring .bg { fill: none; stroke: #eee; stroke-width: 8; }
+.progress-ring .progress { fill: none; stroke: #e17055; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 251.2; stroke-dashoffset: 251.2; transition: stroke-dashoffset 0.5s; }
+.progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.progress-text span { font-size: 32px; font-weight: 700; color: #e17055; }
+.progress-text small { display: block; color: #999; }
+.remaining { text-align: center; color: #666; }
+.remaining strong { color: #e17055; font-size: 18px; }
+.add-food h3 { margin-bottom: 16px; color: #333; }
+.food-form { display: grid; gap: 10px; }
+.food-form input, .food-form select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; }
+.food-form button { padding: 14px; background: linear-gradient(135deg, #e17055, #fdcb6e); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.food-list h3 { margin-bottom: 16px; color: #333; }
+.meal-group { margin-bottom: 16px; }
+.meal-group h4 { font-size: 14px; color: #e17055; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px solid #eee; }
+.food-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; }
+.food-item-name { font-weight: 500; color: #333; }
+.food-item-cal { color: #e17055; font-weight: 600; }
+.food-item button { padding: 6px 10px; background: #ff5252; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }

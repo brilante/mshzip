@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>심박수 존 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .input-group { flex: 1; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .zone-list { margin-top: 1rem; }
+    .zone-item { display: flex; align-items: center; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
+    .zone-indicator { width: 8px; height: 100%; min-height: 60px; border-radius: 4px; margin-right: 1rem; }
+    .zone-info { flex: 1; }
+    .zone-name { font-weight: 600; }
+    .zone-desc { font-size: 0.8rem; opacity: 0.7; }
+    .zone-range { text-align: right; }
+    .zone-bpm { font-size: 1.25rem; font-weight: 700; }
+    .zone-percent { font-size: 0.8rem; opacity: 0.7; }
+    .zone-1 { background: rgba(59, 130, 246, 0.15); }
+    .zone-1 .zone-indicator { background: #3b82f6; }
+    .zone-2 { background: rgba(34, 197, 94, 0.15); }
+    .zone-2 .zone-indicator { background: #22c55e; }
+    .zone-3 { background: rgba(234, 179, 8, 0.15); }
+    .zone-3 .zone-indicator { background: #eab308; }
+    .zone-4 { background: rgba(249, 115, 22, 0.15); }
+    .zone-4 .zone-indicator { background: #f97316; }
+    .zone-5 { background: rgba(239, 68, 68, 0.15); }
+    .zone-5 .zone-indicator { background: #ef4444; }
+    .max-hr-display { text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px; margin-top: 1rem; }
+    .max-hr-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+    .max-hr-label { font-size: 0.85rem; color: var(--text-secondary); }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">심박수 존 계산기</h1>
+          <p class="tool-description">운동 강도별 목표 심박수</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="input-row">
+          <div class="input-group">
+            <div class="input-label">나이</div>
+            <input type="number" id="age" class="tool-input" placeholder="30" min="1" max="120" oninput="HeartRateZone.calculate()" aria-label="30">
+          </div>
+          <div class="input-group">
+            <div class="input-label">안정시 심박수 (선택)</div>
+            <input type="number" id="restingHR" class="tool-input" placeholder="60" min="30" max="120" oninput="HeartRateZone.calculate()" aria-label="60">
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">계산 방식</div>
+          <select id="method" class="tool-input" onchange="HeartRateZone.calculate()">
+            <option value="max">최대 심박수 기준</option>
+            <option value="karvonen">카르보넨 공식 (HRR)</option>
+          </select>
+        </div>
+        <div class="max-hr-display">
+          <div class="max-hr-value" id="maxHR">-</div>
+          <div class="max-hr-label">예상 최대 심박수 (bpm)</div>
+        </div>
+      </div>
+
+      <div class="zone-list" id="zoneList">
+        <!-- 존 리스트가 여기에 렌더링됩니다 -->
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">심박수 존 가이드</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          <strong>Zone 1 (회복)</strong>: 가벼운 활동, 워밍업/쿨다운<br>
+          <strong>Zone 2 (지방연소)</strong>: 유산소 기초 체력 향상<br>
+          <strong>Zone 3 (유산소)</strong>: 심폐 지구력 향상<br>
+          <strong>Zone 4 (역치)</strong>: 젖산 역치 개선, 속도 향상<br>
+          <strong>Zone 5 (최대)</strong>: 최대 능력, 단거리 스프린트
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="heart-rate-zone.js"></script>
+</body>
+</html>

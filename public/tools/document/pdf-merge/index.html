@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 병합 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="pdf-merge.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">PDF 병합</h1>
+      <p class="tool-description">여러 PDF 파일을 하나로 병합합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- PDF 업로드 영역 -->
+        <div class="upload-section">
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".pdf" multiple hidden>
+            <div class="dropzone-icon"></div>
+            <div class="dropzone-text">PDF 파일을 드래그하거나 클릭하여 선택</div>
+            <div class="dropzone-hint">여러 개의 PDF 파일을 선택할 수 있습니다</div>
+          </div>
+        </div>
+
+        <!-- PDF 목록 -->
+        <div class="files-section" id="filesSection" style="display: none;">
+          <div class="section-header">
+            <span class="section-title">PDF 파일 목록 (<span id="fileCount">0</span>개)</span>
+            <div class="section-actions">
+              <button class="tool-btn tool-btn-sm" onclick="PdfMerge.addMore()" aria-label="+ 추가">+ 추가</button>
+              <button class="tool-btn tool-btn-sm tool-btn-danger" onclick="PdfMerge.clearAll()" aria-label="전체 삭제">전체 삭제</button>
+            </div>
+          </div>
+          <div class="files-list" id="filesList"></div>
+          <p class="files-hint">드래그하여 병합 순서 변경 가능</p>
+        </div>
+
+        <!-- 병합 설정 -->
+        <div class="settings-section" id="settingsSection" style="display: none;">
+          <div class="section-title">병합 설정</div>
+
+          <div class="settings-grid">
+            <div class="setting-group">
+              <label class="setting-label">출력 파일명</label>
+              <input type="text" id="outputName" class="setting-input" value="merged" placeholder="파일명 입력" aria-label="파일명 입력">
+            </div>
+          </div>
+
+          <button class="tool-btn tool-btn-primary tool-btn-lg merge-btn" id="mergeBtn" onclick="PdfMerge.merge()" aria-label="PDF 병합하기">
+            PDF 병합하기
+          </button>
+        </div>
+
+        <!-- 결과 -->
+        <div class="result-section" id="resultSection" style="display: none;">
+          <div class="section-header">
+            <span class="section-title">병합 완료</span>
+          </div>
+          <div class="result-info" id="resultInfo"></div>
+          <div class="result-actions">
+            <button class="tool-btn tool-btn-primary" onclick="PdfMerge.download()" aria-label="다운로드">다운로드</button>
+            <button class="tool-btn" onclick="PdfMerge.reset()" aria-label="새로 시작">새로 시작</button>
+          </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사용 팁</div>
+          <div class="help-content">
+            <ul>
+              <li><strong>순서 변경</strong>: 파일 카드를 드래그하여 원하는 병합 순서로 정렬</li>
+              <li><strong>페이지 유지</strong>: 각 PDF의 모든 페이지가 순서대로 병합됩니다</li>
+              <li><strong>파일 크기</strong>: 큰 PDF 파일은 처리 시간이 길어질 수 있습니다</li>
+              <li><strong>브라우저 처리</strong>: 모든 작업은 브라우저에서 처리되어 파일이 서버로 전송되지 않습니다</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="pdf-merge.js"></script>
+</body>
+</html>

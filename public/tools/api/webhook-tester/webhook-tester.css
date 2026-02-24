@@ -1,0 +1,30 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+.header { text-align: center; color: white; margin-bottom: 20px; }
+.header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.main-content { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.webhook-info { margin-bottom: 25px; }
+.info-card { background: #fff3cd; border-left: 4px solid #f39c12; padding: 15px; border-radius: 8px; }
+.info-card h4 { margin-bottom: 8px; color: #856404; }
+.info-card p { font-size: 14px; color: #856404; }
+.info-card a { color: #e67e22; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #333; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; }
+.form-group textarea { font-family: 'Fira Code', monospace; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.send-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.send-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(243, 156, 18, 0.3); }
+.templates-section { margin-top: 25px; padding-top: 25px; border-top: 2px solid #f0f0f0; }
+.templates-section h4 { margin-bottom: 15px; color: #333; }
+.templates-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+.templates-grid button { padding: 10px 20px; background: #f8f8f8; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+.templates-grid button:hover { border-color: #f39c12; color: #e67e22; }
+.response-section { margin-top: 25px; padding-top: 25px; border-top: 2px solid #f0f0f0; }
+.response-section h4 { margin-bottom: 15px; }
+.response-info { margin-bottom: 10px; font-size: 14px; }
+.response-info .status { padding: 4px 10px; border-radius: 4px; font-weight: 600; }
+.response-info .status.success { background: #d4edda; color: #155724; }
+.response-info .status.error { background: #f8d7da; color: #721c24; }
+#responseBody { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 10px; font-family: 'Fira Code', monospace; font-size: 13px; overflow-x: auto; white-space: pre-wrap; }

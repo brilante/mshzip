@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>플래시카드 생성기 - 학습 도구</title>
+    <link rel="stylesheet" href="flashcard-maker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>플래시카드 생성기</h1>
+            <p>효과적인 암기를 위한 플래시카드를 만들고 학습하세요</p>
+        </header>
+
+        <div class="main-content">
+            <div class="card-creator">
+                <h3>새 카드 만들기</h3>
+                <div class="input-group">
+                    <label>앞면 (질문/단어)</label>
+                    <textarea id="cardFront" placeholder="질문이나 단어를 입력하세요"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>뒷면 (답/설명)</label>
+                    <textarea id="cardBack" placeholder="답이나 설명을 입력하세요"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>카테고리</label>
+                    <input type="text" id="cardCategory" placeholder="예: 영어, 역사, 과학" aria-label="예: 영어, 역사, 과학">
+                </div>
+                <button id="addCard" class="btn-primary" aria-label="카드 추가">카드 추가</button>
+            </div>
+
+            <div class="card-study">
+                <h3>학습 모드</h3>
+                <div class="study-stats">
+                    <span id="cardCount">0개의 카드</span>
+                    <span id="studyProgress">0 / 0</span>
+                </div>
+
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <p id="frontText">카드를 추가하세요</p>
+                        </div>
+                        <div class="flashcard-back">
+                            <p id="backText">뒷면</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="study-controls">
+                    <button id="prevCard" class="btn-secondary" aria-label="이전">이전</button>
+                    <button id="flipCard" class="btn-primary" aria-label="뒤집기">뒤집기</button>
+                    <button id="nextCard" class="btn-secondary" aria-label="다음">다음</button>
+                </div>
+
+                <div class="rating-btns">
+                    <button class="rating" data-rating="hard" aria-label="어려움">어려움</button>
+                    <button class="rating" data-rating="medium" aria-label="보통">보통</button>
+                    <button class="rating" data-rating="easy" aria-label="쉬움">쉬움</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-list">
+            <h3>카드 목록 <button id="clearAll" class="btn-small" aria-label="전체 삭제">전체 삭제</button></h3>
+            <div id="cardListContainer"></div>
+        </div>
+    </div>
+    <script src="flashcard-maker.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

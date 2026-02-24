@@ -1,0 +1,20 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+header { text-align: center; color: white; margin-bottom: 30px; }
+header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.generators { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.gen-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+.gen-card h3 { margin-bottom: 16px; color: #333; }
+.gen-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.gen-form input[type="number"] { width: 80px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; text-align: center; }
+.gen-form label { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #666; }
+.gen-form input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6c5ce7; }
+.gen-card select { padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; margin-right: 10px; }
+.gen-card button { padding: 12px 24px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 16px; }
+.result { padding: 16px; background: #f5f5f5; border-radius: 8px; text-align: center; font-size: 18px; word-break: break-all; }
+.result.mono { font-family: 'Roboto Mono', monospace; font-size: 14px; }
+.result.coin { font-size: 48px; }
+.color-result { display: flex; gap: 10px; align-items: center; }
+.color-preview { width: 60px; height: 60px; border-radius: 8px; border: 2px solid #e0e0e0; }
+.color-result .result { flex: 1; }

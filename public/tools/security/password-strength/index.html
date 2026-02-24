@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비밀번호 강도 체커 - ALLINONE</title>
+    <link rel="stylesheet" href="password-strength.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>비밀번호 강도 체커</h1>
+            <p class="subtitle">비밀번호의 보안 강도를 분석해드립니다</p>
+        </header>
+        <main class="main-content">
+            <div class="input-section">
+                <div class="password-input-wrapper">
+                    <input type="password" id="passwordInput" placeholder="비밀번호를 입력하세요" aria-label="비밀번호를 입력하세요">
+                    <button class="toggle-btn" onclick="togglePassword()" aria-label=""></button>
+                </div>
+                <div class="strength-meter">
+                    <div class="meter-fill" id="meterFill"></div>
+                </div>
+                <div class="strength-label" id="strengthLabel">비밀번호를 입력하세요</div>
+            </div>
+            <div class="result-section">
+                <div class="score-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="bg" cx="50" cy="50" r="45"/>
+                        <circle class="progress" id="scoreCircle" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"/>
+                    </svg>
+                    <div class="score-text">
+                        <span class="score-value" id="scoreValue">0</span>
+                        <span class="score-label">점</span>
+                    </div>
+                </div>
+                <div class="criteria-section">
+                    <h3>평가 기준</h3>
+                    <div class="criteria-list">
+                        <div class="criteria-item" id="lengthCriteria">
+                            <span class="icon"></span>
+                            <span class="text">8자 이상</span>
+                        </div>
+                        <div class="criteria-item" id="uppercaseCriteria">
+                            <span class="icon"></span>
+                            <span class="text">대문자 포함</span>
+                        </div>
+                        <div class="criteria-item" id="lowercaseCriteria">
+                            <span class="icon"></span>
+                            <span class="text">소문자 포함</span>
+                        </div>
+                        <div class="criteria-item" id="numberCriteria">
+                            <span class="icon"></span>
+                            <span class="text">숫자 포함</span>
+                        </div>
+                        <div class="criteria-item" id="symbolCriteria">
+                            <span class="icon"></span>
+                            <span class="text">특수문자 포함</span>
+                        </div>
+                        <div class="criteria-item" id="noCommonCriteria">
+                            <span class="icon"></span>
+                            <span class="text">흔한 패턴 없음</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="crack-time-section">
+                <h3>예상 크래킹 시간</h3>
+                <div class="crack-time" id="crackTime">-</div>
+                <p class="crack-note">온라인 공격 기준 (초당 1,000회 시도)</p>
+            </div>
+            <div class="tips-section">
+                <h3>강력한 비밀번호 만들기</h3>
+                <ul>
+                    <li>12자 이상 사용하기</li>
+                    <li>대소문자, 숫자, 특수문자 혼합</li>
+                    <li>개인정보(생일, 이름) 사용 금지</li>
+                    <li>연속된 문자(123, abc) 피하기</li>
+                    <li>사이트마다 다른 비밀번호 사용</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+    <script src="password-strength.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

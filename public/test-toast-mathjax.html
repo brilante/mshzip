@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Toast UI Editor MathJax 테스트</title>
+
+    <!-- Toast UI Editor CSS -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+
+    <!-- MathJax Configuration -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        },
+        startup: {
+          ready: function () {
+            console.log('MathJax 로드 완료!');
+            MathJax.startup.defaultReady();
+          }
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Toast UI Editor JS -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; }
+        #editor { height: 500px; margin: 20px 0; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Toast UI Editor + MathJax 통합 테스트</h1>
+
+    <div>
+        <button id="insertLatex">LaTeX 수식 삽입</button>
+        <button id="checkRendering">렌더링 확인</button>
+    </div>
+
+    <div id="editor"></div>
+
+    <div id="results" class="result info">
+        <h2>테스트 결과</h2>
+        <p>테스트를 진행하려면 위의 버튼을 클릭하세요.</p>
+    </div>
+
+    <script>
+        // Toast UI Editor 초기화
+        const initialContent = `
+# Toast UI Editor + MathJax 테스트
+
+## 1. Display Math (블록 수식)
+
+원주율 계산 공식:
+
+\\[\\pi = 4 \\sum_{n=0}^{\\infty} \\frac{(-1)^n}{2n+1}\\]
+
+## 2. Inline Math (인라인 수식)
+
+아인슈타인의 공식: \\(E = mc^2\\)
+
+## 3. 이차방정식 근의 공식
+
+\\[x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\]
+
+## 4. 오일러 공식
+
+\\[e^{i\\pi} + 1 = 0\\]
+        `;
+
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: '500px',
+            initialEditType: 'wysiwyg',
+            initialValue: initialContent,
+            previewStyle: 'vertical'
+        });
+
+        // MathJax 렌더링 함수
+        function renderMathJaxInEditor() {
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                const editorContainer = document.querySelector('#editor');
+                const wysiwygEditor = editorContainer.querySelector('.toastui-editor-contents');
+                const previewPanel = editorContainer.querySelector('.toastui-editor-md-preview');
+
+                const elementsToRender = [];
+                if (wysiwygEditor) elementsToRender.push(wysiwygEditor);
+                if (previewPanel) elementsToRender.push(previewPanel);
+
+                if (elementsToRender.length > 0) {
+                    MathJax.typesetPromise(elementsToRender).then(() => {
+                        console.log('MathJax 렌더링 완료');
+                    }).catch(err => {
+                        console.error('MathJax 렌더링 실패:', err);
+                    });
+                }
+            } else {
+                console.error('MathJax가 로드되지 않음');
+            }
+        }
+
+        // 초기 렌더링
+        setTimeout(renderMathJaxInEditor, 500);
+
+        // 에디터 이벤트 핸들러
+        editor.on('change', () => {
+            setTimeout(renderMathJaxInEditor, 100);
+        });
+
+        // LaTeX 삽입 버튼
+        document.getElementById('insertLatex').addEventListener('click', () => {
+            const newLatex = `
+
+## 새로 추가된 수식
+
+바젤 문제:
+
+\\[\\frac{\\pi^2}{6} = \\sum_{n=1}^{\\infty} \\frac{1}{n^2}\\]
+
+인라인 수식: \\(\\sin^2(x) + \\cos^2(x) = 1\\)
+            `;
+
+            const currentContent = editor.getHTML();
+            editor.setHTML(currentContent + newLatex);
+
+            setTimeout(renderMathJaxInEditor, 100);
+
+            alert('LaTeX 수식이 삽입되었습니다. 잠시 후 렌더링됩니다.');
+        });
+
+        // 렌더링 확인 버튼
+        document.getElementById('checkRendering').addEventListener('click', () => {
+            const resultsDiv = document.getElementById('results');
+
+            // MathJax 로드 확인
+            const hasMathJax = typeof MathJax !== 'undefined';
+
+            // 렌더링된 수식 요소 확인
+            const editorContainer = document.querySelector('#editor');
+            const mjxContainers = editorContainer.querySelectorAll('mjx-container');
+            const mjxCount = mjxContainers.length;
+
+            // 원시 LaTeX 텍스트 확인
+            const editorText = editorContainer.innerText;
+            const hasRawDisplayMath = editorText.includes('\\[');
+            const hasRawInlineMath = editorText.includes('\\(');
+
+            let html = '<h2>검증 결과</h2><ul>';
+
+            html += `<li><strong>MathJax 로드:</strong> ${hasMathJax ? '성공' : '실패'}</li>`;
+            html += `<li><strong>렌더링된 수식:</strong> ${mjxCount}개 ${mjxCount >= 4 ? '' : '(최소 4개 필요)'}</li>`;
+
+            if (mjxCount > 0) {
+                html += '<li><strong>렌더링된 수식 목록:</strong><ul>';
+                mjxContainers.forEach((container, index) => {
+                    const text = container.textContent.substring(0, 30);
+                    html += `<li>${index + 1}. ${text}...</li>`;
+                });
+                html += '</ul></li>';
+            }
+
+            html += `<li><strong>원시 Display Math (\\[...\\]):</strong> ${hasRawDisplayMath ? '일부 남아있음' : '모두 렌더링됨'}</li>`;
+            html += `<li><strong>원시 Inline Math (\\(...\\)):</strong> ${hasRawInlineMath ? '일부 남아있음' : '모두 렌더링됨'}</li>`;
+
+            html += '</ul>';
+
+            // 최종 판정
+            const passed = hasMathJax && mjxCount >= 4;
+
+            if (passed) {
+                html += '<h3 style="color: #155724;">테스트 통과!</h3>';
+                html += '<p>Toast UI Editor에서 MathJax가 정상적으로 작동합니다.</p>';
+                resultsDiv.className = 'result success';
+            } else {
+                html += '<h3 style="color: #721c24;">테스트 실패</h3>';
+                html += '<p>일부 수식이 제대로 렌더링되지 않았습니다.</p>';
+
+                if (!hasMathJax) {
+                    html += '<p><strong>문제:</strong> MathJax 라이브러리가 로드되지 않음</p>';
+                }
+                if (mjxCount < 4) {
+                    html += `<p><strong>문제:</strong> 렌더링된 수식 개수 부족 (${mjxCount}/4)</p>';
+                }
+
+                resultsDiv.className = 'result error';
+            }
+
+            resultsDiv.innerHTML = html;
+        });
+
+        // 페이지 로드 후 자동 검증
+        setTimeout(() => {
+            document.getElementById('checkRendering').click();
+        }, 2000);
+    </script>
+</body>
+</html>

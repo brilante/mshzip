@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>플로우차트 생성기 | Flowchart Generator</title>
+  <link rel="stylesheet" href="flowchart-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>플로우차트 생성기</h1>
+      <p>드래그 앤 드롭으로 플로우차트를 만드세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="toolbar">
+        <div class="shape-palette">
+          <div class="shape-item" draggable="true" data-shape="rect">
+            <div class="shape-preview rect"></div>
+            <span>프로세스</span>
+          </div>
+          <div class="shape-item" draggable="true" data-shape="diamond">
+            <div class="shape-preview diamond"></div>
+            <span>조건</span>
+          </div>
+          <div class="shape-item" draggable="true" data-shape="oval">
+            <div class="shape-preview oval"></div>
+            <span>시작/종료</span>
+          </div>
+          <div class="shape-item" draggable="true" data-shape="parallelogram">
+            <div class="shape-preview parallelogram"></div>
+            <span>입출력</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="clearCanvas()" aria-label="초기화">초기화</button>
+          <button onclick="exportImage()" aria-label="다운로드">다운로드</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <svg id="flowchartCanvas" width="100%" height="600">
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="properties-panel" id="propertiesPanel" style="display: none;">
+        <h4>속성</h4>
+        <div class="property-group">
+          <label>텍스트</label>
+          <input type="text" id="shapeText" onchange="updateSelectedShape()">
+        </div>
+        <div class="property-group">
+          <label>색상</label>
+          <input type="color" id="shapeColor" value="#4A90D9" onchange="updateSelectedShape()">
+        </div>
+        <button onclick="deleteSelected()" aria-label="삭제">삭제</button>
+      </div>
+    </div>
+  </div>
+  <script src="flowchart-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

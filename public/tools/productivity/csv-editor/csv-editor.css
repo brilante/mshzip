@@ -1,0 +1,303 @@
+/**
+ * CSV 편집기 스타일
+ */
+
+.tool-panel-full {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 툴바 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  align-items: center;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 4px;
+  padding-right: 12px;
+  border-right: 1px solid var(--tools-border);
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.toolbar-right {
+  margin-left: auto;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--tools-border);
+  background: var(--tools-bg);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--tools-text);
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: var(--tools-bg-secondary);
+  border-color: var(--tools-primary);
+}
+
+.toolbar-btn-primary {
+  background: var(--tools-primary);
+  border-color: var(--tools-primary);
+  color: white;
+}
+
+.toolbar-btn-primary:hover {
+  background: var(--tools-primary-dark);
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  width: 150px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+/* 업로드 영역 */
+.upload-dropzone {
+  border: 2px dashed var(--tools-border);
+  border-radius: var(--tools-radius);
+  padding: 60px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--tools-bg-secondary);
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  border-color: var(--tools-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.dropzone-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.dropzone-text {
+  font-size: 16px;
+  color: var(--tools-text);
+  margin-bottom: 12px;
+}
+
+.dropzone-hint {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+  margin-bottom: 16px;
+}
+
+/* 편집 영역 */
+.editor-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.csv-table th,
+.csv-table td {
+  border: 1px solid var(--tools-border);
+  padding: 0;
+  min-width: 100px;
+  max-width: 300px;
+  height: 32px;
+}
+
+.csv-table th {
+  background: var(--tools-bg);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.csv-table th.row-header {
+  width: 50px;
+  min-width: 50px;
+  text-align: center;
+  background: var(--tools-bg);
+  position: sticky;
+  left: 0;
+  z-index: 11;
+}
+
+.csv-table td.row-number {
+  width: 50px;
+  min-width: 50px;
+  text-align: center;
+  background: var(--tools-bg);
+  font-weight: 500;
+  color: var(--tools-text-secondary);
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.csv-table td.row-number:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.csv-table th.selected,
+.csv-table td.row-number.selected {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.csv-table .col-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.csv-table .col-header:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.csv-table .col-header.selected {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+/* 셀 입력 */
+.cell-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: transparent;
+  color: var(--tools-text);
+  box-sizing: border-box;
+}
+
+.cell-input:focus {
+  outline: 2px solid var(--tools-primary);
+  outline-offset: -2px;
+  background: var(--tools-bg);
+}
+
+.csv-table td.selected {
+  outline: 2px solid var(--tools-primary);
+  outline-offset: -2px;
+}
+
+.csv-table td.highlight {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+/* 상태바 */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--tools-bg);
+  border-top: 1px solid var(--tools-border);
+  font-size: 12px;
+  color: var(--tools-text-secondary);
+}
+
+/* 도움말 */
+.tool-help {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 버튼 */
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--tools-border);
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-btn-primary {
+  background: var(--tools-primary);
+  border-color: var(--tools-primary);
+  color: white;
+}
+
+.tool-btn-primary:hover {
+  background: var(--tools-primary-dark);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-group {
+    border-right: none;
+    padding-right: 0;
+    justify-content: center;
+  }
+
+  .toolbar-right {
+    margin-left: 0;
+  }
+
+  .table-wrapper {
+    max-height: 400px;
+  }
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 뽑기 - JEOGI Tools</title>
+  <link rel="stylesheet" href="card-draw.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>🃏 카드 뽑기</h1>
+      <p class="subtitle">트럼프 카드를 무작위로 뽑아보세요</p>
+    </header>
+
+    <main class="main-content">
+      <section class="deck-section">
+        <div class="deck-info">
+          <span class="remaining">남은 카드: <strong id="remainingCount">52</strong>장</span>
+          <button class="shuffle-btn" id="shuffleBtn" aria-label="섞기">섞기</button>
+        </div>
+      </section>
+
+      <section class="cards-section">
+        <div class="drawn-cards" id="drawnCards">
+          <div class="card placeholder">
+            <span>?</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls-section">
+        <div class="draw-options">
+          <label>뽑을 장수:</label>
+          <select id="drawCount">
+            <option value="1">1장</option>
+            <option value="2">2장</option>
+            <option value="3">3장</option>
+            <option value="5" selected>5장</option>
+            <option value="7">7장</option>
+          </select>
+        </div>
+        <button class="draw-btn" id="drawBtn">
+          <span></span> 카드 뽑기
+        </button>
+      </section>
+
+      <section class="hand-section">
+        <h3>현재 패</h3>
+        <div class="hand-cards" id="handCards"></div>
+        <div class="hand-result" id="handResult"></div>
+        <button class="clear-hand-btn" id="clearHandBtn" aria-label="패 버리기">패 버리기</button>
+      </section>
+
+      <section class="history-section">
+        <h3>뽑은 기록</h3>
+        <div class="history-list" id="historyList"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="card-draw.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

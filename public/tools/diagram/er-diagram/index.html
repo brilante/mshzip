@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ER 다이어그램 | ER Diagram</title>
+  <link rel="stylesheet" href="er-diagram.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>ER 다이어그램</h1>
+      <p>데이터베이스 스키마를 시각화하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="quick-add">
+        <h4>빠른 추가</h4>
+        <div class="quick-buttons">
+          <button onclick="addEntity()" aria-label="엔티티">엔티티</button>
+          <button onclick="addRelation('||--o{')" aria-label="1:N 관계">1:N 관계</button>
+          <button onclick="addRelation('||--||')" aria-label="1:1 관계">1:1 관계</button>
+          <button onclick="addRelation('}o--o{')" aria-label="N:M 관계">N:M 관계</button>
+        </div>
+        <div class="relation-guide">
+          <small>관계 기호: || (1) | o (0) | { (다수)</small>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="editor-panel">
+          <textarea id="codeEditor" spellcheck="false">erDiagram
+    USER ||--o{ ORDER : places
+    USER {
+        int id PK
+        string email UK
+        string name
+        datetime created_at
+    }
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER {
+        int id PK
+        int user_id FK
+        decimal total
+        string status
+        datetime ordered_at
+    }
+    PRODUCT ||--o{ ORDER_ITEM : "ordered in"
+    PRODUCT {
+        int id PK
+        string name
+        decimal price
+        int stock
+    }
+    ORDER_ITEM {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+    }</textarea>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-header">
+            <button onclick="downloadSVG()" aria-label="SVG 다운로드">SVG 다운로드</button>
+          </div>
+          <div class="preview-area" id="previewArea">
+            <div class="mermaid" id="mermaidOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="er-diagram.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

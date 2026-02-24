@@ -1,0 +1,22 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+header { text-align: center; color: white; margin-bottom: 30px; }
+header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.local-time { text-align: center; }
+.local-time h3 { margin-bottom: 10px; color: #666; }
+.big-time { font-family: 'Roboto Mono', monospace; font-size: 64px; font-weight: 700; color: #2d3436; margin-bottom: 10px; }
+.date { color: #999; font-size: 18px; }
+.add-city { display: flex; gap: 10px; margin-bottom: 20px; }
+.add-city select { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 14px; background: white; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+.add-city button { padding: 14px 24px; background: #2d3436; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.clocks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.clock-card { background: white; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative; }
+.clock-card .city { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 5px; }
+.clock-card .timezone { font-size: 12px; color: #999; margin-bottom: 15px; }
+.clock-card .time { font-family: 'Roboto Mono', monospace; font-size: 36px; font-weight: 700; color: #2d3436; }
+.clock-card .diff { font-size: 12px; color: #666; margin-top: 10px; }
+.clock-card .delete-btn { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #ff5252; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 12px; opacity: 0; transition: opacity 0.2s; }
+.clock-card:hover .delete-btn { opacity: 1; }
+@media (max-width: 500px) { .big-time { font-size: 48px; } }

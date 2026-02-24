@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미팅 스케줄러 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .scheduler-layout { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .list-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+    .meeting-group { margin-bottom: 1.5rem; }
+    .meeting-group h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; }
+    .meeting-group.past { opacity: 0.6; }
+    .meeting-card { display: flex; gap: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.75rem; }
+    .meeting-card.today { border-left: 3px solid var(--primary); }
+    .meeting-card.past { opacity: 0.7; }
+    .meeting-time-block { min-width: 80px; text-align: center; }
+    .meeting-date-display { font-size: 0.85rem; font-weight: 600; }
+    .meeting-time-display { font-size: 1rem; font-weight: 700; color: var(--primary); }
+    .meeting-duration { font-size: 0.75rem; color: var(--text-secondary); }
+    .meeting-content { flex: 1; }
+    .meeting-title-display { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+    .meeting-location, .meeting-attendees { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .meeting-description { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+    .meeting-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+    .action-btn { background: transparent; border: none; cursor: pointer; font-size: 1rem; opacity: 0.6; }
+    .action-btn:hover { opacity: 1; }
+    .action-btn.delete:hover { color: var(--error); }
+    .empty-state { text-align: center; color: var(--text-secondary); padding: 3rem; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    @media (max-width: 900px) { .scheduler-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">미팅 스케줄러</h1>
+          <p class="tool-description">미팅 일정 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="scheduler-layout">
+      <div class="form-panel">
+        <div class="section-title">새 미팅</div>
+        <div class="control-group">
+          <label>제목 *</label>
+          <input type="text" id="meetingTitle" class="tool-input" placeholder="미팅 제목" aria-label="미팅 제목">
+        </div>
+        <div class="row-2">
+          <div class="control-group">
+            <label>날짜 *</label>
+            <input type="date" id="meetingDate" class="tool-input">
+          </div>
+          <div class="control-group">
+            <label>시간 *</label>
+            <input type="time" id="meetingTime" class="tool-input">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>소요 시간</label>
+          <select id="meetingDuration" class="tool-input">
+            <option value="30">30분</option>
+            <option value="60" selected>1시간</option>
+            <option value="90">1시간 30분</option>
+            <option value="120">2시간</option>
+            <option value="180">3시간</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>장소/링크</label>
+          <input type="text" id="meetingLocation" class="tool-input" placeholder="회의실 A 또는 Zoom 링크" aria-label="회의실 A 또는 Zoom 링크">
+        </div>
+        <div class="control-group">
+          <label>참석자 (쉼표로 구분)</label>
+          <input type="text" id="meetingAttendees" class="tool-input" placeholder="홍길동, 김철수" aria-label="홍길동, 김철수">
+        </div>
+        <div class="control-group">
+          <label>설명</label>
+          <textarea id="meetingDesc" class="tool-input" rows="3" placeholder="미팅 내용..."></textarea>
+        </div>
+        <button class="tool-btn tool-btn-primary" style="width:100%" onclick="MeetingScheduler.addMeeting()" aria-label="+ 미팅 추가">+ 미팅 추가</button>
+      </div>
+
+      <div class="list-panel">
+        <div class="header-row">
+          <div class="section-title" style="margin:0">미팅 일정</div>
+          <button class="tool-btn tool-btn-secondary" onclick="MeetingScheduler.clearAll()" aria-label="전체 삭제">전체 삭제</button>
+        </div>
+        <div id="meetingsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="meeting-scheduler.js"></script>
+</body>
+</html>

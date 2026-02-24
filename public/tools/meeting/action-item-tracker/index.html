@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>액션아이템 트래커 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="action-item-tracker.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">액션아이템 트래커</h1>
+      <p class="tool-description">회의 후속 작업을 체계적으로 관리합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 필터 및 통계 -->
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalCount">0</div>
+            <div class="stat-label">전체</div>
+          </div>
+          <div class="stat-card pending">
+            <div class="stat-value" id="pendingCount">0</div>
+            <div class="stat-label">대기</div>
+          </div>
+          <div class="stat-card progress">
+            <div class="stat-value" id="progressCount">0</div>
+            <div class="stat-label">진행중</div>
+          </div>
+          <div class="stat-card completed">
+            <div class="stat-value" id="completedCount">0</div>
+            <div class="stat-label">완료</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 액션아이템 추가 -->
+      <div class="add-section">
+        <h3 class="section-title">새 액션아이템</h3>
+        <div class="add-form">
+          <div class="form-row">
+            <input type="text" id="itemTitle" class="form-input" placeholder="액션아이템 제목" aria-label="액션아이템 제목">
+          </div>
+          <div class="form-row three-col">
+            <input type="text" id="itemAssignee" class="form-input" placeholder="담당자" aria-label="담당자">
+            <input type="date" id="itemDueDate" class="form-input">
+            <select id="itemPriority" class="form-input">
+              <option value="high">높음</option>
+              <option value="medium" selected> 보통</option>
+              <option value="low"> 낮음</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <input type="text" id="itemMeeting" class="form-input" placeholder="관련 회의 (선택)" aria-label="관련 회의 (선택)">
+          </div>
+          <button class="add-btn" onclick="ActionTracker.addItem()" aria-label="추가">추가</button>
+        </div>
+      </div>
+
+      <!-- 필터 -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>상태:</label>
+          <select id="filterStatus" class="filter-select" onchange="ActionTracker.render()">
+            <option value="all">전체</option>
+            <option value="pending">대기</option>
+            <option value="progress">진행중</option>
+            <option value="completed">완료</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>우선순위:</label>
+          <select id="filterPriority" class="filter-select" onchange="ActionTracker.render()">
+            <option value="all">전체</option>
+            <option value="high">높음</option>
+            <option value="medium">보통</option>
+            <option value="low">낮음</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>담당자:</label>
+          <select id="filterAssignee" class="filter-select" onchange="ActionTracker.render()">
+            <option value="all">전체</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 액션아이템 목록 -->
+      <div class="items-section">
+        <div class="items-list" id="itemsList">
+          <!-- 동적 생성 -->
+        </div>
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon"></div>
+          <div class="empty-text">액션아이템이 없습니다</div>
+          <div class="empty-sub">새 액션아이템을 추가해보세요</div>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="action-buttons">
+        <button class="action-btn" onclick="ActionTracker.exportMarkdown()" aria-label="Markdown 내보내기">Markdown 내보내기</button>
+        <button class="action-btn" onclick="ActionTracker.copyToClipboard()" aria-label="복사">복사</button>
+        <button class="action-btn" onclick="ActionTracker.saveData()" aria-label="저장">저장</button>
+        <button class="action-btn" onclick="ActionTracker.loadData()" aria-label="불러오기">불러오기</button>
+        <button class="action-btn danger" onclick="ActionTracker.clearCompleted()" aria-label="완료 항목 삭제">완료 항목 삭제</button>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 방법</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>액션아이템 추가</strong>: 제목, 담당자, 마감일, 우선순위를 입력하여 추가</li>
+            <li><strong>상태 변경</strong>: 항목을 클릭하여 대기 → 진행중 → 완료로 상태 전환</li>
+            <li><strong>필터링</strong>: 상태, 우선순위, 담당자별로 필터링 가능</li>
+            <li><strong>내보내기</strong>: Markdown 형식으로 내보내거나 클립보드에 복사</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="action-item-tracker.js"></script>
+</body>
+</html>

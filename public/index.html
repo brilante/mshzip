@@ -1,0 +1,3684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <!-- 테마 플래시 방지: 최우선 실행 스크립트 -->
+  <script>
+  (function() {
+    // 테마 즉시 적용 (localStorage 또는 시스템 설정)
+    var theme = localStorage.getItem('mymind3-theme');
+    if (!theme) {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    // 테마 로드 완료 표시
+    document.documentElement.classList.add('theme-loaded');
+  })();
+  </script>
+  <!-- 공통 CSS 변수 및 테마 기본 스타일 (중복 제거) -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/theme-base.css">
+  <link rel="stylesheet" href="/css/themes/light.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="metaIndexTitle">마인드맵</title>
+
+  <!-- ============================================ -->
+  <!-- Phase 2-3: SEO 메타 태그 -->
+  <!-- ============================================ -->
+
+  <!-- 기본 SEO 메타 태그 -->
+  <meta name="description" data-i18n-content="metaIndexDescription" content="AI 통합 마인드맵 애플리케이션 - GPT, Claude, Gemini를 활용한 스마트한 아이디어 정리 및 문서 생성">
+  <meta name="keywords" data-i18n-content="metaIndexKeywords" content="마인드맵, mindmap, AI, GPT, Claude, Gemini, 아이디어 정리, 문서 생성, PDF, PPT, 노트, 메모, 생산성">
+  <meta name="author" content="MyMind3 Team">
+  <meta name="robots" content="index, follow">
+  <meta name="application-name" content="MyMind3">
+
+  <!-- Open Graph 메타 태그 (소셜 미디어 공유) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MyMind3">
+  <meta property="og:title" content="MyMind3 - AI 통합 마인드맵">
+  <meta property="og:description" content="AI 통합 마인드맵 애플리케이션 - GPT, Claude, Gemini를 활용한 스마트한 아이디어 정리 및 문서 생성">
+  <meta property="og:url" content="http://localhost:3999">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:locale:alternate" content="ja_JP">
+  <meta property="og:locale:alternate" content="zh_CN">
+
+  <!-- Twitter Card 메타 태그 -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MyMind3 - AI 통합 마인드맵">
+  <meta name="twitter:description" content="AI 통합 마인드맵 애플리케이션 - GPT, Claude, Gemini를 활용한 스마트한 아이디어 정리 및 문서 생성">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="http://localhost:3999">
+
+  <!-- 다국어 지원 링크 -->
+  <link rel="alternate" hreflang="ko" href="http://localhost:3999?lang=ko">
+  <link rel="alternate" hreflang="en" href="http://localhost:3999?lang=en">
+  <link rel="alternate" hreflang="ja" href="http://localhost:3999?lang=ja">
+  <link rel="alternate" hreflang="zh-CN" href="http://localhost:3999?lang=zh-CN">
+  <link rel="alternate" hreflang="ar" href="http://localhost:3999?lang=ar">
+  <link rel="alternate" hreflang="x-default" href="http://localhost:3999">
+
+  <!-- ============================================ -->
+
+  <link rel="icon" type="image/x-icon"
+    href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+
+  <!-- ============================================ -->
+  <!-- Preconnect: 외부 CDN 연결 사전 설정 (DNS/TCP/TLS) -->
+  <!-- ============================================ -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://uicdn.toast.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://uicdn.toast.com">
+  <!-- ============================================ -->
+
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="/css/exact-mymind2-layout.css">
+  <link rel="stylesheet" href="/css/exact-mymind2-mindmap.css">
+
+  <!-- Tailwind CSS (Phase 1) -->
+  <link rel="stylesheet" href="/css/tailwind-output.css?v=20260111">
+
+  <!-- ============================================ -->
+  <!-- Phase 1-3: RTL 레이아웃 CSS 지원 -->
+  <!-- ============================================ -->
+  <link rel="stylesheet" href="/css/rtl.css">
+  <!-- ============================================ -->
+
+  <!-- 노드필터 관리 팝업 CSS -->
+  <link rel="stylesheet" href="/css/components/node-filter.css">
+
+  <!-- ============================================ -->
+  <!-- Phase 1-2: 다국어 폰트 지원 -->
+  <!-- Pretendard 폰트 사용 (SIL Open Font License) -->
+  <!-- ============================================ -->
+  <link rel="stylesheet" href="/css/fonts.css">
+
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- TOAST UI Editor CSS -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/3.2.2/toastui-editor.min.css">
+
+  <!-- TOAST UI Editor KaTeX Plugin CSS -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@toast-ui/editor-plugin-katex@1.0.0/dist/toastui-editor-plugin-katex.min.css">
+
+
+  <!-- Custom Toast UI Editor Styles (수학 공식 렌더링 개선) -->
+  <link rel="stylesheet" href="/css/editor.css?v=20260124_17">
+
+  <!-- ============================================ -->
+  <!-- Dark Theme CSS (exactly.ai 스타일) -->
+  <!-- ============================================ -->
+  <link rel="stylesheet" href="/css/themes/dark.css?v=20251218001">
+
+  <!-- Context Menu CSS (노드 우클릭 메뉴) -->
+  <link rel="stylesheet" href="/css/context-menu.css">
+
+  <!-- MathJax 제거 - KaTeX만 사용 -->
+
+  <style>
+    /* ============================================ */
+    /* Phase 1-2: 다국어 폰트 스택 적용 */
+    /* ============================================ */
+    body,
+    html {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+        'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    }
+
+    /* ============================================ */
+
+    /* 통합 아이콘 시스템 */
+    .mm-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .mm-icon-fallback {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      text-align: center;
+      line-height: 16px;
+    }
+    /* 진행 단계 아이콘 */
+    .phase-icon .mm-icon { width: 18px; height: 18px; }
+    .phase-name .mm-icon { width: 14px; height: 14px; }
+    /* 토스트 아이콘 */
+    .toast-notification .mm-icon { width: 16px; height: 16px; margin-right: 4px; }
+    /* 검색 아이콘 */
+    .search-icon .mm-icon { width: 14px; height: 14px; }
+    /* 파일 첨부 아이콘 */
+    .toolbar-btn .mm-icon,
+    .image-attach-btn .mm-icon { width: 16px; height: 16px; }
+    /* 도구/FAQ 아이콘 */
+    .tools-icon .mm-icon,
+    .faq-icon .mm-icon { width: 20px; height: 20px; }
+
+    /* .panel-toggle-btn 스타일은 exact-mymind2-layout.css에서 통합 관리 */
+    /* 불러오기 버튼과 동일한 스타일로 통일됨 */
+
+    /* 토스트 알림 스타일 - 우측 상단, 한 줄 표시 */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      left: auto !important;
+      bottom: auto !important;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10001;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      max-width: 400px;
+      width: auto !important;
+      height: auto !important;
+      min-height: unset !important;
+      max-height: 60px !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    }
+
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* 성공 토스트 - 연한 녹색 */
+    .toast-notification.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    /* 에러 토스트 - 연한 빨강 */
+    .toast-notification.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* 경고 토스트 - 연한 노랑 */
+    .toast-notification.warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    /* 정보 토스트 - 연한 파랑 */
+    .toast-notification.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    /* 다크 모드 토스트 */
+    [data-theme="dark"] .toast-notification.success {
+      background-color: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    [data-theme="dark"] .toast-notification.error {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    [data-theme="dark"] .toast-notification.warning {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    [data-theme="dark"] .toast-notification.info {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    /* 메인 툴바 버튼 - 메인추가 버튼과 동일한 강조 스타일 */
+    .button-toolbar button:not(.panel-toggle-btn) {
+      background-color: transparent !important;
+      color: #1d1d1f !important;
+      border: 1px solid #1d1d1f !important;
+      box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .button-toolbar button:not(.panel-toggle-btn):hover:not(:disabled) {
+      background-color: #f0f0f0 !important;
+      border-color: #000 !important;
+      color: #1d1d1f !important;
+      outline: 0.5px solid #000;
+      box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.15);
+    }
+
+    .button-toolbar button:not(.panel-toggle-btn):active:not(:disabled) {
+      background-color: #e0e0e0 !important;
+      border-color: #000 !important;
+      box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    .button-toolbar button:not(.panel-toggle-btn):disabled {
+      background-color: #e9ecef !important;
+      color: #6c757d !important;
+      border-color: #bbb !important;
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+
+    [data-theme="dark"] .button-toolbar button:not(.panel-toggle-btn) {
+      background-color: transparent !important;
+      color: #e0e0e0 !important;
+      border-color: #e0e0e0 !important;
+      box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05);
+    }
+
+    [data-theme="dark"] .button-toolbar button:not(.panel-toggle-btn):hover:not(:disabled) {
+      background-color: #2a2a2a !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      outline: 0.5px solid #ffffff;
+      box-shadow: 0px 3px 12px 0px rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] .button-toolbar button:not(.panel-toggle-btn):active:not(:disabled) {
+      background-color: #333333 !important;
+      border-color: #ffffff !important;
+      box-shadow: 0px 1px 4px 0px rgba(255, 255, 255, 0.15);
+    }
+
+    [data-theme="dark"] .button-toolbar button:not(.panel-toggle-btn):disabled {
+      background-color: #2a2a2a !important;
+      color: #666666 !important;
+      border-color: #444444 !important;
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+
+    /* 로그아웃 버튼, 도구 버튼 - 불러오기 버튼과 동일한 스타일 */
+    .logout-btn,
+    .etc-tools-btn {
+      background-color: transparent !important;
+      color: #1d1d1f !important;
+      border: 1px solid #1d1d1f !important;
+      box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .logout-btn:hover,
+    .etc-tools-btn:hover {
+      background-color: #f0f0f0 !important;
+      border-color: #000 !important;
+      color: #1d1d1f !important;
+      outline: 0.5px solid #000;
+      box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="dark"] .logout-btn,
+    [data-theme="dark"] .etc-tools-btn {
+      background-color: transparent !important;
+      color: #e0e0e0 !important;
+      border-color: #e0e0e0 !important;
+      box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05);
+    }
+
+    [data-theme="dark"] .logout-btn:hover,
+    [data-theme="dark"] .etc-tools-btn:hover {
+      background-color: #2a2a2a !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      outline: 0.5px solid #ffffff;
+      box-shadow: 0px 3px 12px 0px rgba(255, 255, 255, 0.1);
+    }
+
+    /* 아이디 버튼 - 불러오기 버튼과 동일한 스타일 */
+    #currentUserDisplay {
+      display: inline-block;
+      padding: 6px 14px !important;
+      background-color: transparent !important;
+      color: #1d1d1f !important;
+      border: 1px solid #1d1d1f !important;
+      box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    #currentUserDisplay:hover {
+      background-color: #f0f0f0 !important;
+      border-color: #000 !important;
+      color: #1d1d1f !important;
+      outline: 0.5px solid #000;
+      box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="dark"] #currentUserDisplay {
+      background-color: transparent !important;
+      color: #e0e0e0 !important;
+      border-color: #e0e0e0 !important;
+      box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05);
+    }
+
+    [data-theme="dark"] #currentUserDisplay:hover {
+      background-color: #2a2a2a !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      outline: 0.5px solid #ffffff;
+      box-shadow: 0px 3px 12px 0px rgba(255, 255, 255, 0.1);
+    }
+
+    .editor-toggle-container {
+      margin-left: auto;
+      display: flex;
+      gap: 5px;
+    }
+
+    /* Settings Layer Popup - 반응형 스타일 */
+    #settingsLayerOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 99999;
+    }
+
+    #settingsLayerPopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 98%;
+      max-width: 1680px; /* 기존 1400px에서 20% 증가 */
+      height: 90vh;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      z-index: 100000;
+      overflow: hidden;
+    }
+
+    /* Settings 팝업 다크 모드 */
+    html[data-theme="dark"] #settingsLayerPopup {
+      background: #111111;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    }
+    html[data-theme="dark"] #settingsLayerContent {
+      background: #111111;
+      color: #ffffff;
+    }
+    html[data-theme="dark"] #settingsLayerCloseBtn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+    html[data-theme="dark"] #settingsLayerCloseBtn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* 고해상도 (1920px 이상) */
+    @media (min-width: 1920px) {
+      #settingsLayerPopup {
+        width: 95%;
+        max-width: 1800px;
+        height: 88vh;
+      }
+    }
+
+    /* 중간 해상도 (1440px ~ 1919px) */
+    @media (min-width: 1440px) and (max-width: 1919px) {
+      #settingsLayerPopup {
+        width: 96%;
+        max-width: 1600px;
+        height: 88vh;
+      }
+    }
+
+    /* 일반 해상도 (1200px ~ 1439px) */
+    @media (min-width: 1200px) and (max-width: 1439px) {
+      #settingsLayerPopup {
+        width: 97%;
+        max-width: 1350px;
+        height: 85vh;
+      }
+    }
+
+    /* 낮은 해상도 (992px ~ 1199px) */
+    @media (min-width: 992px) and (max-width: 1199px) {
+      #settingsLayerPopup {
+        width: 98%;
+        max-width: 1100px;
+        height: 85vh;
+      }
+    }
+
+    /* 태블릿 (768px ~ 991px) */
+    @media (min-width: 768px) and (max-width: 991px) {
+      #settingsLayerPopup {
+        width: 98%;
+        max-width: 95%;
+        height: 90vh;
+      }
+    }
+
+    /* 모바일 (768px 미만) */
+    @media (max-width: 767px) {
+      #settingsLayerPopup {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        transform: none;
+      }
+    }
+
+    #settingsLayerCloseBtn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.1);
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #333;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100001;
+      transition: background 0.2s;
+    }
+
+    #settingsLayerCloseBtn:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    #settingsLayerContent {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    /* 사용 내역 모달 CSS (body에 append되므로 index.html에 정의) */
+    .usage-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .usage-modal-container {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 1200px;
+      height: 85vh;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .usage-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .usage-modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #1f2937;
+    }
+
+    .usage-modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .usage-modal-close:hover {
+      color: #1f2937;
+    }
+
+    .usage-modal-summary {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-card {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .summary-icon {
+      font-size: 24px;
+    }
+
+    .summary-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .summary-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .usage-modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 0;
+      background: white;
+    }
+
+    .usage-table-container {
+      overflow-x: auto;
+    }
+
+    .usage-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .usage-table th,
+    .usage-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .usage-table th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+      position: sticky;
+      top: 0;
+    }
+
+    .usage-table tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .usage-modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .usage-record-count {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .usage-loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+
+    .usage-no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+
+    .usage-no-data-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    #loadMoreUsage {
+      padding: 8px 16px;
+      background: transparent;
+      color: #86868b;
+      border: 1px solid #d2d2d7;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    #loadMoreUsage:hover {
+      background: transparent;
+      border-color: #1d1d1f;
+      color: #1d1d1f;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] #loadMoreUsage {
+      border-color: #3a3a3a;
+      color: #888888;
+    }
+
+    [data-theme="dark"] #loadMoreUsage:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+    }
+
+    /* 상태 텍스트 스타일 */
+    .status-text {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: transparent;
+      color: #1d1d1f;
+      border: 1px solid #1d1d1f;
+    }
+
+    .status-failed {
+      background-color: transparent;
+      color: #86868b;
+      border: 1px solid #86868b;
+    }
+
+    .status-pending {
+      background-color: transparent;
+      color: #86868b;
+      border: 1px solid #d2d2d7;
+    }
+
+    /* 크레딧 발급 표시 (모노크롬) */
+    .credit-granted {
+      color: #1d1d1f;
+      font-weight: 600;
+    }
+
+    /* 서비스 배지 스타일 - 모노크롬 */
+    .service-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      background-color: transparent;
+      border: 1px solid #d2d2d7;
+      color: #86868b;
+    }
+
+    .service-badge.openai,
+    .service-badge.gpt {
+      background-color: transparent;
+      color: #1d1d1f;
+      border-color: #1d1d1f;
+    }
+
+    .service-badge.anthropic,
+    .service-badge.claude {
+      background-color: transparent;
+      color: #1d1d1f;
+      border-color: #1d1d1f;
+    }
+
+    .service-badge.google,
+    .service-badge.gemini {
+      background-color: transparent;
+      color: #1d1d1f;
+      border-color: #1d1d1f;
+    }
+
+    .service-badge.xai,
+    .service-badge.grok {
+      background-color: transparent;
+      color: #1d1d1f;
+      border-color: #1d1d1f;
+    }
+
+    .service-badge.local {
+      background-color: transparent;
+      color: #86868b;
+      border-color: #d2d2d7;
+    }
+
+    .service-badge.purchase {
+      background-color: transparent;
+      color: #1d1d1f;
+      border-color: #1d1d1f;
+      text-transform: none;
+    }
+
+    /* 다크모드 상태/서비스 배지 */
+    [data-theme="dark"] .status-success {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    [data-theme="dark"] .status-failed,
+    [data-theme="dark"] .status-pending {
+      color: #888888;
+      border-color: #3a3a3a;
+    }
+
+    [data-theme="dark"] .credit-granted {
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .service-badge {
+      color: #888888;
+      border-color: #3a3a3a;
+    }
+
+    [data-theme="dark"] .service-badge.openai,
+    [data-theme="dark"] .service-badge.gpt,
+    [data-theme="dark"] .service-badge.anthropic,
+    [data-theme="dark"] .service-badge.claude,
+    [data-theme="dark"] .service-badge.google,
+    [data-theme="dark"] .service-badge.gemini,
+    [data-theme="dark"] .service-badge.xai,
+    [data-theme="dark"] .service-badge.grok,
+    [data-theme="dark"] .service-badge.purchase {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    /* 구독 버튼 스타일 (레이어 팝업용) */
+    #settingsLayerContent .btn-primary,
+    #settingsLayerContent .btn-danger {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #settingsLayerContent .btn-primary {
+      background-color: transparent;
+      color: #1d1d1f;
+      border: 1px solid #1d1d1f;
+    }
+
+    #settingsLayerContent .btn-primary:hover {
+      background-color: #1d1d1f;
+      color: #ffffff;
+    }
+
+    #settingsLayerContent .btn-danger {
+      background-color: transparent;
+      color: #86868b;
+      border: 1px solid #d2d2d7;
+    }
+
+    #settingsLayerContent .btn-danger:hover {
+      background-color: transparent;
+      border-color: #1d1d1f;
+      color: #1d1d1f;
+    }
+
+    #settingsLayerContent .btn-danger:disabled {
+      background-color: transparent;
+      border-color: #d2d2d7;
+      color: #d2d2d7;
+      cursor: not-allowed;
+    }
+
+    /* 다크모드 설정 레이어 버튼 */
+    [data-theme="dark"] #settingsLayerContent .btn-primary {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    [data-theme="dark"] #settingsLayerContent .btn-primary:hover {
+      background-color: #ffffff;
+      color: #1d1d1f;
+    }
+
+    [data-theme="dark"] #settingsLayerContent .btn-danger {
+      color: #888888;
+      border-color: #3a3a3a;
+    }
+
+    [data-theme="dark"] #settingsLayerContent .btn-danger:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] #settingsLayerContent .btn-danger:disabled {
+      border-color: #3a3a3a;
+      color: #3a3a3a;
+    }
+
+    /* 광고 영역 스타일 */
+    .ad-container {
+      height: 200px;
+      background: #f5f5f7;
+      border-top: 1px solid #d2d2d7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    [data-theme="dark"] .ad-container {
+      background: #1d1d1f;
+      border-top-color: #3a3a3a;
+    }
+
+    .ad-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      text-align: center;
+    }
+
+    .ad-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      opacity: 0.6;
+    }
+
+    .ad-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .ad-subtext {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* 기타 도구 버튼 스타일 - 모노크롬 */
+    .etc-tools-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid #d2d2d7;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #86868b;
+      transition: all 0.2s;
+    }
+    .etc-tools-btn:hover {
+      transform: translateY(-1px);
+      border-color: #1d1d1f;
+      color: #1d1d1f;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="dark"] .etc-tools-btn {
+      border-color: #3a3a3a;
+      color: #888888;
+    }
+    [data-theme="dark"] .etc-tools-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+    }
+    .etc-tools-btn svg {
+      stroke: currentColor;
+    }
+
+    /* ========== ALL-IN-ONE 도구 팝업 스타일 ========== */
+    .tools-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    .tools-popup-overlay.hidden {
+      display: none !important;
+    }
+    .tools-popup-container {
+      width: 95%;
+      max-width: 1200px;
+      max-height: 90vh;
+      background: var(--bg-primary, #ffffff);
+      border-radius: 20px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: toolsPopupSlideIn 0.3s ease;
+    }
+    @keyframes toolsPopupSlideIn {
+      from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .tools-popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: #1d1d1f;
+      color: white;
+    }
+    [data-theme="dark"] .tools-popup-header {
+      background: #ffffff;
+      color: #1d1d1f;
+    }
+    .tools-popup-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tools-popup-title .tools-icon { font-size: 28px; }
+    .tools-popup-title h2 { margin: 0; font-size: 22px; font-weight: 700; }
+    .tools-popup-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tools-filter-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    [data-theme="dark"] .tools-filter-group {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .tools-filter-radio {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .tools-filter-radio input {
+      display: none;
+    }
+    .tools-filter-radio span {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .tools-filter-radio span {
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .tools-filter-radio input:checked + span {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+      font-weight: 600;
+    }
+    [data-theme="dark"] .tools-filter-radio input:checked + span {
+      background: rgba(0, 0, 0, 0.15);
+      color: #1d1d1f;
+    }
+    .tools-filter-radio:hover span {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    [data-theme="dark"] .tools-filter-radio:hover span {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .tools-search-input {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 14px;
+      width: 220px;
+      outline: none;
+    }
+    [data-theme="dark"] .tools-search-input {
+      background: rgba(0, 0, 0, 0.1);
+      color: #1d1d1f;
+    }
+    .tools-search-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+    [data-theme="dark"] .tools-search-input::placeholder { color: rgba(0, 0, 0, 0.5); }
+    .tools-search-input:focus { background: rgba(255, 255, 255, 0.3); }
+    [data-theme="dark"] .tools-search-input:focus { background: rgba(0, 0, 0, 0.15); }
+    .tools-popup-close {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .tools-popup-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+    /* 카테고리 탭 */
+    .tools-category-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 16px 24px;
+      background: var(--bg-secondary, #f8f9fa);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tools-category-tabs::-webkit-scrollbar { display: none; }
+    .tools-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-secondary, #666);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .tools-tab:hover { background: var(--bg-hover, #e9ecef); }
+    .tools-tab.active { background: var(--primary-color, #667eea); color: white; }
+    .tools-tab .tab-icon { font-size: 16px; }
+    .tools-tab .tab-count {
+      padding: 2px 6px;
+      background: rgba(102, 126, 234, 0.15);
+      color: var(--primary-color, #667eea);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+    .tools-tab.active .tab-count { background: rgba(255, 255, 255, 0.25); color: white; }
+    .tools-tab .premium-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      padding: 2px 6px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      font-size: 8px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    /* 도구 그리드 */
+    .tools-grid-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+    .tools-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    /* 도구 카드 */
+    .tool-card {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-primary, #ffffff);
+      border: 1px solid var(--border-color, #e9ecef);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      border-color: var(--primary-color, #667eea);
+    }
+    .tool-card.disabled { opacity: 0.5; cursor: not-allowed; }
+    .tool-card.disabled:hover { transform: none; box-shadow: none; }
+    .tool-card-icon {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: var(--bg-secondary, #f8f9fa);
+      border-radius: 10px;
+    }
+    .tool-card-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary, #333);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tool-card-category {
+      font-size: 11px;
+      color: var(--text-secondary, #888);
+    }
+    .not-impl-badge {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      line-height: 1;
+      opacity: 0.8;
+    }
+    .tool-card.premium .tool-card-icon {
+      background: linear-gradient(135deg, #f093fb20 0%, #f5576c20 100%);
+    }
+    .tool-card.premium::after {
+      content: 'PRO';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 3px 8px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    /* 카테고리 섹션 (아코디언 스타일) */
+    .tools-category-section {
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color, #e9ecef);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tools-category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: var(--bg-secondary, #f8f9fa);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .tools-category-header:hover {
+      background: var(--bg-tertiary, #e9ecef);
+    }
+    .tools-category-header .category-toggle {
+      font-size: 12px;
+      color: var(--text-secondary, #666);
+      width: 16px;
+    }
+    .tools-category-header .category-icon { font-size: 20px; }
+    .tools-category-header .category-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary, #333);
+      flex: 1;
+    }
+    .tools-category-header .category-count {
+      padding: 3px 10px;
+      background: var(--bg-primary, #fff);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-secondary, #666);
+      font-weight: 500;
+    }
+    .tools-category-section .category-grid {
+      padding: 16px;
+      background: var(--bg-primary, #fff);
+    }
+    .tools-category-section.expanded .tools-category-header {
+      border-bottom: 1px solid var(--border-color, #e9ecef);
+    }
+
+    /* 푸터 */
+    .tools-popup-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--bg-secondary, #f8f9fa);
+      border-top: 1px solid var(--border-color, #e9ecef);
+      font-size: 12px;
+      color: var(--text-secondary, #888);
+    }
+
+    /* ========== 다크 모드 (전체 재설계) ========== */
+    /* 오버레이 */
+    [data-theme="dark"] .tools-popup-overlay {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    /* 메인 컨테이너 */
+    [data-theme="dark"] .tools-popup-container {
+      background: #121212;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    /* 헤더 - 다크 모드용 그라디언트 */
+    [data-theme="dark"] .tools-popup-header {
+      background: linear-gradient(135deg, #4a5ad8 0%, #5d3f8e 100%);
+    }
+
+    /* 검색창 다크 스타일 */
+    [data-theme="dark"] .tools-search-input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-theme="dark"] .tools-search-input:focus {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* 필터 그룹 */
+    [data-theme="dark"] .tools-filter-group {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* 카테고리 탭 영역 */
+    [data-theme="dark"] .tools-category-tabs {
+      background: #1a1a1a;
+      border-bottom: 1px solid #2d2d2d;
+    }
+
+    /* 탭 버튼 */
+    [data-theme="dark"] .tools-tab {
+      color: #9ca3af;
+    }
+    [data-theme="dark"] .tools-tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e5e7eb;
+    }
+    [data-theme="dark"] .tools-tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    [data-theme="dark"] .tools-tab .tab-count {
+      background: rgba(255, 255, 255, 0.1);
+      color: #9ca3af;
+    }
+    [data-theme="dark"] .tools-tab.active .tab-count {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    /* 그리드 컨테이너 스크롤바 */
+    [data-theme="dark"] .tools-grid-container {
+      background: #121212;
+    }
+    [data-theme="dark"] .tools-grid-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    [data-theme="dark"] .tools-grid-container::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    [data-theme="dark"] .tools-grid-container::-webkit-scrollbar-thumb {
+      background: #404040;
+      border-radius: 4px;
+    }
+    [data-theme="dark"] .tools-grid-container::-webkit-scrollbar-thumb:hover {
+      background: #505050;
+    }
+
+    /* 카테고리 섹션 */
+    [data-theme="dark"] .tools-category-section {
+      border-color: #2d2d2d;
+      background: #1e1e1e;
+    }
+
+    /* 카테고리 헤더 */
+    [data-theme="dark"] .tools-category-header {
+      background: #1a1a1a;
+    }
+    [data-theme="dark"] .tools-category-header:hover {
+      background: #222222;
+    }
+    [data-theme="dark"] .tools-category-header .category-toggle {
+      color: #6b7280;
+    }
+    [data-theme="dark"] .tools-category-header .category-title {
+      color: #f3f4f6;
+    }
+    [data-theme="dark"] .tools-category-header .category-count {
+      background: #2d2d2d;
+      color: #9ca3af;
+    }
+    [data-theme="dark"] .tools-category-section.expanded .tools-category-header {
+      border-bottom-color: #2d2d2d;
+    }
+
+    /* 카테고리 그리드 배경 */
+    [data-theme="dark"] .tools-category-section .category-grid {
+      background: #1e1e1e;
+    }
+
+    /* 도구 카드 */
+    [data-theme="dark"] .tool-card {
+      background: linear-gradient(145deg, #252525, #1e1e1e);
+      border-color: #333333;
+    }
+    [data-theme="dark"] .tool-card:hover {
+      background: linear-gradient(145deg, #2d2d2d, #252525);
+      border-color: #667eea;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(102, 126, 234, 0.3);
+    }
+
+    /* 카드 아이콘 */
+    [data-theme="dark"] .tool-card-icon {
+      background: linear-gradient(135deg, #2d2d2d, #353535);
+      border: 1px solid #404040;
+    }
+
+    /* 카드 텍스트 */
+    [data-theme="dark"] .tool-card-name {
+      color: #f3f4f6;
+    }
+    [data-theme="dark"] .tool-card-category {
+      color: #6b7280;
+    }
+
+    /* 비활성화 카드 */
+    [data-theme="dark"] .tool-card.disabled {
+      opacity: 0.4;
+    }
+
+    /* 프리미엄 카드 */
+    [data-theme="dark"] .tool-card.premium .tool-card-icon {
+      background: linear-gradient(135deg, #3d2d40, #2d3040);
+    }
+
+    /* 푸터 */
+    [data-theme="dark"] .tools-popup-footer {
+      background: #1a1a1a;
+      border-top-color: #2d2d2d;
+      color: #6b7280;
+    }
+    [data-theme="dark"] .tools-popup-footer strong {
+      color: #9ca3af;
+    }
+
+    /* 로딩 스피너 */
+    [data-theme="dark"] .tools-loading {
+      color: #6b7280;
+    }
+    [data-theme="dark"] .tools-loading .loading-spinner {
+      border-color: rgba(102, 126, 234, 0.2);
+      border-top-color: #667eea;
+    }
+
+    /* 검색 결과 없음 */
+    [data-theme="dark"] .tools-empty {
+      color: #6b7280;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .tools-popup-container { width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+      .tools-grid, .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .tool-card { padding: 14px; }
+      .tools-search-input { width: 140px; }
+    }
+
+    /* 도구 로딩 스피너 */
+    .tools-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      color: var(--text-secondary, #888);
+    }
+    .tools-loading .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(102, 126, 234, 0.2);
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .tools-loading p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* YouTube Text Extraction Popup Styles */
+    .youtube-extract-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 99998;
+    }
+
+    .youtube-extract-overlay.show {
+      display: block;
+    }
+
+    .youtube-extract-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      max-width: 90vw;
+      max-height: 80vh;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 99999;
+      overflow: hidden;
+    }
+
+    .youtube-extract-popup.show {
+      display: block;
+    }
+
+    .youtube-extract-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #7eb8da;
+      color: #fff;
+    }
+
+    .youtube-extract-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .youtube-extract-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .youtube-extract-close:hover {
+      opacity: 0.8;
+    }
+
+    .youtube-extract-body {
+      padding: 20px;
+      max-height: calc(80vh - 60px);
+      overflow-y: auto;
+    }
+
+    .youtube-extract-input-group {
+      margin-bottom: 15px;
+    }
+
+    .youtube-extract-input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .youtube-extract-input-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .youtube-extract-input-group input:focus {
+      outline: none;
+      border-color: #7eb8da;
+      box-shadow: 0 0 0 2px rgba(126, 184, 218, 0.2);
+    }
+
+    .youtube-extract-actions {
+      margin-bottom: 15px;
+    }
+
+    .youtube-extract-submit {
+      width: 100%;
+      padding: 12px;
+      background: #5a9fcf;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .youtube-extract-submit:hover {
+      background: #4a8fbf;
+    }
+
+    .youtube-extract-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .youtube-extract-progress {
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #7eb8da;
+      width: 0%;
+      transition: width 0.3s;
+      animation: progress-pulse 1.5s infinite;
+    }
+
+    @keyframes progress-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
+
+    .youtube-extract-result {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .result-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    /* 결과 버튼 - 모노크롬 */
+    .result-copy-btn {
+      padding: 5px 12px;
+      background: transparent;
+      color: #86868b;
+      border: 1px solid #d2d2d7;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .result-copy-btn:hover {
+      background: transparent;
+      border-color: #1d1d1f;
+      color: #1d1d1f;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .result-node-btn {
+      padding: 5px 12px;
+      background: transparent;
+      color: #86868b;
+      border: 1px solid #d2d2d7;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .result-node-btn:hover {
+      background: transparent;
+      border-color: #1d1d1f;
+      color: #1d1d1f;
+    }
+
+    .result-node-btn:disabled {
+      background: transparent;
+      border-color: #e0e0e0;
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    [data-theme="dark"] .result-copy-btn,
+    [data-theme="dark"] .result-node-btn {
+      border-color: #3a3a3a;
+      color: #888888;
+    }
+
+    [data-theme="dark"] .result-copy-btn:hover,
+    [data-theme="dark"] .result-node-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    .result-content {
+      padding: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #fafafa;
+    }
+
+    /* ========== YouTube 텍스트 추출 - 다크 모드 ========== */
+
+    /* 오버레이 */
+    [data-theme="dark"] .youtube-extract-overlay {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* 메인 팝업 컨테이너 */
+    [data-theme="dark"] .youtube-extract-popup {
+      background: #1e1e1e;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    /* 헤더 - 그라디언트 적용 */
+    [data-theme="dark"] .youtube-extract-header {
+      background: linear-gradient(135deg, #3d5a99 0%, #5a3d7a 100%);
+    }
+
+    [data-theme="dark"] .youtube-extract-close:hover {
+      opacity: 0.9;
+      transform: scale(1.1);
+    }
+
+    /* 본문 영역 */
+    [data-theme="dark"] .youtube-extract-body {
+      background: #1e1e1e;
+    }
+
+    /* 스크롤바 스타일 */
+    [data-theme="dark"] .youtube-extract-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    [data-theme="dark"] .youtube-extract-body::-webkit-scrollbar-track {
+      background: #2d2d2d;
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] .youtube-extract-body::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] .youtube-extract-body::-webkit-scrollbar-thumb:hover {
+      background: #5a5a5a;
+    }
+
+    /* 입력 그룹 */
+    [data-theme="dark"] .youtube-extract-input-group label {
+      color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .youtube-extract-input-group input {
+      background: #2d2d2d;
+      border: 1px solid #404040;
+      color: #f0f0f0;
+    }
+
+    [data-theme="dark"] .youtube-extract-input-group input::placeholder {
+      color: #888;
+    }
+
+    [data-theme="dark"] .youtube-extract-input-group input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+    }
+
+    /* 제출 버튼 */
+    [data-theme="dark"] .youtube-extract-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    [data-theme="dark"] .youtube-extract-submit:hover {
+      background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    [data-theme="dark"] .youtube-extract-submit:disabled {
+      background: #3d3d3d;
+      box-shadow: none;
+      color: #666;
+    }
+
+    /* 프로그레스 바 */
+    [data-theme="dark"] .progress-bar {
+      background: #2d2d2d;
+    }
+
+    [data-theme="dark"] .progress-fill {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    [data-theme="dark"] .progress-text {
+      color: #b0b0b0;
+    }
+
+    /* 결과 영역 */
+    [data-theme="dark"] .youtube-extract-result {
+      border-color: #404040;
+    }
+
+    [data-theme="dark"] .result-header {
+      background: #252525;
+      border-bottom-color: #404040;
+    }
+
+    [data-theme="dark"] .result-title {
+      color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .result-node-btn:disabled {
+      border-color: #3d3d3d;
+      color: #666;
+    }
+
+    [data-theme="dark"] .result-content {
+      background: #252525;
+      color: #d0d0d0;
+    }
+
+    /* 결과 콘텐츠 스크롤바 */
+    [data-theme="dark"] .result-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    [data-theme="dark"] .result-content::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+
+    [data-theme="dark"] .result-content::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 3px;
+    }
+
+    [data-theme="dark"] .result-content::-webkit-scrollbar-thumb:hover {
+      background: #5a5a5a;
+    }
+  </style>
+
+  <!-- 에러 핸들러 (가장 먼저 로드 - 글로벌 에러 핸들러 조기 등록) -->
+  <script src="/js/core/error-handler.js"></script>
+</head>
+
+<body>
+  <!-- 메인 콘텐츠 영역 -->
+  <div class="main">
+    <!-- 사이드바: 마인드맵 -->
+    <div class="sidebar" id="leftPanel">
+      <div class="panel-header">
+        <span data-i18n="mindmapPanelTitle">마인드맵</span>
+        <span id="envBadge" class="env-badge" style="display: none;"></span>
+      </div>
+      <div class="button-toolbar">
+        <button id="toggleSidebar" class="panel-toggle-btn" data-i18n-title="toggleLeftPanel"
+          title="왼쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="toggleContent" class="panel-toggle-btn" data-i18n-title="toggleMiddlePanel"
+          title="중간 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="toggleResponse" class="panel-toggle-btn" data-i18n-title="toggleRightPanel"
+          title="오른쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="addMainTitleBtn" data-i18n="addMainBtn">메인 추가</button>
+        <button id="saveMapBtn" data-i18n="saveMapBtn" disabled>저장</button>
+        <button id="loadMapBtn" data-i18n="loadMapBtn">불러오기</button>
+        <button id="resetMapBtn" data-i18n="resetMapBtn">초기화</button>
+        <button id="generateTreeBtn" data-i18n="generateTreeBtn" title="AI 노드재구성" style="background-color: #cccccc; border-color: #999999; color: #666666; cursor: not-allowed; opacity: 0.6;" disabled>노드재구성</button>
+        <button id="nodeFilterBtn" data-i18n="nodeFilterBtn" title="노드 필터 관리">노드필터</button>
+
+        <!-- 마인드맵 검색 UI (오른쪽 정렬) -->
+        <div class="mindmap-search-container">
+          <span class="search-icon"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+          <input
+            type="text"
+            id="mindmapSearchInput"
+            class="mindmap-search-input"
+            placeholder="노드 검색..."
+            data-i18n-placeholder="searchPlaceholder"
+            maxlength="100"
+            aria-label="마인드맵 노드 검색"
+            role="searchbox"
+          />
+          <button id="mindmapSearchBtn" class="mindmap-search-btn" data-i18n="searchButton" data-i18n-title="searchButton" title="검색">
+            검색
+          </button>
+          <button id="mindmapSearchClearBtn" class="mindmap-search-clear-btn" data-i18n-title="searchClearTooltip" title="검색 초기화" style="display: none;">
+            <svg class="mm-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <span id="searchResultCount" class="search-result-count" aria-live="polite" aria-atomic="true" style="display: none;"></span>
+        </div>
+      </div>
+      <div id="mindmap" class="mindmap-container">
+        <div id="mindmapLayout" class="mindmap-layout">
+          <!-- 루트 노드 위 필터 리스트 -->
+          <div id="nodeFilterList" class="node-filter-list" style="display: none;">
+            <!-- 필터 아이템은 JavaScript로 동적 생성 -->
+          </div>
+          <div id="connectorContainer" class="connector-container"></div>
+          <svg id="mindmap-svg" class="mindmap-canvas">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+              </marker>
+            </defs>
+            <g id="connections-layer"></g>
+            <g id="nodes-layer"></g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider" id="divider1"></div>
+
+    <!-- 중앙 패널: 콘텐츠 편집 -->
+    <div class="content" id="middlePanel">
+      <div class="panel-header">
+        <span data-i18n="nodePanelTitle">노드 내용</span>
+      </div>
+      <div class="button-toolbar">
+        <button id="toggleSidebar2" class="panel-toggle-btn" data-i18n-title="toggleLeftPanel"
+          title="왼쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="toggleContent2" class="panel-toggle-btn" data-i18n-title="toggleMiddlePanel"
+          title="중간 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="toggleResponse2" class="panel-toggle-btn" data-i18n-title="toggleRightPanel"
+          title="오른쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <button id="attachFileBtn" data-i18n-title="attachFileTooltip" title="파일 첨부" class="toolbar-btn" style="pointer-events: none; opacity: 0.5;"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <input type="file" id="attachFileInput" multiple style="display: none;">
+        <button id="saveContentBtn" data-i18n="saveContentBtn" disabled>저장</button>
+        <button id="pdfNodeBtn" data-i18n="pdfBtn" disabled>PDF</button>
+        <button id="pptNodeBtn" data-i18n="pptBtn" disabled>PPT</button>
+      </div>
+      <div class="content-container">
+        <!-- 첨부파일 리스트 (상단) -->
+        <div id="attachmentListContainer" class="attachment-list-container" style="display: none;"></div>
+        <div id="contentArea" style="display: none;">
+          <p data-i18n="selectNodeMessage">노드를 선택하여 내용을 확인하세요.</p>
+        </div>
+        <div id="toastEditor" style="display: block; height: 100%;"></div>
+        <textarea id="contentEditor" dir="auto" style="display: none;"></textarea>
+      </div>
+    </div>
+
+    <div class="divider" id="divider2"></div>
+
+    <!-- 오른쪽 패널: LLM 응답 -->
+    <div class="llm-response" id="rightPanel">
+      <div class="panel-header">
+        <span data-i18n="responsePanelTitle">응답</span>
+      </div>
+      <!-- GPT 모델 선택 UI - 2줄 레이아웃 -->
+      <div class="gpt-toolbar-wrapper">
+        <!-- 1줄: 패널토글, 자동만들기, 다중선택 (왼쪽) | AI콤보, 모델콤보 (오른쪽) -->
+        <div class="gpt-toolbar gpt-toolbar-row1">
+          <button id="toggleSidebar3" class="panel-toggle-btn" data-i18n-title="toggleLeftPanel"
+            title="왼쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+          <button id="toggleContent3" class="panel-toggle-btn" data-i18n-title="toggleMiddlePanel"
+            title="중간 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+          <button id="toggleResponse3" class="panel-toggle-btn" data-i18n-title="toggleRightPanel" title="오른쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+          <label style="display: flex; align-items: center; margin-right: 10px; font-size: 12px; cursor: pointer;" title="AI 응답 시 질문 맥락으로 자동 노드 생성">
+            <input type="checkbox" id="autoCreateNodeAI" style="margin-right: 5px;">
+            <span data-i18n="autoCreateNode">노드자동만들기</span>
+          </label>
+          <label style="display: flex; align-items: center; margin-right: 10px; font-size: 12px; cursor: pointer;">
+            <input type="checkbox" id="multiSelectAI" style="margin-right: 5px;">
+            <span data-i18n="multiSelect">모델다중선택</span>
+          </label>
+          <!-- AI 선택 콤보 (오른쪽 정렬) -->
+          <span style="margin-left: auto; display: flex; gap: 4px; align-items: center;">
+            <div class="ai-service-selector" style="display: flex; align-items: center; gap: 4px;">
+              <select id="aiServiceSelect" class="toolbar-select"
+                style="padding: 5px 10px; border-radius: 3px; font-size: 12px; cursor: pointer;">
+                <option value="gpt" selected>GPT</option>
+                <option value="grok">Grok</option>
+                <option value="claude">Claude</option>
+                <option value="gemini">Gemini</option>
+                <option value="local">Local AI</option>
+              </select>
+            </div>
+            <select id="gptModelSelect" class="toolbar-select"
+              style="padding: 5px 10px; border-radius: 3px; font-size: 12px; cursor: pointer;">
+              <!-- 모델 목록은 서버에서 동적 로딩 (DB 설정 기반) -->
+              <option value="" disabled selected>모델 로딩중...</option>
+            </select>
+            <button id="apiKeyBtn" data-i18n="apiKeyBtn"
+              style="display: none; padding: 5px 15px; background-color: #e6f2ff; border: 1px solid #b3d9ff; border-radius: 3px; font-size: 12px; cursor: pointer;">API
+              Key</button>
+            <!-- 다크모드 토글 버튼 -->
+            <button id="themeToggleBtn" class="theme-toggle-btn" title="다크/라이트 모드 전환"
+              style="padding: 5px 10px; border-radius: 3px; font-size: 14px; cursor: pointer; background: transparent; border: 1px solid #ddd;">
+              <span class="theme-icon"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+            </button>
+          </span>
+        </div>
+        <!-- 2줄: 아이디, 로그아웃, 도구 (오른쪽 정렬만) -->
+        <div class="gpt-toolbar gpt-toolbar-row2">
+          <!-- 오른쪽 정렬 영역 -->
+          <span style="margin-left: auto; display: flex; gap: 5px; align-items: center;">
+            <span id="currentUserDisplay" class="user-display" data-i18n-title="settingsTooltip"
+              style="display: none;"
+              title="설정 페이지로 이동">
+              <span id="userNamePart"></span>
+              <span id="creditPart" class="credit-display"></span>
+            </span>
+            <button id="logoutBtn" class="logout-btn" data-i18n="logoutBtn"
+              style="padding: 6px 14px; border-radius: 3px; font-size: 12px; cursor: pointer; display: none;">로그아웃</button>
+            <!-- 기타 도구 버튼 -->
+            <button id="etcToolsBtn" class="etc-tools-btn" data-i18n="etcToolsBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+              도구
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <!-- 모델 기능 정보 표시 (Gemini 선택 시에만 표시) -->
+      <div id="modelCapabilitiesBar" class="model-capabilities-bar" style="display: none;">
+        <div class="capabilities-content">
+          <span class="capabilities-label">입력:</span>
+          <span id="modelInputIcons" class="capabilities-icons"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>
+          <span class="capabilities-separator">│</span>
+          <span class="capabilities-label">출력:</span>
+          <span id="modelOutputIcons" class="capabilities-icons"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>
+          <span id="modelPricing" class="capabilities-pricing" title="1M 토큰당 비용 (입력/출력/캐시)"></span>
+          <span class="capabilities-separator pricing-sep">│</span>
+          <span id="modelDescription" class="capabilities-desc">모델 설명</span>
+        </div>
+      </div>
+
+      <!-- 탭별 응답 콘텐츠 영역 -->
+      <div class="llm-body" id="llmResponse">
+        <!-- 각 AI별 응답 컨테이너 -->
+        <div class="ai-response-container" id="evaluateResponse" data-service="evaluate" style="display: none;"></div>
+        <div class="ai-response-container" id="gptResponse" data-service="gpt"></div>
+        <div class="ai-response-container" id="grokResponse" data-service="grok" style="display: none;"></div>
+        <div class="ai-response-container" id="claudeResponse" data-service="claude" style="display: none;"></div>
+        <div class="ai-response-container" id="geminiResponse" data-service="gemini" style="display: none;"></div>
+        <div class="ai-response-container" id="localResponse" data-service="local" style="display: none;"></div>
+      </div>
+
+      <!-- AI 탭 바 (다중 AI 선택 시에만 표시) -->
+      <div class="ai-tab-bar" id="aiTabBar" style="display: none;">
+        <div class="ai-tab active" data-service="gpt" data-default="true">
+          <span class="tab-label">GPT</span>
+          <span class="tab-status"></span>
+        </div>
+        <div class="ai-tab" data-service="grok">
+          <span class="tab-label">Grok</span>
+          <span class="tab-status"></span>
+        </div>
+        <div class="ai-tab" data-service="claude">
+          <span class="tab-label">Claude</span>
+          <span class="tab-status"></span>
+        </div>
+        <div class="ai-tab" data-service="gemini">
+          <span class="tab-label">Gemini</span>
+          <span class="tab-status"></span>
+        </div>
+        <div class="ai-tab" data-service="local">
+          <span class="tab-label">Local</span>
+          <span class="tab-status"></span>
+        </div>
+      </div>
+
+      <!-- 드래그 앤 드롭 영역 -->
+      <div id="fileDropZone" class="file-drop-zone">
+        <div class="drop-zone-content">
+          <span class="drop-icon"><svg class="mm-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="drop-text" data-i18n="dropFileHere">파일을 여기에 드롭하세요</span>
+        </div>
+      </div>
+
+      <!-- 이미지 첨부 미리보기 영역 -->
+      <div id="imagePreviewArea" class="image-preview-area" style="display: none;">
+        <div class="image-preview-container">
+          <img id="attachedImagePreview" src="" alt="첨부 이미지">
+          <button id="removeAttachedImage" class="remove-image-btn" data-i18n-title="removeImageTooltip" title="이미지 제거">×</button>
+        </div>
+        <span id="attachedImageName" class="attached-image-name"></span>
+      </div>
+
+      <div class="input-area" id="inputAreaDropTarget">
+        <input type="file" id="imageAttachInput" accept="image/*,video/*,audio/*,.md,.txt,.json,.csv,.xml,.html,.css,.js,.ts,.py,.java,.c,.cpp,.h,.yaml,.yml" style="position: fixed; top: 50%; left: 50%; width: 1px; height: 1px; opacity: 0; pointer-events: none; transform: translate(-50%, -50%);">
+        <button id="imageAttachBtn" class="image-attach-btn" data-i18n-title="attachFileTooltip" title="파일 첨부 (이미지/비디오/오디오/텍스트)" disabled><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <textarea id="promptInput" data-i18n-placeholder="questionPlaceholder" placeholder="질문을 입력하세요..."
+          dir="auto" rows="1"
+          style="font-weight: 700 !important; font-size: 16px !important;" disabled></textarea>
+        <button id="sendPromptBtn" data-i18n="sendBtn" disabled>전송</button>
+        <button id="clearQaBtn" data-i18n="clearQaBtn" disabled>삭제</button>
+      </div>
+
+      <!-- 광고 영역 (무료 사용자용) -->
+      <div id="adContainer" class="ad-container">
+        <div class="ad-placeholder">
+          <span class="ad-icon"><svg class="mm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>
+          <span class="ad-text">광고 공간</span>
+          <span class="ad-subtext">Advertisement Area</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Folder Popup -->
+  <div id="saveFolderPopup"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3); z-index:2000; width:500px;">
+    <button id="saveFolderPopupCloseBtn"
+      style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; cursor:pointer;">&times;</button>
+    <div data-i18n="saveFolderTitle" style="font-size:18px; font-weight:bold; margin-bottom:15px;">폴더 저장</div>
+    <input type="text" id="saveFolderNameInput" data-i18n-placeholder="folderNamePlaceholder" placeholder="폴더 이름을 입력하세요"
+      dir="auto"
+      style="width:100%; padding:8px; margin-bottom:15px; border:2px solid #90caf9; border-radius:4px; font-size:14px; box-sizing:border-box;" />
+    <ul id="saveFolderList" style="max-height:200px; overflow-y:auto; margin-bottom:15px; padding:0; list-style:none;">
+    </ul>
+    <div style="text-align:right;">
+      <button id="saveFolderCancelBtn" data-i18n="cancelBtn"
+        style="padding:8px 16px; background:#ccc; border:none; border-radius:4px; cursor:pointer; margin-right:10px;">취소</button>
+      <button id="saveFolderConfirmBtn" data-i18n="saveBtn"
+        style="padding:8px 16px; background:#cce5ff; color:#333; border:1px solid #99caff; border-radius:4px; cursor:pointer;">저장</button>
+    </div>
+  </div>
+  <div id="saveFolderOverlay"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1999;">
+  </div>
+
+  <!-- Document Generation Popup -->
+  <div id="documentPopup"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:30px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3); z-index:99999; width:400px;">
+    <button id="documentPopupCloseBtn"
+      style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+    <div id="documentPopupTitle" data-i18n="documentGenerationTitle"
+      style="font-size:20px; font-weight:bold; margin-bottom:20px; color:#333;">문서 생성</div>
+    <div style="margin-bottom:25px; color:#666; line-height:1.6;">
+      <span data-i18n="documentGenerationMessage">선택한 노드의 내용으로</span> <strong id="documentType"></strong> <span
+        data-i18n="documentGenerationMessage2">문서를 생성합니다.</span>
+    </div>
+    <div id="documentFileInfo"
+      style="margin-bottom:20px; padding:10px; background:#f8f9fa; border-radius:6px; text-align:center; font-size:14px; color:#333; display:none;">
+      <div data-i18n="existingDocumentLabel" style="margin-bottom:5px; color:#666;">기존 문서:</div>
+      <div id="documentFileName" style="font-weight:bold; color:#2c3e50;"></div>
+    </div>
+    <!-- PPT 전용 옵션 (type이 PPT일 때만 표시) -->
+    <div id="pptOptions" style="display:none; margin-bottom:20px;">
+      <!-- 템플릿 선택 -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="palette"></span> 템플릿
+        </label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="pptTemplateSelect"
+            style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+            <option value="default">기본 (Default) - 파란색 기반</option>
+            <option value="business">비즈니스 (Business) - 네이비 전문가용</option>
+            <option value="education">교육용 (Education) - 친근한 녹색</option>
+            <option value="creative">크리에이티브 (Creative) - 그라데이션 컬러풀</option>
+            <option value="minimal">미니멀 (Minimal) - 흑백 간결함</option>
+            <option value="dark">다크 (Dark) - 세련된 다크모드</option>
+          </select>
+          <button id="uploadTemplateBtn" type="button"
+            onclick="openTemplateUploadModal()"
+            style="padding:10px 14px; background:transparent; color:#86868b; border:1px solid #d2d2d7; border-radius:6px; cursor:pointer; font-size:13px; white-space:nowrap; transition:all 0.2s ease;"
+            data-i18n-title="uploadTemplateTooltip" title="사용자 템플릿 업로드">
+            <span data-i18n="pptUploadBtn"><span data-icon="upload" data-icon-size="14"></span> 업로드</span>
+          </button>
+        </div>
+        <small id="templateTypeLabel" style="display:block; margin-top:5px; color:#888; font-size:11px;"></small>
+      </div>
+      <!-- AI 모델 선택 -->
+      <div id="pptAIModelGroup" style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="robot"></span> AI 모델 선택
+        </label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="pptAIService"
+            style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+            <option value="gpt">OpenAI GPT</option>
+            <option value="claude">Anthropic Claude</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="grok">xAI Grok</option>
+          </select>
+          <select id="pptAIModel"
+            style="flex:1.5; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+            <!-- 모델 옵션은 JavaScript로 동적 로드 -->
+          </select>
+        </div>
+        <small style="display:block; margin-top:5px; color:#888; font-size:12px;">
+          ※ GPT 콘텐츠 개선에 사용할 AI 모델을 선택하세요
+        </small>
+      </div>
+      <!-- AI 모드 hidden inputs (내부 호환성 유지) -->
+      <input type="radio" name="pptGenMode" id="pptModeFast" value="fast" style="display:none;">
+      <input type="radio" name="pptGenMode" id="pptModeAI" value="ai" checked style="display:none;">
+      <input type="checkbox" id="pptUseGPT" checked style="display:none;">
+      <input type="hidden" id="pptIncludeChildren" value="true">
+      <!-- 핵심항목 입력 (AI 고급 생성용) -->
+      <div id="keyPointsGroup" style="margin-top:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="target"></span> 핵심항목
+        </label>
+        <textarea id="pptKeyPoints"
+          placeholder="예: 비용 절감 효과, 도입 시 주의사항, 경쟁사 비교..."
+          rows="3"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; resize:vertical; box-sizing:border-box;"></textarea>
+        <small style="display:block; margin-top:5px; color:#888; font-size:12px;">
+          ※ 입력한 핵심항목의 취지에 맞게 PPT 내용이 구성됩니다
+        </small>
+      </div>
+      <!-- AI 모델 정보 - 내부용 hidden -->
+      <div id="aiModelInfoGroup" style="display:none;">
+        <div id="currentAIModelName">-</div>
+      </div>
+    </div>
+    <!-- PDF 전용 옵션 (type이 PDF일 때만 표시) -->
+    <div id="pdfOptions" style="display:none; margin-bottom:20px;">
+      <!-- 템플릿 선택 -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="palette"></span> 템플릿
+        </label>
+        <select id="pdfTemplate"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+          <option value="default">기본 (Default) - 인디고 기반</option>
+          <option value="business">비즈니스 (Business) - 네이비 전문가용</option>
+          <option value="education">교육용 (Education) - 친근한 녹색</option>
+          <option value="creative">크리에이티브 (Creative) - 그라데이션 컬러풀</option>
+          <option value="minimal">미니멀 (Minimal) - 흑백 간결함</option>
+          <option value="dark">다크 (Dark) - 세련된 다크모드</option>
+        </select>
+      </div>
+      <!-- 톤 선택 (Presenton 스타일) -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="theater"></span> 문서 톤
+        </label>
+        <select id="pdfTone"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+          <option value="professional">전문적 (Professional) - 비즈니스 문체</option>
+          <option value="casual">친근한 (Casual) - 대화체 문체</option>
+          <option value="educational">교육적 (Educational) - 설명적 문체</option>
+        </select>
+        <small style="display:block; margin-top:5px; color:#888; font-size:12px;">
+          ※ 문서의 전체적인 어조를 선택합니다
+        </small>
+      </div>
+      <!-- 상세도 선택 (Presenton 스타일) -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="bar-chart"></span> 상세도
+        </label>
+        <select id="pdfDetailLevel"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+          <option value="concise">간결 (Concise) - 핵심만 3-5문장</option>
+          <option value="standard" selected>표준 (Standard) - 적절한 분량 5-10문장</option>
+          <option value="text-heavy">상세 (Text-Heavy) - 충분한 설명 10-15문장</option>
+        </select>
+      </div>
+      <!-- 이미지 소스 선택 -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="image"></span> 이미지 소스
+        </label>
+        <select id="pdfImageSource"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+          <option value="none">이미지 없음</option>
+          <option value="stock" disabled>스톡 이미지 (준비 중)</option>
+          <option value="ai">AI 생성 이미지</option>
+        </select>
+        <small style="display:block; margin-top:5px; color:#888; font-size:12px;">
+          ※ AI 이미지는 추가 비용이 발생할 수 있습니다
+        </small>
+      </div>
+      <!-- AI 모델 선택 -->
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">
+          <span data-icon="robot"></span> AI 모델 선택
+        </label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="pdfAIService"
+            style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+            <option value="gpt">OpenAI GPT</option>
+            <option value="claude">Anthropic Claude</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="grok">xAI Grok</option>
+          </select>
+          <select id="pdfAIModel"
+            style="flex:1.5; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#fff; color:#333;">
+            <!-- 모델 옵션은 JavaScript로 동적 로드 -->
+          </select>
+        </div>
+        <small style="display:block; margin-top:5px; color:#888; font-size:12px;">
+          ※ 콘텐츠 생성에 사용할 AI 모델을 선택하세요
+        </small>
+      </div>
+    </div>
+    <div style="display:flex; gap:15px; justify-content:center;">
+      <button id="documentGenerateBtn"
+        style="padding:12px 24px; background:#e6f2ff; color:#333; border:1px solid #99caff; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; display:flex; align-items:center; gap:8px;">
+        <span
+          style="background:#ff6b6b; color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold;">C</span>
+        <span data-i18n="generateFileBtn">파일생성</span>
+      </button>
+      <button id="documentDownloadBtn"
+        style="padding:12px 24px; background:#f8f9fa; color:#333; border:1px solid #ddd; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; display:flex; align-items:center; gap:8px; opacity:0.5;">
+        <span
+          style="background:transparent; color:#86868b; border:1px solid #d2d2d7; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold;">D</span>
+        <span data-i18n="downloadBtn">다운로드</span>
+      </button>
+    </div>
+    <div id="documentStatus" style="margin-top:20px; text-align:center; font-size:14px; color:#666; min-height:20px;">
+    </div>
+  </div>
+  <div id="documentPopupOverlay"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99998;">
+  </div>
+
+  <!-- PPT Progress Modal (PPT2 기획) -->
+  <div id="pptProgressModal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100002;">
+    <div class="modal-content progress-modal" style="min-width:450px; padding:24px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+      <h3 style="margin:0 0 16px 0; font-size:18px; color:#333; display:flex; align-items:center; gap:8px;">
+        <span id="pptProgressIcon"><svg class="mm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span>
+        <span id="pptProgressTitle">PPT 생성 중...</span>
+      </h3>
+      <div id="pptProgressContent">
+        <!-- 단계별 진행상황 -->
+        <div class="progress-phases" id="pptProgressPhases">
+          <div class="progress-phase pending" data-phase="0">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l2 3h9a2 2 0 0 1 2 2v1"/><path d="M3.5 12H21l-3 7H6.5L3.5 12z"/></svg> 데이터 수집</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="1">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg> AI 슬라이드 설계</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="2">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"/><path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z"/></svg> AI 콘텐츠 개선</span>
+            <span class="phase-detail" id="pptAIModelDetail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="3">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 이미지 생성</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="4">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="6.5" cy="12" r="0.5" fill="currentColor" stroke="none"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> 템플릿 적용</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="5">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PPTX 파일 생성</span>
+            <span class="phase-detail"></span>
+          </div>
+        </div>
+        <!-- 진행 바 -->
+        <div class="progress-bar-container" style="margin:16px 0;">
+          <div class="progress-bar" style="height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden;">
+            <div id="pptProgressBar" class="progress-fill" style="height:100%; background:#1d1d1f; width:0%; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+        <!-- 진행 정보 -->
+        <div class="progress-info" style="text-align:center; color:#6b7280; font-size:14px;">
+          <span id="pptProgressPercent">0%</span>
+          <span id="pptProgressTime" style="margin-left:8px;"></span>
+        </div>
+      </div>
+      <!-- 완료 영역 (초기에는 숨김) -->
+      <div id="pptProgressComplete" style="display:none; text-align:center; padding:20px 0;">
+        <div style="margin-bottom:12px;"><svg class="mm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div style="font-size:16px; font-weight:bold; color:#1d1d1f; margin-bottom:8px;">PPT 생성 완료!</div>
+        <div id="pptProgressCompleteInfo" style="color:#666; font-size:14px;"></div>
+      </div>
+      <!-- 에러 영역 (초기에는 숨김) -->
+      <div id="pptProgressError" style="display:none; text-align:center; padding:20px 0;">
+        <div style="margin-bottom:12px;"><svg class="mm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+        <div data-i18n="generateFailed" style="font-size:16px; font-weight:bold; color:#1d1d1f; margin-bottom:8px;">생성 실패</div>
+        <div id="pptProgressErrorMsg" style="color:#666; font-size:14px;"></div>
+      </div>
+      <!-- 버튼 영역 -->
+      <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+        <button id="pptCancelBtn" data-i18n="cancelBtn" class="btn-secondary" style="padding:10px 24px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:14px; color:#374151;">취소</button>
+        <button id="pptCloseProgressBtn" class="btn-primary" style="display:none; padding:10px 24px; background:transparent; border:1px solid #1d1d1f; border-radius:6px; cursor:pointer; font-size:14px; color:#1d1d1f; font-weight:bold;">완료</button>
+      </div>
+    </div>
+  </div>
+  <div id="pptProgressOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100001;"></div>
+
+  <!-- PDF Progress Modal -->
+  <div id="pdfProgressModal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100002;">
+    <div class="modal-content progress-modal" style="min-width:450px; padding:24px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+      <h3 style="margin:0 0 16px 0; font-size:18px; color:#333; display:flex; align-items:center; gap:8px;">
+        <span id="pdfProgressIcon"><svg class="mm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+        <span id="pdfProgressTitle">PDF 생성 중...</span>
+      </h3>
+      <div id="pdfProgressContent">
+        <!-- 단계별 진행상황 -->
+        <div class="progress-phases" id="pdfProgressPhases">
+          <div class="progress-phase pending" data-phase="0">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l2 3h9a2 2 0 0 1 2 2v1"/><path d="M3.5 12H21l-3 7H6.5L3.5 12z"/></svg> 데이터 수집</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="1">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><path d="M12 2v4"/><circle cx="12" cy="2" r="1"/></svg> AI 페이지 설계</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="2">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"/><path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z"/></svg> AI 콘텐츠 생성</span>
+            <span class="phase-detail" id="pdfAIModelDetail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="3">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 이미지 처리</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="4">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="6.5" cy="12" r="0.5" fill="currentColor" stroke="none"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> 템플릿 적용</span>
+            <span class="phase-detail"></span>
+          </div>
+          <div class="progress-phase pending" data-phase="5">
+            <span class="phase-icon"><svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span>
+            <span class="phase-name"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF 파일 생성</span>
+            <span class="phase-detail"></span>
+          </div>
+        </div>
+        <!-- 진행 바 -->
+        <div class="progress-bar-container" style="margin:16px 0;">
+          <div class="progress-bar" style="height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden;">
+            <div id="pdfProgressBar" class="progress-fill" style="height:100%; background:#1d1d1f; width:0%; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+        <!-- 진행 정보 -->
+        <div class="progress-info" style="text-align:center; color:#6b7280; font-size:14px;">
+          <span id="pdfProgressPercent">0%</span>
+          <span id="pdfProgressTime" style="margin-left:8px;"></span>
+        </div>
+      </div>
+      <!-- 완료 영역 (초기에는 숨김) -->
+      <div id="pdfProgressComplete" style="display:none; text-align:center; padding:20px 0;">
+        <div style="margin-bottom:12px;"><svg class="mm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div style="font-size:16px; font-weight:bold; color:#1d1d1f; margin-bottom:8px;">PDF 생성 완료!</div>
+        <div id="pdfProgressCompleteInfo" style="color:#666; font-size:14px;"></div>
+      </div>
+      <!-- 에러 영역 (초기에는 숨김) -->
+      <div id="pdfProgressError" style="display:none; text-align:center; padding:20px 0;">
+        <div style="margin-bottom:12px;"><svg class="mm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+        <div data-i18n="generateFailed" style="font-size:16px; font-weight:bold; color:#1d1d1f; margin-bottom:8px;">생성 실패</div>
+        <div id="pdfProgressErrorMsg" style="color:#666; font-size:14px;"></div>
+      </div>
+      <!-- 버튼 영역 -->
+      <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+        <button id="pdfCancelBtn" data-i18n="cancelBtn" class="btn-secondary" style="padding:10px 24px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:14px; color:#374151;">취소</button>
+        <button id="pdfCloseProgressBtn" class="btn-primary" style="display:none; padding:10px 24px; background:transparent; border:1px solid #1d1d1f; border-radius:6px; cursor:pointer; font-size:14px; color:#1d1d1f; font-weight:bold;">완료</button>
+      </div>
+    </div>
+  </div>
+  <div id="pdfProgressOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100001;"></div>
+
+  <!-- Template Upload Modal (P5) -->
+  <div id="templateUploadModal"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:30px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3); z-index:100001; width:500px; max-height:80vh; overflow-y:auto;">
+    <button id="templateModalCloseBtn"
+      onclick="closeTemplateUploadModal()"
+      style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+    <div style="font-size:20px; font-weight:bold; margin-bottom:20px; color:#333;"><span data-icon="palette" data-icon-size="20"></span> PPT 템플릿 관리</div>
+
+    <!-- 탭 네비게이션 -->
+    <div style="display:flex; border-bottom:2px solid #eee; margin-bottom:20px;">
+      <button id="templateTabUpload" onclick="switchTemplateTab('upload')"
+        style="flex:1; padding:12px; border:none; background:transparent; font-size:14px; font-weight:bold; cursor:pointer; color:#1d1d1f; border-bottom:2px solid #1d1d1f; margin-bottom:-2px;">
+        <span data-icon="upload" data-icon-size="14"></span> 템플릿 업로드
+      </button>
+      <button id="templateTabList" onclick="switchTemplateTab('list')"
+        style="flex:1; padding:12px; border:none; background:transparent; font-size:14px; cursor:pointer; color:#888; border-bottom:2px solid transparent; margin-bottom:-2px;">
+        <span data-icon="clipboard" data-icon-size="14"></span> 내 템플릿
+      </button>
+    </div>
+
+    <!-- 템플릿 업로드 탭 -->
+    <div id="templateUploadTab">
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">템플릿 이름 *</label>
+        <input type="text" id="templateNameInput"
+          placeholder="예: 내 회사 템플릿"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">설명 (선택)</label>
+        <input type="text" id="templateDescInput"
+          placeholder="예: 회사 브랜드 컬러 사용"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">색상 설정</label>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
+          <div>
+            <label style="font-size:12px; color:#666;">주 색상 (Primary)</label>
+            <input type="color" id="templateColorPrimary" value="#1976d2"
+              style="width:100%; height:40px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+          </div>
+          <div>
+            <label style="font-size:12px; color:#666;">보조 색상 (Secondary)</label>
+            <input type="color" id="templateColorSecondary" value="#42a5f5"
+              style="width:100%; height:40px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+          </div>
+          <div>
+            <label style="font-size:12px; color:#666;">배경색</label>
+            <input type="color" id="templateColorBg" value="#ffffff"
+              style="width:100%; height:40px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+          </div>
+          <div>
+            <label style="font-size:12px; color:#666;">텍스트 색상</label>
+            <input type="color" id="templateColorText" value="#333333"
+              style="width:100%; height:40px; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">폰트 설정</label>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
+          <div>
+            <label style="font-size:12px; color:#666;">제목 폰트</label>
+            <select id="templateFontTitle"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+              <option value="맑은 고딕">맑은 고딕</option>
+              <option value="나눔고딕">나눔고딕</option>
+              <option value="돋움">돋움</option>
+              <option value="굴림">굴림</option>
+              <option value="Arial">Arial</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px; color:#666;">본문 폰트</label>
+            <select id="templateFontBody"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+              <option value="맑은 고딕">맑은 고딕</option>
+              <option value="나눔고딕">나눔고딕</option>
+              <option value="돋움">돋움</option>
+              <option value="굴림">굴림</option>
+              <option value="Arial">Arial</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">전환 효과</label>
+        <select id="templateTransition"
+          style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+          <option value="fade">페이드 (Fade)</option>
+          <option value="push">밀기 (Push)</option>
+          <option value="wipe">닦기 (Wipe)</option>
+          <option value="zoom">줌 (Zoom)</option>
+          <option value="split">분할 (Split)</option>
+        </select>
+      </div>
+      <button id="saveTemplateBtn" onclick="saveUserTemplate()"
+        style="width:100%; padding:14px; background:transparent; color:#1d1d1f; border:1px solid #1d1d1f; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; transition:all 0.2s ease;">
+        <span data-icon="save" data-icon-size="16"></span> 템플릿 저장
+      </button>
+    </div>
+
+    <!-- 템플릿 목록 탭 -->
+    <div id="templateListTab" style="display:none;">
+      <div id="userTemplateList" style="margin-bottom:15px;">
+        <!-- 동적으로 템플릿 목록 표시 -->
+        <div style="text-align:center; color:#888; padding:20px;">템플릿을 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+  <div id="templateUploadModalOverlay"
+    onclick="closeTemplateUploadModal()"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100000;">
+  </div>
+
+  <!-- Load Folder Popup -->
+  <div id="loadFolderPopup"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3); z-index:2000; width:500px; color:#000;">
+    <button id="loadFolderPopupCloseBtn"
+      style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; cursor:pointer; color:#000;">&times;</button>
+    <div style="margin-bottom:15px;">
+      <span data-i18n="loadFolderTitle" style="font-size:18px; font-weight:bold; color:#000;">폴더 불러오기</span>
+    </div>
+    <ul id="loadFolderList"
+      style="max-height:300px; overflow-y:auto; margin-bottom:15px; padding:0; list-style:none; color:#000;"></ul>
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button id="loadFolderRefreshBtn" data-i18n="refreshBtn" title="디렉토리를 다시 탐색하여 목록을 새로고침합니다"
+        style="padding:8px 16px; background:#ccc; color:#000; border:none; border-radius:4px; cursor:pointer;">다시읽기</button>
+      <button id="loadFolderCancelBtn" data-i18n="cancelBtn"
+        style="padding:8px 16px; background:#ccc; color:#000; border:none; border-radius:4px; cursor:pointer;">취소</button>
+    </div>
+  </div>
+  <div id="loadFolderOverlay"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1999;">
+  </div>
+
+  <!-- API Key Setup Popup - 제거됨: Settings 페이지에서 API 키 관리 -->
+
+  <!-- Login Popup -->
+  <div id="loginPopup"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:30px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3); z-index:99999; width:400px; color:#000;">
+    <button id="loginPopupCloseBtn"
+      style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+    <div data-i18n="loginTitle" style="font-size:20px; font-weight:bold; margin-bottom:20px; color:#000;">로그인</div>
+    <input type="text" id="loginUsername" data-i18n-placeholder="loginUsernamePlaceholder" placeholder="아이디 입력" value="" dir="auto"
+      style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #90caf9; border-radius:6px; font-size:14px; box-sizing:border-box;" />
+    <input type="password" id="loginPassword" data-i18n-placeholder="loginPasswordPlaceholder" placeholder="비밀번호 입력" value="" dir="auto"
+      style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #90caf9; border-radius:6px; font-size:14px; box-sizing:border-box;" />
+    <div id="loginErrorMsg" style="color:#f44336; margin-bottom:15px; font-size:13px; min-height:20px;"></div>
+    <div style="text-align:right;">
+      <button id="loginConfirmBtn" data-i18n="loginBtn"
+        style="padding:10px 20px; background:#e3f2fd; color:#333; border:1px solid #2196F3; border-radius:6px; cursor:pointer; font-weight:bold;">로그인</button>
+    </div>
+  </div>
+  <div id="loginOverlay"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99998;">
+  </div>
+
+  <!-- Settings Layer Popup (iframe 사용 금지 - AJAX로 콘텐츠 로드) -->
+  <!-- 스타일은 head의 <style> 태그에서 반응형으로 정의됨 -->
+  <div id="settingsLayerOverlay"></div>
+  <div id="settingsLayerPopup">
+    <button id="settingsLayerCloseBtn">&times;</button>
+    <div id="settingsLayerContent">
+      <!-- Settings 콘텐츠가 AJAX로 로드됨 -->
+    </div>
+  </div>
+
+  <!-- YouTube Text Extraction Popup -->
+  <div id="youtubeExtractOverlay" class="youtube-extract-overlay"></div>
+  <div id="youtubeExtractPopup" class="youtube-extract-popup">
+    <div class="youtube-extract-header">
+      <h3 data-i18n="youtubeExtractTitle">YouTube Text 추출</h3>
+      <button id="youtubeExtractCloseBtn" class="youtube-extract-close">&times;</button>
+    </div>
+    <div class="youtube-extract-body">
+      <div class="youtube-extract-input-group">
+        <label for="youtubeUrlInput" data-i18n="youtubeUrlLabel">YouTube URL</label>
+        <input type="text" id="youtubeUrlInput" data-i18n-placeholder="youtubeUrlPlaceholder" placeholder="https://www.youtube.com/watch?v=..." />
+      </div>
+      <div class="youtube-extract-actions">
+        <button id="youtubeExtractBtn" class="youtube-extract-submit">
+          <span class="btn-text" data-i18n="youtubeExtractBtn">텍스트 추출</span>
+          <span class="btn-loading" data-i18n="youtubeExtracting" style="display: none;">추출 중...</span>
+        </button>
+      </div>
+      <div id="youtubeExtractProgress" class="youtube-extract-progress" style="display: none;">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text" data-i18n="youtubePreparing">준비 중...</div>
+      </div>
+      <div id="youtubeExtractResult" class="youtube-extract-result" style="display: none;">
+        <div class="result-header">
+          <span class="result-title" data-i18n="youtubeExtractedText">추출된 텍스트</span>
+          <div class="result-actions">
+            <button id="youtubeResultCopyBtn" class="result-copy-btn" data-i18n="copyBtn">복사</button>
+            <button id="youtubeCreateNodeBtn" data-i18n="createNodeBtn" class="result-node-btn">노드만들기</button>
+          </div>
+        </div>
+        <div id="youtubeResultContent" class="result-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript Files -->
+  <script src="/js/mindmap-config.js"></script>
+  <script src="/js/core/constants.js"></script>
+  <!-- Theme Manager (exactly.ai 스타일 다크 모드) -->
+  <script src="/js/core/theme.js?v=20251218001"></script>
+  <script src="/js/core/storage-helper.js"></script>
+  <script src="/js/core/api-client.js"></script>
+  <script src="/js/core/api-cache.js"></script>
+  <script src="/js/utils/csrf.js"></script>
+  <!-- error-handler.js는 head에서 먼저 로드됨 -->
+  <script src="/js/core/api-key-manager.js"></script>
+  <script src="/js/core/utils.js"></script>
+  <script src="/js/core/events.js"></script>
+  <script src="/js/core/storage.js"></script>
+  <script src="/js/core/ai.js"></script>
+  <script src="/js/core/mindmap-data.js"></script>
+  <script src="/js/core/connector-drawer.js"></script>
+
+  <!-- Node ID 생성 및 관리 모듈 -->
+  <script src="/js/features/node-id.js"></script>
+
+  <!-- MyMind2 Style Node Renderer -->
+  <script src="/js/mymind2-node-renderer.js"></script>
+
+  <!-- Node Context Menu (노드 우클릭 메뉴) -->
+  <script src="/js/ui/context-menu.js?v=20260212"></script>
+
+  <!-- KaTeX JS -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <!-- KaTeX Auto-render (필수) -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Marked.js (마크다운 파싱) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <!-- DOMPurify (XSS 방지) -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <!-- TOAST UI Editor JS -->
+  <script src="https://uicdn.toast.com/editor/3.2.2/toastui-editor-all.min.js"></script>
+
+  <!-- TOAST UI Editor KaTeX Plugin JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/@toast-ui/editor-plugin-katex@1.0.0/dist/toastui-editor-plugin-katex.min.js"></script>
+
+  <!-- ============================================ -->
+  <!-- Phase 2-1: 다국어 날짜/숫자/통화 형식 지원 -->
+  <!-- ============================================ -->
+  <script src="/js/utils/intl.js"></script>
+  <!-- ============================================ -->
+
+  <!-- Editor Module (test3/editor.html pattern) -->
+  <script src="/js/editor.js?v=20260124_11"></script>
+
+  <!-- Math Formula Fix Script -->
+  <script src="/js/math-fix.js?v=20251024003"></script>
+
+  <!-- Simple Application -->
+  <script src="/js/app-simple.js?v=20251201c"></script>
+
+  <!-- AI Tree Generator (defer: 초기 렌더링 후 로드) -->
+  <script defer src="/js/features/tree-generator.js?v=20251205"></script>
+
+  <!-- Mindmap Search (defer: 초기 렌더링 후 로드) -->
+  <script defer src="/js/features/search.js?v=20251221"></script>
+
+  <!-- PPT Generator Client (defer: 사용자 요청 시 필요) -->
+  <script defer src="/js/features/ppt-generator.js?v=20251223"></script>
+
+  <!-- PDF Generator Client (defer: 사용자 요청 시 필요) -->
+  <script defer src="/js/features/pdf-generator.js?v=20251229"></script>
+
+  <!-- Node Attachments (defer: 노드 선택 시 필요) -->
+  <script defer src="/js/features/node-attachments.js?v=20260124_24"></script>
+
+  <!-- Node Filter (defer: 필터 관리 팝업) -->
+  <script defer src="/js/features/node-filter.js?v=20260127"></script>
+
+  <!-- Feature Settings (defer: 초기 렌더링 후 필요) -->
+  <script defer src="/js/settings-feature.js?v=20260212"></script>
+
+
+  <!-- Initialize Application Modules (Phase 5-1 모듈화) -->
+  <script src="/js/modules/toast.js?v=20260117"></script>
+  <script src="/js/modules/environment.js?v=20260117"></script>
+  <script src="/js/modules/panel-resize.js?v=20260117"></script>
+  <script src="/js/modules/panel-toggle.js?v=20260117"></script>
+  <script src="/js/modules/editor-setup.js?v=20260117"></script>
+  <script src="/js/modules/keyboard.js?v=20260117"></script>
+
+  <!-- UI 모듈 -->
+  <script src="/js/modules/ui/modals.js?v=20260117"></script>
+  <script src="/js/modules/ui/buttons.js?v=20260117"></script>
+
+  <!-- 컨텐츠 모듈 -->
+  <script src="/js/modules/content/markdown-utils.js?v=20260117"></script>
+  <script src="/js/modules/content/format-response.js?v=20260117"></script>
+  <script src="/js/modules/content/copy-utils.js?v=20260117"></script>
+
+  <!-- AI 모듈 (순서 중요) -->
+  <script src="/js/modules/ai/ai-credits.js?v=20260117"></script>
+  <script src="/js/modules/ai/ai-core.js?v=20260117"></script>
+  <script src="/js/modules/ai/ai-tabs.js?v=20260117"></script>
+  <script src="/js/modules/ai/ai-messaging.js?v=20260117"></script>
+  <script src="/js/modules/ai/ai-multi.js?v=20260117"></script>
+
+  <!-- 인증 모듈 -->
+  <script src="/js/modules/auth/session.js?v=20260117"></script>
+  <script src="/js/modules/auth/login-popup.js?v=20260117"></script>
+  <script src="/js/modules/auth/settings-popup.js?v=20260217"></script>
+
+  <!-- 기능 모듈 (defer 로드) -->
+  <script defer src="/js/modules/features/i18n-init.js?v=20260117"></script>
+  <script defer src="/js/modules/features/youtube-extract.js?v=20260117"></script>
+
+  <!-- 통합 아이콘 시스템 -->
+  <script src="/js/mm-icons.js?v=20260217"></script>
+
+  <!-- Initialize Application (외부 파일로 분리됨) -->
+  <script src="/js/app-init.js?v=20260217"></script>
+
+  <!-- WebMCP 도구 등록 (AI 에이전트용) -->
+  <script defer src="/js/webmcp-tools.js?v=20260214"></script>
+
+  <!-- ============================================ -->
+  <!-- 관리자 비밀번호 확인 팝업 -->
+  <!-- ============================================ -->
+  <div id="adminPasswordPopup" class="admin-password-popup" style="display: none;">
+    <div class="admin-password-overlay" onclick="closeAdminPasswordPopup()"></div>
+    <div class="admin-password-modal">
+      <h3 data-i18n="adminAuthTitle">관리자 인증</h3>
+      <p data-i18n="adminAuthDesc">관리자 메뉴에 접근하려면 인증 정보를 입력하세요.</p>
+      <input type="password" id="adminPasswordInput" data-i18n-placeholder="adminAuthPlaceholder" placeholder="관리자 비밀번호" autocomplete="off" lang="en" style="ime-mode: disabled;" />
+      <div id="adminPasswordError" class="admin-password-error"></div>
+      <div class="admin-password-buttons">
+        <button type="button" id="adminPasswordCancelBtn" data-i18n="cancelBtn" onclick="closeAdminPasswordPopup()">취소</button>
+        <button type="button" id="adminPasswordConfirmBtn" data-i18n="confirmBtn" onclick="verifyAdminPassword()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 인증 함수 (별도 파일로 분리됨) -->
+  <script src="/js/ui/admin-auth.js?v=20260109"></script>
+
+  <!-- 관리자 CSS -->
+  <link rel="stylesheet" href="/css/admin.css">
+
+  <!-- 인증 체크 스크립트 (모든 함수 정의 후 실행) -->
+  <script src="/js/auth-check.js"></script>
+
+  <!-- ========== ALL-IN-ONE 도구 팝업 (162개 도구) ========== -->
+  <div id="tools-popup-overlay" class="tools-popup-overlay hidden">
+    <div class="tools-popup-container">
+      <!-- 헤더 -->
+      <div class="tools-popup-header">
+        <div class="tools-popup-title">
+          <span class="tools-icon"><svg class="mm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+          <h2>All-in-One 도구 허브</h2>
+        </div>
+        <div class="tools-popup-actions">
+          <div class="tools-filter-group">
+            <label class="tools-filter-radio">
+              <input type="radio" name="tools-filter" value="all" checked>
+              <span>모두</span>
+            </label>
+            <label class="tools-filter-radio">
+              <input type="radio" name="tools-filter" value="implemented">
+              <span>허용</span>
+            </label>
+            <label class="tools-filter-radio">
+              <input type="radio" name="tools-filter" value="not-implemented">
+              <span>금지</span>
+            </label>
+          </div>
+          <input type="text" id="tools-search" class="tools-search-input" placeholder="도구 검색...">
+          <button class="tools-popup-close" onclick="hideToolsPopup()"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+      </div>
+
+      <!-- 카테고리 탭 (동적 로드) -->
+      <div id="tools-category-tabs" class="tools-category-tabs">
+        <!-- API에서 동적으로 로드됨 -->
+      </div>
+
+      <!-- 도구 그리드 (동적 로드) -->
+      <div class="tools-grid-container">
+        <div id="tools-grid" class="tools-grid">
+          <!-- 로딩 표시자 -->
+          <div id="tools-loading" class="tools-loading">
+            <div class="loading-spinner"></div>
+            <p>도구 목록을 불러오는 중...</p>
+          </div>
+          <!-- API에서 동적으로 로드됨 -->
+        </div>
+      </div>
+
+      <!-- 푸터 -->
+      <div class="tools-popup-footer">
+        <span class="tools-count">총 <strong id="tools-total-count">0</strong>개 도구 (<strong id="tools-category-count">0</strong>개 카테고리)</span>
+        <span class="tools-phase-info"><svg class="mm-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> 무료 + <svg class="mm-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 프리미엄</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FAQ 팝업 (게시판 스타일) ========== -->
+  <div id="faq-popup-overlay" class="faq-popup-overlay hidden">
+    <div class="faq-popup-container">
+      <div class="faq-popup-header">
+        <div class="faq-popup-title">
+          <span class="faq-icon"><svg class="mm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <h2 id="faq-tool-name">도구 FAQ</h2>
+        </div>
+        <div class="faq-popup-actions">
+          <input type="text" id="faq-search" class="faq-search-input" placeholder="FAQ 검색...">
+          <button class="faq-popup-close" onclick="hideFAQPopup()"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+      </div>
+      <div class="faq-popup-content">
+        <div id="faq-list" class="faq-board-list">
+          <!-- FAQ 항목들이 여기에 로드됨 -->
+          <div class="faq-loading">FAQ를 불러오는 중...</div>
+        </div>
+      </div>
+      <div class="faq-popup-footer">
+        <span class="faq-count">총 <strong id="faq-total-count">0</strong>개 FAQ</span>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* FAQ 팝업 스타일 - 게시판 형태 */
+    .faq-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .faq-popup-overlay.hidden { display: none; }
+    .faq-popup-container {
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      background: var(--bg-primary, #fff);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .faq-popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px 16px 0 0;
+    }
+    .faq-popup-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+    }
+    .faq-popup-title .faq-icon { font-size: 24px; }
+    .faq-popup-title h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .faq-popup-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .faq-search-input {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      width: 200px;
+      font-size: 14px;
+    }
+    .faq-search-input:focus { outline: none; background: white; }
+    .faq-popup-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .faq-popup-close:hover { background: rgba(255,255,255,0.3); }
+    .faq-popup-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+    .faq-board-list { }
+    .faq-board-item {
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+    .faq-board-item:last-child { border-bottom: none; }
+    .faq-board-question {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .faq-board-question:hover { background: var(--bg-secondary, #f3f4f6); }
+    .faq-board-item.open .faq-board-question { background: var(--bg-secondary, #f3f4f6); }
+    .faq-q-badge {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .faq-q-text {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary, #1f2937);
+      line-height: 1.5;
+    }
+    .faq-toggle-icon {
+      flex-shrink: 0;
+      color: var(--text-secondary, #6b7280);
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+    .faq-board-item.open .faq-toggle-icon { transform: rotate(180deg); }
+    .faq-board-answer {
+      display: none;
+      padding: 0 24px 16px 64px;
+    }
+    .faq-board-item.open .faq-board-answer { display: block; }
+    .faq-a-badge {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      background: #10b981;
+      color: white;
+      border-radius: 6px;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-right: 12px;
+      vertical-align: top;
+    }
+    .faq-a-text {
+      display: inline;
+      font-size: 14px;
+      color: var(--text-secondary, #4b5563);
+      line-height: 1.7;
+    }
+    .faq-popup-footer {
+      padding: 12px 24px;
+      border-top: 1px solid var(--border-color, #e5e7eb);
+      background: var(--bg-secondary, #f9fafb);
+      border-radius: 0 0 16px 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary, #6b7280);
+    }
+    .faq-loading, .faq-empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-secondary, #6b7280);
+    }
+    .faq-empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+    /* 도구 카드 래퍼 및 FAQ 버튼 스타일 */
+    .tool-card-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .tool-faq-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: rgba(102, 126, 234, 0.9);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tool-card-wrapper:hover .tool-faq-btn { opacity: 1; }
+    .tool-faq-btn:hover { background: #764ba2; }
+
+    /* 다크모드 대응 - html.dark, [data-theme="dark"], body.dark-mode 모두 지원 */
+    html.dark .faq-popup-container,
+    [data-theme="dark"] .faq-popup-container,
+    body.dark-mode .faq-popup-container { background: #1f2937; }
+
+    html.dark .faq-popup-header,
+    [data-theme="dark"] .faq-popup-header,
+    body.dark-mode .faq-popup-header { border-color: #374151; }
+
+    html.dark .faq-search-input,
+    [data-theme="dark"] .faq-search-input,
+    body.dark-mode .faq-search-input { background: #374151; color: white; }
+
+    html.dark .faq-board-item,
+    [data-theme="dark"] .faq-board-item,
+    body.dark-mode .faq-board-item { border-color: #374151; }
+
+    html.dark .faq-board-question:hover,
+    html.dark .faq-board-item.open .faq-board-question,
+    [data-theme="dark"] .faq-board-question:hover,
+    [data-theme="dark"] .faq-board-item.open .faq-board-question,
+    body.dark-mode .faq-board-question:hover,
+    body.dark-mode .faq-board-item.open .faq-board-question { background: #374151; }
+
+    html.dark .faq-q-text,
+    [data-theme="dark"] .faq-q-text,
+    body.dark-mode .faq-q-text { color: #f3f4f6; }
+
+    html.dark .faq-a-text,
+    [data-theme="dark"] .faq-a-text,
+    body.dark-mode .faq-a-text { color: #d1d5db; }
+
+    html.dark .faq-popup-footer,
+    [data-theme="dark"] .faq-popup-footer,
+    body.dark-mode .faq-popup-footer { background: #111827; border-color: #374151; color: #9ca3af; }
+
+    html.dark .faq-toggle-icon,
+    [data-theme="dark"] .faq-toggle-icon { color: #9ca3af; }
+  </style>
+
+  <script>
+    // ========== ALL-IN-ONE 도구 팝업 컨트롤러 (API 연동) ==========
+    let activeCategory = 'all';
+    let toolsData = null;
+    let activeFilter = 'all'; // 필터: all, implemented, not-implemented
+
+    // 호환성 함수
+    function showEtcToolsModal() {
+      showToolsPopup();
+    }
+    function hideEtcToolsModal() {
+      hideToolsPopup();
+    }
+
+    // 도구 버튼 이벤트 바인딩 (DOMContentLoaded 후 실행)
+    document.addEventListener('DOMContentLoaded', function() {
+      const etcToolsBtn = document.getElementById('etcToolsBtn');
+      if (etcToolsBtn) {
+        etcToolsBtn.addEventListener('click', showEtcToolsModal);
+      }
+    });
+
+    // 도구 데이터 로드
+    async function loadToolsData() {
+      if (toolsData) return toolsData;
+
+      try {
+        const response = await fetch('/api/tools');
+        const result = await response.json();
+        if (result.success) {
+          toolsData = result.data;
+          return toolsData;
+        } else {
+          console.error('[Tools] 도구 로드 실패:', result.error);
+          return null;
+        }
+      } catch (error) {
+        console.error('[Tools] 도구 로드 에러:', error);
+        return null;
+      }
+    }
+
+    // 카테고리 탭 렌더링 (숨김 - 아코디언 방식으로 변경)
+    function renderCategoryTabs(data) {
+      const tabsContainer = document.getElementById('tools-category-tabs');
+      tabsContainer.style.display = 'none'; // 탭 숨김
+    }
+
+    // 도구 그리드 렌더링 (아코디언 스타일)
+    function renderToolsGrid(data) {
+      const gridContainer = document.getElementById('tools-grid');
+      let gridHtml = '';
+
+      data.categories.forEach((cat, index) => {
+        if (cat.tools.length === 0) return;
+
+        const premiumLabel = cat.isPremium ? ' <span class="premium-badge">PRO</span>' : '';
+        const isExpanded = index < 3; // 처음 3개 카테고리만 펼침
+        const expandedClass = isExpanded ? ' expanded' : '';
+        const gridDisplay = isExpanded ? '' : 'style="display: none;"';
+
+        gridHtml += `<div class="tools-category-section${expandedClass}" data-category="${cat.id}">
+          <div class="tools-category-header" onclick="toggleCategory(this)">
+            <span class="category-toggle">${isExpanded ? '▼' : ''}</span>
+            <span class="category-icon">${cat.icon}</span>
+            <span class="category-title">${cat.name}${premiumLabel}</span>
+            <span class="category-count">${cat.tools.length}개</span>
+          </div>
+          <div class="category-grid" ${gridDisplay}>`;
+
+        cat.tools.forEach(tool => {
+          const premiumClass = tool.isPremium ? ' premium' : '';
+          const notImplBadge = !tool.isImplemented ? '<span class="not-impl-badge" title="미구현"></span>' : '';
+          gridHtml += `<div class="tool-card-wrapper">
+            <a href="#" class="tool-card${premiumClass}" onclick="handleToolClick(event, '${tool.id}', '${tool.path || ''}')">
+              <div class="tool-card-icon">${tool.icon}</div>
+              <div class="tool-card-name">${tool.name}${notImplBadge}</div>
+            </a>
+            <button class="tool-faq-btn" onclick="showToolFAQ(event, '${tool.id}', '${tool.name}')" title="FAQ"></button>
+          </div>`;
+        });
+
+        gridHtml += '</div></div>';
+      });
+
+      gridContainer.innerHTML = gridHtml;
+
+      // 카운트 업데이트
+      document.getElementById('tools-total-count').textContent = data.totalCount;
+      document.getElementById('tools-category-count').textContent = data.categoryCount;
+    }
+
+    // 카테고리 토글 (아코디언)
+    function toggleCategory(header) {
+      const section = header.parentElement;
+      const grid = section.querySelector('.category-grid');
+      const toggle = header.querySelector('.category-toggle');
+      const isExpanded = section.classList.contains('expanded');
+
+      if (isExpanded) {
+        section.classList.remove('expanded');
+        grid.style.display = 'none';
+        toggle.textContent = '';
+      } else {
+        section.classList.add('expanded');
+        grid.style.display = '';
+        toggle.textContent = '▼';
+      }
+    }
+
+    // 모든 카테고리 펼치기/접기
+    function expandAllCategories() {
+      document.querySelectorAll('.tools-category-section').forEach(section => {
+        section.classList.add('expanded');
+        section.querySelector('.category-grid').style.display = '';
+        section.querySelector('.category-toggle').textContent = '▼';
+      });
+    }
+
+    function collapseAllCategories() {
+      document.querySelectorAll('.tools-category-section').forEach(section => {
+        section.classList.remove('expanded');
+        section.querySelector('.category-grid').style.display = 'none';
+        section.querySelector('.category-toggle').textContent = '';
+      });
+    }
+
+    // 팝업 표시
+    async function showToolsPopup() {
+      const overlay = document.getElementById('tools-popup-overlay');
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      // 첫 로드시에만 데이터 불러오기
+      if (!toolsData) {
+        const data = await loadToolsData();
+        if (data) {
+          toolsData = data;
+          window._toolsData = data; // 검색 복원용 저장
+          const loadingEl = document.getElementById('tools-loading');
+          if (loadingEl) loadingEl.style.display = 'none';
+
+          renderCategoryTabs(data);
+          renderToolsGrid(data);
+        }
+      }
+
+      // 검색창 초기화
+      document.getElementById('tools-search').value = '';
+      document.getElementById('tools-search').focus();
+    }
+
+    function hideToolsPopup() {
+      const overlay = document.getElementById('tools-popup-overlay');
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    function setActiveCategory(category) {
+      activeCategory = category;
+      document.querySelectorAll('.tools-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.category === category);
+      });
+      document.querySelectorAll('.tools-category-section').forEach(section => {
+        if (category === 'all') {
+          section.style.display = '';
+        } else {
+          section.style.display = section.dataset.category === category ? '' : 'none';
+        }
+      });
+    }
+
+    // 검색 + 필터 통합 함수
+    function filterAndSearchTools() {
+      const term = document.getElementById('tools-search').value.toLowerCase().trim();
+      const gridContainer = document.getElementById('tools-grid');
+      const data = window._toolsData;
+
+      if (!data) return;
+
+      // 필터 적용 함수
+      function applyFilter(tool) {
+        if (activeFilter === 'all') return true;
+        if (activeFilter === 'implemented') return tool.isImplemented === true;
+        if (activeFilter === 'not-implemented') return tool.isImplemented === false;
+        return true;
+      }
+
+      if (term || activeFilter !== 'all') {
+        // 검색어 또는 필터가 있으면: 플랫 리스트로 표시
+        let matchedTools = [];
+        data.categories.forEach(cat => {
+          cat.tools.forEach(tool => {
+            const matchSearch = !term || tool.name.toLowerCase().includes(term);
+            const matchFilter = applyFilter(tool);
+            if (matchSearch && matchFilter) {
+              matchedTools.push({ ...tool, categoryIcon: cat.icon, isPremium: cat.isPremium });
+            }
+          });
+        });
+
+        // 검색 결과 표시
+        gridContainer.innerHTML = '';
+        if (matchedTools.length > 0) {
+          let html = '<div class="category-grid search-results">';
+          matchedTools.forEach(tool => {
+            const premiumClass = tool.isPremium ? ' premium disabled' : '';
+            const premiumBadge = tool.isPremium ? '<span class="premium-badge">PRO</span>' : '';
+            const notImplBadge = !tool.isImplemented ? '<span class="not-impl-badge" title="미구현"></span>' : '';
+            html += `<div class="tool-card-wrapper">
+              <a href="#" class="tool-card${premiumClass}" onclick="handleToolClick(event, '${tool.id}', '${tool.path || ''}')">
+                <span class="tool-card-icon">${tool.icon}</span>
+                <span class="tool-card-name">${tool.name}${premiumBadge}${notImplBadge}</span>
+              </a>
+              <button class="tool-faq-btn" onclick="showToolFAQ(event, '${tool.id}', '${tool.name}')" title="FAQ"></button>
+            </div>`;
+          });
+          html += '</div>';
+          gridContainer.innerHTML = html;
+        } else {
+          const filterText = activeFilter === 'implemented' ? '구현된' : activeFilter === 'not-implemented' ? '미구현' : '';
+          gridContainer.innerHTML = `<div style="text-align:center;padding:40px;color:#888;">${filterText ? filterText + ' ' : ''}검색 결과가 없습니다.</div>`;
+        }
+
+        // 카운터 업데이트
+        document.querySelector('.tools-popup-footer strong:first-child').textContent = matchedTools.length;
+      } else {
+        // 검색어와 필터가 모두 없으면: 원래 아코디언 스타일로 복원
+        renderToolsGrid(data);
+        document.querySelector('.tools-popup-footer strong:first-child').textContent = data.totalTools;
+      }
+    }
+
+    // 검색 기능
+    document.getElementById('tools-search').addEventListener('input', filterAndSearchTools);
+
+    // 필터 라디오 버튼 이벤트
+    document.querySelectorAll('input[name="tools-filter"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        activeFilter = this.value;
+        filterAndSearchTools();
+      });
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const overlay = document.getElementById('tools-popup-overlay');
+        if (!overlay.classList.contains('hidden')) {
+          hideToolsPopup();
+        }
+      }
+    });
+
+    // 오버레이 클릭으로 닫기
+    document.getElementById('tools-popup-overlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideToolsPopup();
+      }
+    });
+
+    // 도구 클릭 핸들러 (toolPath 파라미터 추가)
+    function handleToolClick(event, toolId, toolPath) {
+      event.preventDefault();
+      // 팝업은 유지 (hideToolsPopup 호출 제거)
+
+      // 특수 핸들러가 필요한 도구 (팝업 등)
+      // youtube-text는 새 창에서 열리도록 변경 (2026-01-17)
+      const specialTools = {};
+
+      // 특수 핸들러 확인
+      if (specialTools[toolId]) {
+        specialTools[toolId]();
+        return;
+      }
+
+      // toolPath가 있으면 새 창으로 열기 (팝업 유지)
+      if (toolPath) {
+        // 도구 페이지로 직접 이동 (iframe 미사용)
+        window.open(toolPath.endsWith('/') ? toolPath : toolPath + '/', '_blank');
+      } else {
+        console.log('Tool selected (no path):', toolId);
+        if (window.showToast) {
+          showToast('이 도구는 준비 중입니다.', 'info');
+        }
+      }
+    }
+
+    // ========== FAQ 팝업 컨트롤러 ==========
+    let currentFAQData = [];
+    let currentToolId = null;
+
+    // FAQ 팝업 표시
+    async function showToolFAQ(event, toolId, toolName) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      currentToolId = toolId;
+      const overlay = document.getElementById('faq-popup-overlay');
+      const titleEl = document.getElementById('faq-tool-name');
+      const listEl = document.getElementById('faq-list');
+      const countEl = document.getElementById('faq-total-count');
+      const searchEl = document.getElementById('faq-search');
+
+      // 팝업 표시
+      overlay.classList.remove('hidden');
+      titleEl.textContent = toolName + ' FAQ';
+      listEl.innerHTML = '<div class="faq-loading">FAQ를 불러오는 중...</div>';
+      searchEl.value = '';
+
+      try {
+        // API에서 도구 정보 가져오기
+        const response = await fetch(`/api/tools/${toolId}`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const faqData = result.data.faq;
+
+          if (faqData) {
+            currentFAQData = typeof faqData === 'string' ? JSON.parse(faqData) : faqData;
+
+            if (Array.isArray(currentFAQData) && currentFAQData.length > 0) {
+              renderFAQList(currentFAQData);
+              countEl.textContent = currentFAQData.length;
+            } else {
+              showEmptyFAQ();
+            }
+          } else {
+            showEmptyFAQ();
+          }
+        } else {
+          showEmptyFAQ();
+        }
+      } catch (error) {
+        console.error('[FAQ] 로드 실패:', error);
+        showEmptyFAQ();
+      }
+    }
+
+    // FAQ 리스트 렌더링
+    function renderFAQList(faqList) {
+      const listEl = document.getElementById('faq-list');
+
+      const html = faqList.map((item, idx) => `
+        <div class="faq-board-item" data-index="${idx}">
+          <div class="faq-board-question" onclick="toggleFAQItem(this)">
+            <span class="faq-q-badge">Q</span>
+            <span class="faq-q-text">${escapeHtmlForFAQ(item.q)}</span>
+            <span class="faq-toggle-icon">▼</span>
+          </div>
+          <div class="faq-board-answer">
+            <span class="faq-a-badge">A</span>
+            <span class="faq-a-text">${escapeHtmlForFAQ(item.a)}</span>
+          </div>
+        </div>
+      `).join('');
+
+      listEl.innerHTML = html;
+    }
+
+    // 빈 FAQ 표시
+    function showEmptyFAQ() {
+      const listEl = document.getElementById('faq-list');
+      const countEl = document.getElementById('faq-total-count');
+
+      listEl.innerHTML = `
+        <div class="faq-empty">
+          <div class="faq-empty-icon"><span data-icon="inbox" data-icon-size="24"></span></div>
+          <p>등록된 FAQ가 없습니다.</p>
+        </div>
+      `;
+      countEl.textContent = '0';
+      currentFAQData = [];
+    }
+
+    // FAQ 항목 토글
+    function toggleFAQItem(element) {
+      const item = element.parentElement;
+      item.classList.toggle('open');
+    }
+
+    // FAQ 팝업 닫기
+    function hideFAQPopup() {
+      const overlay = document.getElementById('faq-popup-overlay');
+      overlay.classList.add('hidden');
+    }
+
+    // FAQ 검색
+    document.getElementById('faq-search').addEventListener('input', function() {
+      const term = this.value.toLowerCase().trim();
+
+      if (!currentFAQData || currentFAQData.length === 0) return;
+
+      if (term) {
+        const filtered = currentFAQData.filter(item =>
+          item.q.toLowerCase().includes(term) ||
+          item.a.toLowerCase().includes(term)
+        );
+        renderFAQList(filtered);
+        document.getElementById('faq-total-count').textContent = filtered.length;
+      } else {
+        renderFAQList(currentFAQData);
+        document.getElementById('faq-total-count').textContent = currentFAQData.length;
+      }
+    });
+
+    // FAQ 팝업 ESC 닫기 및 오버레이 클릭 닫기
+    document.getElementById('faq-popup-overlay').addEventListener('click', function(e) {
+      if (e.target === this) hideFAQPopup();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const faqOverlay = document.getElementById('faq-popup-overlay');
+        if (!faqOverlay.classList.contains('hidden')) {
+          hideFAQPopup();
+        }
+      }
+    });
+
+    // HTML 이스케이프 (FAQ용)
+    function escapeHtmlForFAQ(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\n/g, '<br>');
+    }
+  </script>
+
+  <!-- ============================================ -->
+  <!-- 노드필터 관리 팝업 -->
+  <!-- ============================================ -->
+  <div id="nodeFilterOverlay" class="node-filter-overlay">
+    <div class="node-filter-popup">
+      <!-- 헤더 -->
+      <div class="node-filter-header">
+        <h3 data-i18n="nodeFilterTitle">노드필터 관리</h3>
+        <button class="node-filter-close" id="nodeFilterClose">&times;</button>
+      </div>
+
+      <!-- 본문 -->
+      <div class="node-filter-body">
+        <!-- 필터 추가 섹션 -->
+        <div class="node-filter-section" id="nodeFilterAddSection">
+          <h4 data-i18n="filterAddTitle">필터 추가</h4>
+
+          <div class="filter-form-group">
+            <label data-i18n="filterNameLabel">필터 이름</label>
+            <input type="text" id="filterNameInput" maxlength="20" placeholder="필터 이름 (최대 20자)" data-i18n-placeholder="filterNamePlaceholder">
+          </div>
+
+          <div class="filter-form-group">
+            <label data-i18n="filterColorLabel">필터 색상</label>
+            <div class="color-grid" id="filterColorGrid">
+              <!-- 24개 색상 박스 (JS로 생성) -->
+            </div>
+          </div>
+
+          <button id="addFilterBtn" class="btn-add-filter" data-i18n="filterAddBtn">필터 추가</button>
+
+          <!-- 수정 모드용 버튼 -->
+          <div class="edit-buttons">
+            <button id="updateFilterBtn" class="btn-update-filter" data-i18n="filterUpdateBtn">업데이트</button>
+            <button id="cancelEditBtn" class="btn-cancel-edit" data-i18n="filterCancelEditBtn">취소</button>
+          </div>
+        </div>
+
+        <!-- 필터 목록 섹션 -->
+        <div class="node-filter-section">
+          <h4 data-i18n="filterListTitle">필터 목록</h4>
+          <div id="filterList" class="filter-list">
+            <div class="filter-list-empty" data-i18n="filterListEmpty">필터가 없습니다</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 푸터 -->
+      <div class="node-filter-footer">
+        <button id="cancelFiltersBtn" class="btn-cancel-filters" data-i18n="filterCancelBtn">취소</button>
+        <button id="saveFiltersBtn" class="btn-save-filters" data-i18n="filterSaveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

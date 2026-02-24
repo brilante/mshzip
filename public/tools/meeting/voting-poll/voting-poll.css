@@ -1,0 +1,323 @@
+/**
+ * 투표/설문 도구 스타일
+ */
+
+.create-section, .poll-section, .templates-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--tools-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+/* 선택지 입력 */
+.options-container label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--tools-text);
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.option-input {
+  display: flex;
+  gap: 8px;
+}
+
+.option-input .form-input {
+  flex: 1;
+}
+
+.remove-btn {
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+}
+
+.remove-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.add-option-btn {
+  padding: 10px 16px;
+  background: var(--tools-bg);
+  border: 1px dashed var(--tools-border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.add-option-btn:hover {
+  border-color: var(--tools-primary);
+  color: var(--tools-primary);
+}
+
+/* 설정 */
+.settings-row {
+  display: flex;
+  gap: 24px;
+  margin: 20px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--tools-text);
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+}
+
+.create-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.create-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+/* 투표 진행 */
+.poll-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.poll-question {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--tools-text);
+  margin-bottom: 8px;
+}
+
+.poll-info {
+  font-size: 14px;
+  color: var(--tools-text-secondary);
+}
+
+.poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.poll-option {
+  position: relative;
+  background: var(--tools-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.poll-option:hover {
+  transform: translateX(4px);
+}
+
+.poll-option.selected {
+  outline: 2px solid var(--tools-primary);
+}
+
+.option-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(102, 126, 234, 0.15);
+  transition: width 0.5s ease;
+}
+
+.option-content {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+}
+
+.option-text {
+  font-size: 15px;
+  color: var(--tools-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-check {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.poll-option.selected .option-check {
+  opacity: 1;
+}
+
+.option-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.show-results .option-stats {
+  opacity: 1;
+}
+
+.option-percent {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--tools-primary);
+}
+
+.option-votes {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 액션 버튼 */
+.poll-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  background: var(--tools-bg);
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--tools-text);
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+/* 템플릿 */
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.template-btn {
+  padding: 12px 16px;
+  background: var(--tools-bg);
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--tools-text);
+  transition: all 0.2s;
+}
+
+.template-btn:hover {
+  border-color: var(--tools-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+/* 도움말 */
+.tool-help {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .settings-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .poll-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}

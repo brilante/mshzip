@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일일 플래너 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="daily-planner.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">일일 플래너</h1>
+      <p class="tool-description">하루 일정을 시간대별로 관리하세요</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 날짜 선택 -->
+      <div class="date-section">
+        <button class="date-nav" onclick="DailyPlanner.prevDay()" aria-label=""></button>
+        <div class="date-display">
+          <input type="date" id="dateInput" onchange="DailyPlanner.changeDate()">
+          <span class="date-text" id="dateText"></span>
+        </div>
+        <button class="date-nav" onclick="DailyPlanner.nextDay()" aria-label=""></button>
+        <button class="today-btn" onclick="DailyPlanner.goToday()" aria-label="오늘">오늘</button>
+      </div>
+
+      <!-- 요약 -->
+      <div class="summary-section">
+        <div class="summary-item">
+          <span class="summary-icon"></span>
+          <span class="summary-label">전체</span>
+          <span class="summary-value" id="totalCount">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon"></span>
+          <span class="summary-label">완료</span>
+          <span class="summary-value" id="doneCount">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon"></span>
+          <span class="summary-label">진행 중</span>
+          <span class="summary-value" id="pendingCount">0</span>
+        </div>
+        <div class="summary-item progress-item">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-text" id="progressText">0%</span>
+        </div>
+      </div>
+
+      <!-- 타임라인 -->
+      <div class="timeline-section">
+        <div class="timeline-header">
+          <h3>일정</h3>
+          <button class="add-task-btn" onclick="DailyPlanner.openAddTask()" aria-label="+ 일정 추가">+ 일정 추가</button>
+        </div>
+        <div class="timeline" id="timeline">
+          <!-- 시간대별 일정 -->
+        </div>
+      </div>
+
+      <!-- 일정 편집 모달 -->
+      <div class="modal-overlay" id="taskModal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modalTitle">일정 추가</h3>
+            <button class="modal-close" onclick="DailyPlanner.closeModal()" aria-label=""></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>제목 *</label>
+              <input type="text" id="taskTitle" class="form-input" placeholder="일정 제목" aria-label="일정 제목">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>시작 시간</label>
+                <input type="time" id="taskStartTime" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>종료 시간</label>
+                <input type="time" id="taskEndTime" class="form-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>카테고리</label>
+              <select id="taskCategory" class="form-select">
+                <option value="work">업무</option>
+                <option value="meeting">회의</option>
+                <option value="personal">개인</option>
+                <option value="health">운동/건강</option>
+                <option value="study">학습</option>
+                <option value="other">기타</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>메모</label>
+              <textarea id="taskNote" class="form-textarea" placeholder="메모 (선택사항)"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="tool-btn" onclick="DailyPlanner.closeModal()" aria-label="취소">취소</button>
+            <button class="tool-btn tool-btn-danger" id="deleteTaskBtn" onclick="DailyPlanner.deleteTask()" style="display: none;" aria-label="삭제">삭제</button>
+            <button class="tool-btn tool-btn-primary" onclick="DailyPlanner.saveTask()" aria-label="저장">저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 팁</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>일정 추가</strong>: '+ 일정 추가' 버튼 또는 타임라인 클릭</li>
+            <li><strong>일정 편집</strong>: 일정을 클릭하여 수정</li>
+            <li><strong>완료 표시</strong>: 체크박스를 클릭하여 완료 표시</li>
+            <li><strong>자동 저장</strong>: 모든 변경사항은 브라우저에 자동 저장</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="daily-planner.js"></script>
+</body>
+</html>

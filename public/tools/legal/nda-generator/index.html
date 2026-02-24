@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDA 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .legal-container { max-width: 800px; margin: 0 auto; }
+    .legal-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .form-section { margin-bottom: 1.5rem; }
+    .form-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .nda-preview { background: white; color: #333; padding: 2rem; border-radius: 8px; margin-top: 1.5rem; font-family: 'Malgun Gothic', serif; line-height: 1.8; }
+    .nda-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; }
+    .nda-section { margin-bottom: 1.5rem; }
+    .nda-section-title { font-weight: 600; margin-bottom: 0.5rem; }
+    .nda-signature { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #ddd; }
+    .signature-block { text-align: center; }
+    .signature-line { border-top: 1px solid #333; margin-top: 3rem; padding-top: 0.5rem; }
+    .type-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .type-pill { padding: 0.5rem 1rem; border-radius: 20px; border: none; cursor: pointer; background: var(--bg-primary); font-size: 0.85rem; transition: all 0.2s; }
+    .type-pill.active { background: var(--primary); color: white; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">NDA 생성기</h1>
+          <p class="tool-description">비밀유지계약서 자동 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="legal-container">
+      <div class="legal-panel">
+        <div class="type-pills">
+          <button class="type-pill active" data-type="mutual" onclick="NDAGenerator.setType('mutual')" aria-label="상호 NDA">상호 NDA</button>
+          <button class="type-pill" data-type="unilateral" onclick="NDAGenerator.setType('unilateral')" aria-label="일방향 NDA">일방향 NDA</button>
+        </div>
+
+        <div class="form-section">
+          <h3>공개자 (갑)</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>회사/개인명</label>
+              <input type="text" id="discloserName" class="tool-input" placeholder="주식회사 ABC" aria-label="주식회사 ABC">
+            </div>
+            <div class="form-group">
+              <label>대표자명</label>
+              <input type="text" id="discloserRep" class="tool-input" placeholder="홍길동" aria-label="홍길동">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>주소</label>
+            <input type="text" id="discloserAddress" class="tool-input" placeholder="서울특별시 강남구..." aria-label="서울특별시 강남구...">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>수령자 (을)</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>회사/개인명</label>
+              <input type="text" id="recipientName" class="tool-input" placeholder="주식회사 XYZ" aria-label="주식회사 XYZ">
+            </div>
+            <div class="form-group">
+              <label>대표자명</label>
+              <input type="text" id="recipientRep" class="tool-input" placeholder="김철수" aria-label="김철수">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>주소</label>
+            <input type="text" id="recipientAddress" class="tool-input" placeholder="서울특별시 서초구..." aria-label="서울특별시 서초구...">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>계약 조건</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>계약 목적</label>
+              <input type="text" id="purpose" class="tool-input" placeholder="사업 협력 검토" aria-label="사업 협력 검토">
+            </div>
+            <div class="form-group">
+              <label>유효 기간</label>
+              <select id="duration" class="tool-input">
+                <option value="1">1년</option>
+                <option value="2">2년</option>
+                <option value="3" selected>3년</option>
+                <option value="5">5년</option>
+                <option value="0">무기한</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>관할 법원</label>
+            <input type="text" id="jurisdiction" class="tool-input" value="서울중앙지방법원">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="tool-btn tool-btn-primary" onclick="NDAGenerator.generate()" aria-label="문서 생성">문서 생성</button>
+          <button class="tool-btn tool-btn-secondary" onclick="NDAGenerator.copy()" aria-label="복사">복사</button>
+          <button class="tool-btn tool-btn-secondary" onclick="NDAGenerator.print()" aria-label="인쇄">인쇄</button>
+        </div>
+
+        <div id="previewContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="nda-generator.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>운동 타이머 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 500px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .timer-display { text-align: center; padding: 2rem; }
+    .timer-time { font-size: 4rem; font-weight: 700; font-family: monospace; }
+    .timer-phase { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .timer-progress { margin-top: 1rem; }
+    .progress-bar { height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; transition: width 0.1s; }
+    .work-phase { background: #22c55e; }
+    .rest-phase { background: #3b82f6; }
+    .timer-info { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary); }
+    .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .preset-btn { padding: 0.75rem; text-align: center; border-radius: 8px; background: var(--bg-primary); cursor: pointer; }
+    .preset-btn:hover { background: var(--primary); color: white; }
+    .preset-name { font-weight: 600; font-size: 0.9rem; }
+    .preset-desc { font-size: 0.75rem; opacity: 0.7; }
+    .custom-settings { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .input-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .controls button { flex: 1; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">운동 타이머</h1>
+          <p class="tool-description">인터벌/타바타 타이머</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel timer-display" id="timerDisplay">
+        <div class="timer-phase" id="timerPhase">준비</div>
+        <div class="timer-time" id="timerTime">00:00</div>
+        <div class="timer-progress">
+          <div class="progress-bar">
+            <div class="progress-fill work-phase" id="progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="timer-info">
+          <span>라운드: <strong id="currentRound">0</strong>/<span id="totalRounds">0</span></span>
+          <span>세트: <strong id="currentSet">0</strong>/<span id="totalSets">0</span></span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="tool-btn tool-btn-primary" id="startBtn" onclick="WorkoutTimer.start()" aria-label="시작">시작</button>
+        <button class="tool-btn tool-btn-secondary" onclick="WorkoutTimer.pause()" aria-label="일시정지">일시정지</button>
+        <button class="tool-btn tool-btn-secondary" onclick="WorkoutTimer.reset()" aria-label="리셋">리셋</button>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">프리셋</h3>
+        <div class="preset-grid">
+          <div class="preset-btn" onclick="WorkoutTimer.loadPreset('tabata')">
+            <div class="preset-name">타바타</div>
+            <div class="preset-desc">20초 운동 / 10초 휴식 × 8</div>
+          </div>
+          <div class="preset-btn" onclick="WorkoutTimer.loadPreset('hiit')">
+            <div class="preset-name">HIIT</div>
+            <div class="preset-desc">30초 운동 / 30초 휴식 × 10</div>
+          </div>
+          <div class="preset-btn" onclick="WorkoutTimer.loadPreset('emom')">
+            <div class="preset-name">EMOM</div>
+            <div class="preset-desc">45초 운동 / 15초 휴식 × 12</div>
+          </div>
+          <div class="preset-btn" onclick="WorkoutTimer.loadPreset('custom')">
+            <div class="preset-name">사용자 정의</div>
+            <div class="preset-desc">직접 설정</div>
+          </div>
+        </div>
+
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">설정</h3>
+        <div class="custom-settings">
+          <div>
+            <div class="input-label">운동 시간 (초)</div>
+            <input type="number" id="workTime" class="tool-input" value="20" min="1">
+          </div>
+          <div>
+            <div class="input-label">휴식 시간 (초)</div>
+            <input type="number" id="restTime" class="tool-input" value="10" min="0">
+          </div>
+          <div>
+            <div class="input-label">라운드 수</div>
+            <input type="number" id="rounds" class="tool-input" value="8" min="1">
+          </div>
+          <div>
+            <div class="input-label">세트 수</div>
+            <input type="number" id="sets" class="tool-input" value="1" min="1">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="workout-timer.js"></script>
+</body>
+</html>

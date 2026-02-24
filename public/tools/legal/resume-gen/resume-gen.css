@@ -1,0 +1,161 @@
+/**
+ * 이력서 생성기 스타일
+ */
+
+.form-section, .preview-section, .export-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+textarea.form-input {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.generate-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+.generate-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.document-preview {
+  background: white;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  padding: 30px;
+  min-height: 400px;
+  font-family: 'Malgun Gothic', sans-serif;
+  line-height: 1.8;
+  color: #1e293b;
+}
+
+.document-preview h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #0f172a;
+}
+
+.document-preview h2 {
+  font-size: 16px;
+  margin: 20px 0 10px;
+  color: #1e293b;
+}
+
+.document-preview p {
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+.document-preview .signature-area {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.document-preview .signature-box {
+  width: 45%;
+  text-align: center;
+}
+
+.document-preview .signature-line {
+  border-top: 1px solid #333;
+  margin-top: 40px;
+  padding-top: 8px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 12px 24px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.export-btn.secondary {
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  border: 1px solid var(--tools-border);
+}
+
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .export-buttons { flex-direction: column; }
+  .document-preview .signature-area { flex-direction: column; gap: 30px; }
+  .document-preview .signature-box { width: 100%; }
+}
+
+@media print {
+  .tool-header, .form-section, .export-section, .section-title { display: none; }
+  .preview-section { background: none; padding: 0; }
+  .document-preview { border: none; padding: 20px; }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 목업 생성기 | 3D Mockup Generator</title>
+  <link rel="stylesheet" href="3d-mockup-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>3D 목업 생성기</h1>
+      <p>CSS 3D 변환으로 입체적인 목업을 만드세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="layout">
+        <div class="controls-panel">
+          <div class="upload-section">
+            <label>이미지 업로드</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="imageInput" accept="image/*" hidden>
+              <p>클릭하거나 드래그</p>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>X 회전: <span id="rotateXValue">-20</span>°</label>
+            <input type="range" id="rotateX" min="-60" max="60" value="-20">
+          </div>
+
+          <div class="control-group">
+            <label>Y 회전: <span id="rotateYValue">30</span>°</label>
+            <input type="range" id="rotateY" min="-60" max="60" value="30">
+          </div>
+
+          <div class="control-group">
+            <label>Z 회전: <span id="rotateZValue">0</span>°</label>
+            <input type="range" id="rotateZ" min="-45" max="45" value="0">
+          </div>
+
+          <div class="control-group">
+            <label>원근감: <span id="perspectiveValue">1000</span>px</label>
+            <input type="range" id="perspective" min="300" max="2000" value="1000">
+          </div>
+
+          <div class="control-group">
+            <label>그림자 강도</label>
+            <input type="range" id="shadowIntensity" min="0" max="100" value="50">
+          </div>
+
+          <div class="control-group">
+            <label>배경색</label>
+            <input type="color" id="bgColor" value="#1a1a2e">
+          </div>
+
+          <div class="presets">
+            <label>프리셋</label>
+            <div class="preset-buttons">
+              <button onclick="applyPreset(-20, 30, 0)" aria-label="기본">기본</button>
+              <button onclick="applyPreset(-30, 45, 5)" aria-label="극적">극적</button>
+              <button onclick="applyPreset(0, 0, 0)" aria-label="정면">정면</button>
+              <button onclick="applyPreset(-10, -20, 0)" aria-label="왼쪽">왼쪽</button>
+            </div>
+          </div>
+
+          <button class="download-btn" onclick="downloadImage()" aria-label="이미지 다운로드">이미지 다운로드</button>
+        </div>
+
+        <div class="preview-panel" id="previewPanel">
+          <div class="mockup-3d" id="mockup3d">
+            <div class="placeholder">이미지를 업로드하세요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="3d-mockup-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <!-- 테마 플래시 방지: 최우선 실행 스크립트 -->
+  <script>
+  (function() {
+    // 테마 즉시 적용 (localStorage 또는 시스템 설정)
+    var theme = localStorage.getItem('mymind3-theme');
+    if (!theme) {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    // 테마 로드 완료 표시
+    document.documentElement.classList.add('theme-loaded');
+  })();
+  </script>
+  <!-- 공통 CSS 변수 및 테마 기본 스타일 (중복 제거) -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/theme-base.css">
+  <link rel="stylesheet" href="/css/themes/light.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="metaSettingsTitle">Settings - MyMind3</title>
+
+  <!-- ============================================ -->
+  <!-- Phase 2-3: SEO 메타 태그 -->
+  <!-- ============================================ -->
+
+  <!-- 기본 SEO 메타 태그 -->
+  <meta name="description" data-i18n-content="metaSettingsDescription" content="MyMind3 설정 - AI 통합 마인드맵 애플리케이션의 언어, 테마, AI 서비스 등을 설정합니다">
+  <meta name="keywords" data-i18n-content="metaSettingsKeywords" content="마인드맵, 설정, MyMind3, AI 설정, 언어 설정, 테마, 다국어">
+  <meta name="author" content="MyMind3 Team">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="application-name" content="MyMind3">
+
+  <!-- Open Graph 메타 태그 (소셜 미디어 공유) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MyMind3">
+  <meta property="og:title" content="Settings - MyMind3">
+  <meta property="og:description" data-i18n-content="metaSettingsOgDescription" content="MyMind3 설정 - AI 통합 마인드맵 애플리케이션의 언어, 테마, AI 서비스 등을 설정합니다">
+  <meta property="og:url" content="http://localhost:3999/settings.html">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:locale:alternate" content="ja_JP">
+  <meta property="og:locale:alternate" content="zh_CN">
+
+  <!-- Twitter Card 메타 태그 -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Settings - MyMind3">
+  <meta name="twitter:description" data-i18n-content="metaSettingsTwitterDescription" content="MyMind3 설정 - AI 통합 마인드맵 애플리케이션의 언어, 테마, AI 서비스 등을 설정합니다">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="http://localhost:3999/settings.html">
+
+  <!-- 다국어 지원 링크 -->
+  <link rel="alternate" hreflang="ko" href="http://localhost:3999/settings.html?lang=ko">
+  <link rel="alternate" hreflang="en" href="http://localhost:3999/settings.html?lang=en">
+  <link rel="alternate" hreflang="ja" href="http://localhost:3999/settings.html?lang=ja">
+  <link rel="alternate" hreflang="zh-CN" href="http://localhost:3999/settings.html?lang=zh-CN">
+  <link rel="alternate" hreflang="ar" href="http://localhost:3999/settings.html?lang=ar">
+  <link rel="alternate" hreflang="x-default" href="http://localhost:3999/settings.html">
+
+  <!-- ============================================ -->
+
+  <!-- ============================================ -->
+  <!-- Phase 1-2: 다국어 폰트 지원 (Google Fonts Noto Sans) -->
+  <!-- ============================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <!-- ============================================ -->
+
+  <link rel="stylesheet" href="/css/settings.css?v=20260217">
+  <!-- Phase 5-3: 분리된 CSS 모듈 -->
+  <link rel="stylesheet" href="/css/settings/payment.css?v=20260217">
+  <link rel="stylesheet" href="/css/settings/ai-settings.css?v=20260217">
+  <link rel="stylesheet" href="/css/settings/2fa.css?v=20260217">
+  <link rel="stylesheet" href="/css/settings/access-keys.css?v=20260217">
+  <link rel="stylesheet" href="/css/admin.css?v=20260217">
+  <link rel="stylesheet" href="/css/board.css">
+
+  <!-- ============================================ -->
+  <!-- Phase 1-3: RTL 레이아웃 CSS 지원 -->
+  <!-- ============================================ -->
+  <link rel="stylesheet" href="/css/rtl.css">
+  <!-- ============================================ -->
+
+  <!-- ============================================ -->
+  <!-- Phase 1-2: 다국어 폰트 스택 적용 (인라인) -->
+  <!-- ============================================ -->
+  <!-- @include head-styles.html -->
+  <!-- ============================================ -->
+  <script defer src="/js/modules/features/i18n-init.js?v=20260212"></script>
+</head>
+<body>
+  <div class="settings-container">
+    <!-- Header -->
+    <header class="settings-header">
+      <div class="header-left">
+        <h1 data-i18n="settingsPopupTitle">Settings</h1>
+      </div>
+      <!-- 전역 환경 선택 (관리자 인증 후 표시) -->
+      <div class="header-center" id="globalEnvSelector" style="display: none;">
+        <span class="env-server-badge" id="globalServerEnvBadge" data-i18n-title="envServerBadgeTitle" data-i18n="envLocal" title="현재 서버 환경">로컬</span>
+        <div class="env-radio-group">
+          <label class="env-radio-item">
+            <input type="radio" name="globalEnv" value="local" checked>
+            <span data-i18n="envLocal">로컬</span>
+          </label>
+          <label class="env-radio-item">
+            <input type="radio" name="globalEnv" value="dev">
+            <span data-i18n="envDevelopment">개발</span>
+          </label>
+          <label class="env-radio-item">
+            <input type="radio" name="globalEnv" value="prod">
+            <span data-i18n="envProduction">운영</span>
+          </label>
+        </div>
+      </div>
+      <div class="header-right">
+        <span id="currentUser" class="current-user"></span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="settings-main">
+      <!-- Left Sidebar (Menu) -->
+      <aside class="settings-sidebar">
+        <nav class="settings-nav">
+          <ul class="nav-list">
+            <li class="nav-item active" data-menu="basic">
+              <span class="nav-icon" data-icon="settings" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuBasic">Basic</span>
+            </li>
+            <li class="nav-item" data-menu="agent-skills" id="navAgentSkills">
+              <span class="nav-icon" data-icon="link" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuAgentSkills">Agent Skills</span>
+            </li>
+            <li class="nav-item" data-menu="ai">
+              <span class="nav-icon" data-icon="robot" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuAI">AI Settings</span>
+            </li>
+            <li class="nav-item" data-menu="account">
+              <span class="nav-icon" data-icon="user" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuAccount">Account</span>
+            </li>
+            <li class="nav-item" data-menu="security">
+              <span class="nav-icon" data-icon="shield" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuSecurity">보안</span>
+            </li>
+            <li class="nav-item" data-menu="payment">
+              <span class="nav-icon" data-icon="credit-card" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuPayment">결제정보</span>
+            </li>
+            <li class="nav-item" data-menu="subscription">
+              <span class="nav-icon" data-icon="package" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuSubscription">구독</span>
+            </li>
+            <li class="nav-item" data-menu="about">
+              <span class="nav-icon" data-icon="info" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuAbout">About</span>
+            </li>
+            <!-- 기능설정 메뉴 (관리자 전용) -->
+            <li class="nav-item admin-only" data-menu="feature-settings" id="featureSettingsNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="sliders" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuFeatureSettings">기능설정</span>
+            </li>
+            <!-- 로그검색 메뉴 (관리자 인증 후 표시) -->
+            <li class="nav-item admin-only" data-menu="admin" id="adminNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="clipboard" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuLogSearch">로그검색</span>
+            </li>
+            <!-- AI모델관리 메뉴 (관리자 전용) -->
+            <li class="nav-item admin-only" data-menu="ai-model-admin" id="aiModelAdminNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="robot" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuAIModelAdmin">AI모델관리</span>
+            </li>
+            <!-- 배치실행로그 메뉴 (관리자 전용) -->
+            <li class="nav-item admin-only" data-menu="model-sync-logs" id="modelSyncLogsNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="refresh-cw" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuModelSyncLogs">배치실행로그</span>
+            </li>
+            <!-- 도구설정 메뉴 (관리자 전용) -->
+            <li class="nav-item admin-only" data-menu="tool-settings" id="toolSettingsNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="wrench" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuToolSettings">도구설정</span>
+            </li>
+            <!-- 다중게시판 관리 메뉴 (관리자 전용) -->
+            <li class="nav-item admin-only" data-menu="board-admin" id="boardAdminNavItem" style="display: none;">
+              <span class="nav-icon" data-icon="map-pin" data-icon-size="16"></span>
+              <span class="nav-label" data-i18n="menuBoardAdmin">게시판 관리</span>
+            </li>
+          </ul>
+          <!-- 동적 게시판 메뉴 (공개 게시판) -->
+          <div id="dynamicBoardMenus" class="dynamic-board-menus"></div>
+        </nav>
+      </aside>
+
+      <!-- Right Content Area -->
+      <main class="settings-content">
+        <!-- @include basic.html -->
+        <!-- @include agent-skills.html -->
+        <!-- @include ai.html -->
+        <!-- @include account.html -->
+        <!-- @include security.html -->
+        <!-- @include subscription.html -->
+        <!-- @include payment.html -->
+        <!-- @include about.html -->
+        <!-- @include feature-settings.html -->
+        <!-- @include admin.html -->
+        <!-- @include ai-model-admin.html -->
+        <!-- @include model-sync-logs.html -->
+        <!-- @include tool-settings.html -->
+        <!-- @include board-admin.html -->
+
+        <!-- Dynamic Board Sections (동적 게시판 콘텐츠 영역) -->
+        <div id="dynamicBoardContents"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- @include modals.html -->
+
+  <!-- Settings 모듈 (분리됨) -->
+  <script src="/js/settings-core.js"></script>
+  <script src="/js/settings-env.js"></script>
+  <script src="/js/settings-2fa.js"></script>
+
+  <!-- Phase 5-2: 결제 모듈 분리 -->
+  <script src="/js/settings/constants.js?v=20260116"></script>
+  <script src="/js/settings/currency.js?v=20260116"></script>
+  <script src="/js/settings/package-calc.js?v=20260116"></script>
+
+  <script src="/js/settings-payment.js?v=20260212"></script>
+  <script src="/js/settings-ai.js"></script>
+  <script src="/js/settings-drive.js"></script>
+  <script src="/js/settings-feature.js?v=20260212"></script>
+  <script src="/js/settings-admin.js"></script>
+  <script src="/js/settings-tools.js"></script>
+  <script src="/js/settings-board-admin.js"></script>
+  <script src="/js/settings-board.js"></script>
+  <script src="/js/settings-access-keys.js"></script>
+  <script src="/js/settings.js"></script>
+
+  <!--
+    중요: settings.html 직접 접근 금지!
+    이 페이지는 index.html에서 레이어 팝업으로만 로드되어야 합니다.
+    직접 URL 접근 시 initSettingsAll()이 호출되지 않아 버튼 이벤트가 작동하지 않습니다.
+
+    올바른 접근 방법:
+    1. index.html 접속 (http://localhost:4848/)
+    2. 설정 버튼 클릭
+    3. Settings 레이어 팝업에서 기능 사용
+  -->
+  <script>
+    // 직접 접근 감지 및 경고
+    if (window.location.pathname === '/settings.html' && !window.opener && !window.parent.settingsPopupContainer) {
+      console.warn('[Settings] settings.html 직접 접근은 지원되지 않습니다. index.html에서 설정 버튼을 클릭하세요.');
+      // 선택적: 메인 페이지로 리다이렉트
+      // window.location.href = '/';
+    }
+  </script>
+
+  <!-- Saving Indicator -->
+  <div id="savingIndicator" style="display: none; position: fixed; bottom: 20px; right: 20px; padding: 8px 16px; background: #3b82f6; color: white; border-radius: 6px; font-size: 14px; z-index: 9999; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+</body>
+</html>

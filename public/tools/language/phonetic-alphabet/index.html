@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>음성 알파벳 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .phonetic-container { max-width: 700px; margin: 0 auto; }
+    .phonetic-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .input-section { margin-bottom: 1.5rem; }
+    .input-section label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .io-input { width: 100%; padding: 1rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.25em; }
+    .io-input:focus { border-color: var(--primary); outline: none; }
+    .result-box { background: var(--bg-primary); border-radius: 8px; padding: 1.5rem; }
+    .phonetic-word { display: inline-block; margin: 0.25rem; padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; font-weight: 500; }
+    .phonetic-word .letter { color: var(--primary); font-weight: 700; margin-right: 0.5rem; }
+    .system-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .system-tab { padding: 0.5rem 1rem; border-radius: 20px; border: none; cursor: pointer; background: var(--bg-primary); font-size: 0.85rem; }
+    .system-tab.active { background: var(--primary); color: white; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">음성 알파벳</h1>
+          <p class="tool-description">NATO 음성 알파벳 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="phonetic-container">
+      <div class="phonetic-panel">
+        <div class="system-tabs" id="systemTabs">
+          <button class="system-tab active" data-system="nato" onclick="PhoneticAlphabet.setSystem('nato')" aria-label="NATO">NATO</button>
+          <button class="system-tab" data-system="lapd" onclick="PhoneticAlphabet.setSystem('lapd')" aria-label="LAPD">LAPD</button>
+          <button class="system-tab" data-system="korean" onclick="PhoneticAlphabet.setSystem('korean')" aria-label="한글 발음">한글 발음</button>
+        </div>
+
+        <div class="input-section">
+          <label>텍스트 입력</label>
+          <input type="text" class="io-input" id="inputText" placeholder="알파벳을 입력하세요..." oninput="PhoneticAlphabet.convert()" value="HELLO" aria-label="알파벳을 입력하세요...">
+        </div>
+
+        <div class="input-section">
+          <label>음성 알파벳 결과</label>
+          <div class="result-box" id="result"></div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" onclick="PhoneticAlphabet.copy()" aria-label="복사">복사</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="phonetic-alphabet.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시간대 플래너 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .travel-container { max-width: 800px; margin: 0 auto; }
+    .travel-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .timezone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .timezone-card { background: var(--bg-primary); border-radius: 12px; padding: 1rem; text-align: center; }
+    .timezone-card.highlight { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .tz-city { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+    .tz-time { font-size: 2rem; font-weight: 700; }
+    .tz-date { font-size: 0.8rem; opacity: 0.7; }
+    .tz-offset { font-size: 0.75rem; opacity: 0.6; margin-top: 0.25rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 150px; gap: 1rem; margin-bottom: 1rem; }
+    .add-city { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .schedule-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .schedule-row { display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: center; padding: 0.5rem 0; }
+    .schedule-times { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .schedule-time { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: var(--bg-primary); }
+    .schedule-time.good { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .schedule-time.bad { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">시간대 플래너</h1>
+          <p class="tool-description">여러 도시 시간 비교 및 회의 시간 계획</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="travel-container">
+      <div class="travel-panel">
+        <div class="add-city">
+          <select id="citySelect" class="tool-input" style="flex: 1;">
+            <option value="Asia/Seoul">🇰🇷 서울</option>
+            <option value="Asia/Tokyo">🇯🇵 도쿄</option>
+            <option value="Asia/Shanghai">🇨🇳 상하이</option>
+            <option value="Asia/Hong_Kong">🇭🇰 홍콩</option>
+            <option value="Asia/Singapore">🇸🇬 싱가포르</option>
+            <option value="Asia/Bangkok">🇹🇭 방콕</option>
+            <option value="Asia/Dubai">🇦🇪 두바이</option>
+            <option value="Europe/London">🇬🇧 런던</option>
+            <option value="Europe/Paris">🇫🇷 파리</option>
+            <option value="Europe/Berlin">🇩🇪 베를린</option>
+            <option value="America/New_York">🇺🇸 뉴욕</option>
+            <option value="America/Los_Angeles">🇺🇸 로스앤젤레스</option>
+            <option value="America/Chicago">🇺🇸 시카고</option>
+            <option value="Australia/Sydney">🇦🇺 시드니</option>
+            <option value="Pacific/Auckland">🇳🇿 오클랜드</option>
+          </select>
+          <button class="tool-btn tool-btn-primary" onclick="TimezonePlanner.addCity()" aria-label="도시 추가">도시 추가</button>
+        </div>
+
+        <div class="timezone-grid" id="timezoneGrid"></div>
+
+        <div class="schedule-section">
+          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">회의 시간 추천</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            추가된 도시들의 업무 시간(9AM-6PM)을 기준으로 최적의 회의 시간을 찾습니다.
+          </p>
+          <div id="scheduleResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="timezone-planner.js"></script>
+</body>
+</html>

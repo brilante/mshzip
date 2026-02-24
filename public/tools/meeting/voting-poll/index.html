@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>투표/설문 도구 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="voting-poll.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">투표/설문 도구</h1>
+      <p class="tool-description">빠른 의사결정을 위한 실시간 투표를 진행합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 투표 생성 -->
+      <div class="create-section" id="createSection">
+        <h3 class="section-title">새 투표 만들기</h3>
+        <div class="input-group">
+          <label>질문</label>
+          <input type="text" id="pollQuestion" class="form-input" placeholder="투표할 질문을 입력하세요" aria-label="투표할 질문을 입력하세요">
+        </div>
+        <div class="options-container">
+          <label>선택지</label>
+          <div class="options-list" id="optionsList">
+            <div class="option-input">
+              <input type="text" class="form-input option-field" placeholder="선택지 1" aria-label="선택지 1">
+              <button class="remove-btn" onclick="VotingPoll.removeOption(this)" style="display:none" aria-label=""></button>
+            </div>
+            <div class="option-input">
+              <input type="text" class="form-input option-field" placeholder="선택지 2" aria-label="선택지 2">
+              <button class="remove-btn" onclick="VotingPoll.removeOption(this)" style="display:none" aria-label=""></button>
+            </div>
+          </div>
+          <button class="add-option-btn" onclick="VotingPoll.addOption()" aria-label="+ 선택지 추가">+ 선택지 추가</button>
+        </div>
+        <div class="settings-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="multipleChoice">
+            복수 선택 허용
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="anonymousVote" checked>
+            익명 투표
+          </label>
+        </div>
+        <button class="create-btn" onclick="VotingPoll.createPoll()" aria-label="투표 시작">투표 시작</button>
+      </div>
+
+      <!-- 투표 진행 -->
+      <div class="poll-section" id="pollSection" style="display: none;">
+        <div class="poll-header">
+          <h2 class="poll-question" id="pollQuestionDisplay"></h2>
+          <div class="poll-info">
+            <span id="voteCount">0</span>명 참여
+          </div>
+        </div>
+
+        <div class="poll-options" id="pollOptions">
+          <!-- 동적 생성 -->
+        </div>
+
+        <div class="poll-actions">
+          <button class="action-btn" onclick="VotingPoll.toggleResults()" aria-label="결과 보기/숨기기">결과 보기/숨기기</button>
+          <button class="action-btn" onclick="VotingPoll.resetPoll()" aria-label="투표 초기화">투표 초기화</button>
+          <button class="action-btn" onclick="VotingPoll.newPoll()" aria-label="새 투표">새 투표</button>
+        </div>
+      </div>
+
+      <!-- 빠른 템플릿 -->
+      <div class="templates-section">
+        <h3 class="section-title">빠른 템플릿</h3>
+        <div class="templates-grid">
+          <button class="template-btn" onclick="VotingPoll.useTemplate('yesno')" aria-label="예/아니오">예/아니오</button>
+          <button class="template-btn" onclick="VotingPoll.useTemplate('satisfaction')" aria-label="만족도">만족도</button>
+          <button class="template-btn" onclick="VotingPoll.useTemplate('priority')" aria-label="우선순위 (상/중/하)">우선순위 (상/중/하)</button>
+          <button class="template-btn" onclick="VotingPoll.useTemplate('agreement')" aria-label="동의 수준">동의 수준</button>
+          <button class="template-btn" onclick="VotingPoll.useTemplate('time')" aria-label="시간 선택">시간 선택</button>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 방법</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>투표 생성</strong>: 질문과 선택지를 입력하고 시작</li>
+            <li><strong>투표 참여</strong>: 선택지를 클릭하여 투표</li>
+            <li><strong>결과 확인</strong>: 실시간으로 결과 확인 가능</li>
+            <li><strong>데이터 저장</strong>: 브라우저에 자동 저장됨</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="voting-poll.js"></script>
+</body>
+</html>

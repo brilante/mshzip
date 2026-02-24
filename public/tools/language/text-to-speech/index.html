@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>텍스트 음성 변환 - ALLINONE</title>
+    <link rel="stylesheet" href="text-to-speech.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>텍스트 음성 변환</h1>
+            <p class="subtitle">텍스트를 음성으로 읽어드립니다</p>
+        </header>
+        <main class="main-content">
+            <div class="input-section">
+                <textarea id="inputText" placeholder="읽어줄 텍스트를 입력하세요..."></textarea>
+                <div class="char-info">
+                    <span id="charCount">0</span> / 5000 글자
+                </div>
+            </div>
+            <div class="controls-section">
+                <div class="control-group">
+                    <label>음성 선택</label>
+                    <select id="voiceSelect"></select>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>속도: <span id="rateValue">1.0</span>x</label>
+                        <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>음높이: <span id="pitchValue">1.0</span></label>
+                        <input type="range" id="pitchRange" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>볼륨: <span id="volumeValue">100</span>%</label>
+                        <input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1">
+                    </div>
+                </div>
+            </div>
+            <div class="player-section">
+                <div class="player-controls">
+                    <button class="player-btn" id="playBtn" onclick="speak()" aria-label="재생">재생</button>
+                    <button class="player-btn" id="pauseBtn" onclick="pauseSpeak()" disabled aria-label="일시정지">일시정지</button>
+                    <button class="player-btn" id="stopBtn" onclick="stopSpeak()" aria-label="정지">정지</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status" id="status">대기 중</div>
+            </div>
+            <div class="presets-section">
+                <h3>빠른 설정</h3>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="applyPreset('slow')" aria-label="느리게">느리게</button>
+                    <button class="preset-btn" onclick="applyPreset('normal')" aria-label="보통">보통</button>
+                    <button class="preset-btn" onclick="applyPreset('fast')" aria-label="빠르게">빠르게</button>
+                    <button class="preset-btn" onclick="applyPreset('robot')" aria-label="로봇">로봇</button>
+                    <button class="preset-btn" onclick="applyPreset('child')" aria-label="아이">아이</button>
+                </div>
+            </div>
+            <div class="samples-section">
+                <h3>샘플 텍스트</h3>
+                <div class="sample-buttons">
+                    <button class="sample-btn" onclick="setSample('greeting')" aria-label="인사말">인사말</button>
+                    <button class="sample-btn" onclick="setSample('news')" aria-label="뉴스">뉴스</button>
+                    <button class="sample-btn" onclick="setSample('story')" aria-label="동화">동화</button>
+                    <button class="sample-btn" onclick="setSample('numbers')" aria-label="숫자">숫자</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="text-to-speech.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

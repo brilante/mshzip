@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 텍스트 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="3d-text-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">3D 텍스트 생성기</h1>
+      <p class="tool-description">CSS 3D 효과로 입체적인 텍스트를 생성합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="preview-section">
+        <div class="preview-container" id="previewContainer">
+          <div id="text3d" class="text-3d">3D Text</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="section-title">텍스트 설정</h3>
+        <div class="settings-grid">
+          <div class="setting-item full-width">
+            <label>텍스트</label>
+            <input type="text" id="textInput" class="form-input" value="3D Text" oninput="Text3D.updateText()">
+          </div>
+          <div class="setting-item">
+            <label>폰트 크기</label>
+            <input type="range" id="fontSize" class="range-input" min="24" max="120" value="72" oninput="Text3D.update()">
+            <span id="fontSizeValue">72px</span>
+          </div>
+          <div class="setting-item">
+            <label>깊이</label>
+            <input type="range" id="depth" class="range-input" min="1" max="20" value="8" oninput="Text3D.update()">
+            <span id="depthValue">8</span>
+          </div>
+          <div class="setting-item">
+            <label>X축 회전</label>
+            <input type="range" id="rotateX" class="range-input" min="-45" max="45" value="15" oninput="Text3D.update()">
+            <span id="rotateXValue">15°</span>
+          </div>
+          <div class="setting-item">
+            <label>Y축 회전</label>
+            <input type="range" id="rotateY" class="range-input" min="-45" max="45" value="-20" oninput="Text3D.update()">
+            <span id="rotateYValue">-20°</span>
+          </div>
+          <div class="setting-item">
+            <label>전면 색상</label>
+            <input type="color" id="frontColor" class="color-input" value="#667eea" onchange="Text3D.update()">
+          </div>
+          <div class="setting-item">
+            <label>측면 색상</label>
+            <input type="color" id="sideColor" class="color-input" value="#4a5568" onchange="Text3D.update()">
+          </div>
+        </div>
+      </div>
+
+      <div class="preset-section">
+        <h3 class="section-title">프리셋</h3>
+        <div class="preset-buttons">
+          <button class="preset-btn" onclick="Text3D.loadPreset('neon')" aria-label="네온">네온</button>
+          <button class="preset-btn" onclick="Text3D.loadPreset('gold')" aria-label="골드">골드</button>
+          <button class="preset-btn" onclick="Text3D.loadPreset('ice')" aria-label="아이스">아이스</button>
+          <button class="preset-btn" onclick="Text3D.loadPreset('wood')" aria-label="우드">우드</button>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="Text3D.copyCSS()" aria-label="CSS 복사">CSS 복사</button>
+          <button class="export-btn secondary" onclick="Text3D.exportSettings()" aria-label="설정 내보내기">설정 내보내기</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="3d-text-gen.js"></script>
+</body>
+</html>

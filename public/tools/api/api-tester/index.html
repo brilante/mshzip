@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 테스터 | API Tester</title>
+  <link rel="stylesheet" href="api-tester.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>API 테스터</h1>
+      <p>REST API 요청을 테스트하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="request-section">
+        <div class="url-bar">
+          <select id="method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <input type="text" id="url" placeholder="https://api.example.com/endpoint" value="https://jsonplaceholder.typicode.com/posts/1" aria-label="https://api.example.com/endpoint">
+          <button onclick="sendRequest()" aria-label="전송">전송</button>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('headers')" aria-label="Headers">Headers</button>
+          <button class="tab" onclick="showTab('body')" aria-label="Body">Body</button>
+          <button class="tab" onclick="showTab('params')" aria-label="Params">Params</button>
+        </div>
+
+        <div class="tab-content" id="tab-headers">
+          <div class="key-value-list" id="headersList">
+            <div class="key-value-row">
+              <input type="text" placeholder="Key" value="Content-Type" aria-label="Key">
+              <input type="text" placeholder="Value" value="application/json" aria-label="Value">
+              <button onclick="removeRow(this)" aria-label="×">×</button>
+            </div>
+          </div>
+          <button class="add-row" onclick="addHeaderRow()" aria-label="+ 헤더 추가">+ 헤더 추가</button>
+        </div>
+
+        <div class="tab-content hidden" id="tab-body">
+          <textarea id="requestBody" placeholder='{"key": "value"}'></textarea>
+        </div>
+
+        <div class="tab-content hidden" id="tab-params">
+          <div class="key-value-list" id="paramsList">
+            <div class="key-value-row">
+              <input type="text" placeholder="Key" aria-label="Key">
+              <input type="text" placeholder="Value" aria-label="Value">
+              <button onclick="removeRow(this)" aria-label="×">×</button>
+            </div>
+          </div>
+          <button class="add-row" onclick="addParamRow()" aria-label="+ 파라미터 추가">+ 파라미터 추가</button>
+        </div>
+      </div>
+
+      <div class="response-section">
+        <div class="response-header">
+          <h3>응답</h3>
+          <div class="response-info" id="responseInfo"></div>
+        </div>
+        <div class="response-tabs">
+          <button class="tab active" onclick="showResponseTab('body')" aria-label="Body">Body</button>
+          <button class="tab" onclick="showResponseTab('headers')" aria-label="Headers">Headers</button>
+        </div>
+        <div class="response-body" id="responseBody">
+          <pre id="responseContent">// 요청을 전송하면 응답이 여기에 표시됩니다</pre>
+        </div>
+        <div class="response-body hidden" id="responseHeaders">
+          <pre id="responseHeadersContent"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="api-tester.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

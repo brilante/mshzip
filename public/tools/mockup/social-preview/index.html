@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소셜 미리보기 | Social Preview</title>
+  <link rel="stylesheet" href="social-preview.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>소셜 미리보기</h1>
+      <p>Facebook, Twitter, LinkedIn에서 링크가 어떻게 보이는지 미리보세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="input-section">
+        <div class="input-row">
+          <div class="input-group">
+            <label>OG 제목</label>
+            <input type="text" id="ogTitle" value="놀라운 웹사이트 - 최고의 서비스" placeholder="페이지 제목" aria-label="페이지 제목">
+          </div>
+          <div class="input-group">
+            <label>OG 설명</label>
+            <textarea id="ogDescription" rows="2" placeholder="페이지 설명">이 웹사이트는 최고의 사용자 경험을 제공합니다. 지금 바로 방문하여 확인하세요!</textarea>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>URL</label>
+            <input type="text" id="ogUrl" value="https://example.com" placeholder="https://example.com" aria-label="https://example.com">
+          </div>
+          <div class="input-group">
+            <label>OG 이미지</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="imageInput" accept="image/*" hidden>
+              <p>이미지 업로드 (1200×630 권장)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="previews">
+        <div class="preview-card">
+          <h3>Facebook</h3>
+          <div class="facebook-preview" id="facebookPreview">
+            <div class="fb-image" id="fbImage">
+              <div class="placeholder">이미지 없음</div>
+            </div>
+            <div class="fb-content">
+              <div class="fb-domain" id="fbDomain">example.com</div>
+              <div class="fb-title" id="fbTitle">놀라운 웹사이트 - 최고의 서비스</div>
+              <div class="fb-desc" id="fbDesc">이 웹사이트는 최고의 사용자 경험을 제공합니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-card">
+          <h3>Twitter</h3>
+          <div class="twitter-preview" id="twitterPreview">
+            <div class="tw-image" id="twImage">
+              <div class="placeholder">이미지 없음</div>
+            </div>
+            <div class="tw-content">
+              <div class="tw-title" id="twTitle">놀라운 웹사이트 - 최고의 서비스</div>
+              <div class="tw-desc" id="twDesc">이 웹사이트는 최고의 사용자 경험을 제공합니다.</div>
+              <div class="tw-domain" id="twDomain">example.com</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-card">
+          <h3>LinkedIn</h3>
+          <div class="linkedin-preview" id="linkedinPreview">
+            <div class="li-image" id="liImage">
+              <div class="placeholder">이미지 없음</div>
+            </div>
+            <div class="li-content">
+              <div class="li-title" id="liTitle">놀라운 웹사이트 - 최고의 서비스</div>
+              <div class="li-domain" id="liDomain">example.com</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="social-preview.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

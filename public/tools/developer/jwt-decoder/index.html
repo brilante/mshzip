@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT 디코더 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .jwt-input-section {
+      background: var(--tools-card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .jwt-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      color: var(--tools-text);
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .jwt-textarea:focus {
+      outline: none;
+      border-color: var(--tools-primary);
+    }
+    .jwt-textarea.error {
+      border-color: var(--tools-danger);
+    }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: var(--tools-bg);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--tools-text-secondary);
+    }
+    .status-indicator.valid { background: #10b981; }
+    .status-indicator.invalid { background: #ef4444; }
+    .status-indicator.expired { background: #f59e0b; }
+    .decoded-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .decoded-panel {
+      background: var(--tools-card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: var(--tools-bg);
+      border-bottom: 1px solid var(--tools-border);
+    }
+    .panel-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--tools-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    .header-dot { background: #ef4444; }
+    .payload-dot { background: #8b5cf6; }
+    .signature-dot { background: #3b82f6; }
+    .copy-btn {
+      padding: 4px 10px;
+      font-size: 12px;
+      background: transparent;
+      border: 1px solid var(--tools-border);
+      border-radius: 4px;
+      color: var(--tools-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover {
+      background: var(--tools-primary);
+      color: white;
+      border-color: var(--tools-primary);
+    }
+    .panel-content {
+      padding: 18px;
+    }
+    .json-viewer {
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--tools-text);
+    }
+    .json-key { color: #8b5cf6; }
+    .json-string { color: #10b981; }
+    .json-number { color: #f59e0b; }
+    .json-boolean { color: #3b82f6; }
+    .json-null { color: #6b7280; }
+    .claim-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tools-border);
+    }
+    .claim-item:last-child { border-bottom: none; }
+    .claim-name {
+      font-size: 12px;
+      color: var(--tools-text-secondary);
+      margin-bottom: 4px;
+    }
+    .claim-value {
+      font-family: 'Consolas', monospace;
+      font-size: 14px;
+      color: var(--tools-text);
+    }
+    .claim-value.expired { color: #ef4444; }
+    .claim-value.valid { color: #10b981; }
+    .signature-raw {
+      word-break: break-all;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      color: var(--tools-text-secondary);
+      background: var(--tools-bg);
+      padding: 12px;
+      border-radius: 6px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .sample-tokens {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--tools-card-bg);
+      border-radius: 8px;
+    }
+    .sample-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tools-text);
+      margin-bottom: 12px;
+    }
+    .sample-btn {
+      padding: 8px 14px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--tools-text);
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .sample-btn:hover {
+      background: var(--tools-primary);
+      color: white;
+      border-color: var(--tools-primary);
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">JWT 디코더</h1>
+          <p class="tool-description">JSON Web Token 분석 및 디코딩</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() {
+        if (window.self !== window.top) window.parent.postMessage('tools:back', '*');
+        else window.history.back();
+      }
+    </script>
+
+    <div class="tool-panel">
+      <!-- JWT 입력 -->
+      <div class="jwt-input-section">
+        <textarea
+          class="jwt-textarea"
+          id="jwtInput"
+          placeholder="JWT 토큰을 붙여넣으세요 (예: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)"
+          oninput="JwtDecoder.decode()"
+        ></textarea>
+        <div class="status-bar">
+          <div class="status-indicator" id="statusIndicator"></div>
+          <span id="statusText">JWT를 입력하세요</span>
+        </div>
+        <div class="action-buttons">
+          <button class="tool-btn tool-btn-secondary" onclick="JwtDecoder.clear()" aria-label="초기화">초기화</button>
+          <button class="tool-btn tool-btn-secondary" onclick="JwtDecoder.paste()" aria-label="붙여넣기">붙여넣기</button>
+        </div>
+      </div>
+
+      <!-- 디코딩 결과 -->
+      <div class="decoded-section" id="decodedSection" style="display: none;">
+        <!-- Header -->
+        <div class="decoded-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="dot header-dot"></div>
+              Header
+            </div>
+            <button class="copy-btn" onclick="JwtDecoder.copyPart('header')" aria-label="복사">복사</button>
+          </div>
+          <div class="panel-content">
+            <div class="json-viewer" id="headerJson"></div>
+          </div>
+        </div>
+
+        <!-- Payload -->
+        <div class="decoded-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="dot payload-dot"></div>
+              Payload
+            </div>
+            <button class="copy-btn" onclick="JwtDecoder.copyPart('payload')" aria-label="복사">복사</button>
+          </div>
+          <div class="panel-content">
+            <div class="json-viewer" id="payloadJson"></div>
+            <div id="claimsInfo" style="margin-top: 16px;"></div>
+          </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="decoded-panel" style="grid-column: 1 / -1;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="dot signature-dot"></div>
+              Signature
+            </div>
+            <button class="copy-btn" onclick="JwtDecoder.copyPart('signature')" aria-label="복사">복사</button>
+          </div>
+          <div class="panel-content">
+            <div class="signature-raw" id="signatureRaw"></div>
+            <p style="margin-top: 12px; font-size: 12px; color: var(--tools-text-secondary);">
+              서명 검증은 비밀키가 필요하므로 이 도구에서는 지원하지 않습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 샘플 토큰 -->
+      <div class="sample-tokens">
+        <div class="sample-title">샘플 토큰</div>
+        <button class="sample-btn" onclick="JwtDecoder.loadSample('basic')" aria-label="기본 JWT">기본 JWT</button>
+        <button class="sample-btn" onclick="JwtDecoder.loadSample('expired')" aria-label="만료된 JWT">만료된 JWT</button>
+        <button class="sample-btn" onclick="JwtDecoder.loadSample('admin')" aria-label="관리자 JWT">관리자 JWT</button>
+      </div>
+    </div>
+
+    <div class="tool-help">
+      <div class="help-title">JWT 디코더 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>Header</strong>: 토큰 유형과 알고리즘 정보</li>
+          <li><strong>Payload</strong>: 클레임 (사용자 정보, 만료 시간 등)</li>
+          <li><strong>Signature</strong>: 토큰 무결성 검증용 서명</li>
+          <li>JWT는 암호화되지 않고 Base64로 인코딩만 됩니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="jwt-decoder.js"></script>
+</body>
+</html>

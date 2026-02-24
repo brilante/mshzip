@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공학용 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="scientific-calc.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">공학용 계산기</h1>
+      <p class="tool-description">삼각함수, 로그, 거듭제곱 등 과학 계산을 수행합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel calculator-panel">
+        <!-- 모드 선택 -->
+        <div class="mode-selector">
+          <button class="mode-btn active" onclick="ScientificCalc.setMode('deg')" aria-label="DEG">DEG</button>
+          <button class="mode-btn" onclick="ScientificCalc.setMode('rad')" aria-label="RAD">RAD</button>
+          <span class="mode-indicator" id="modeIndicator">DEG</span>
+        </div>
+
+        <!-- 디스플레이 -->
+        <div class="display-section">
+          <div class="expression-display" id="expression"></div>
+          <div class="result-display" id="result">0</div>
+        </div>
+
+        <!-- 히스토리 토글 -->
+        <div class="history-toggle">
+          <button class="toggle-btn" onclick="ScientificCalc.toggleHistory()" aria-label="히스토리">
+            히스토리
+          </button>
+        </div>
+
+        <!-- 히스토리 패널 -->
+        <div id="historyPanel" class="history-panel" style="display: none;">
+          <div class="history-header">
+            <span>계산 히스토리</span>
+            <button class="clear-history-btn" onclick="ScientificCalc.clearHistory()" aria-label="지우기">지우기</button>
+          </div>
+          <div id="historyList" class="history-list">
+            <p class="empty-history">히스토리가 없습니다</p>
+          </div>
+        </div>
+
+        <!-- 버튼 패드 -->
+        <div class="button-pad">
+          <!-- 첫 번째 행: 과학 함수 -->
+          <div class="button-row">
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('sin(')" aria-label="sin">sin</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('cos(')" aria-label="cos">cos</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('tan(')" aria-label="tan">tan</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('log(')" aria-label="log">log</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('ln(')" aria-label="ln">ln</button>
+          </div>
+
+          <!-- 두 번째 행: 역삼각함수 & 상수 -->
+          <div class="button-row">
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('asin(')" aria-label="sin⁻¹">sin⁻¹</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('acos(')" aria-label="cos⁻¹">cos⁻¹</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('atan(')" aria-label="tan⁻¹">tan⁻¹</button>
+            <button class="calc-btn const" onclick="ScientificCalc.append('Math.PI')" aria-label="π">π</button>
+            <button class="calc-btn const" onclick="ScientificCalc.append('Math.E')" aria-label="e">e</button>
+          </div>
+
+          <!-- 세 번째 행: 거듭제곱 & 루트 -->
+          <div class="button-row">
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('sqrt(')" aria-label="√">√</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('cbrt(')" aria-label="∛">∛</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('**')" aria-label="xʸ">xʸ</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('**2')" aria-label="x²">x²</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('**3')" aria-label="x³">x³</button>
+          </div>
+
+          <!-- 네 번째 행: 기타 함수 -->
+          <div class="button-row">
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('abs(')" aria-label="|x|">|x|</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('floor(')" aria-label="x">x</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('ceil(')" aria-label="x">x</button>
+            <button class="calc-btn func" onclick="ScientificCalc.appendFunc('factorial(')" aria-label="n!">n!</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('%')" aria-label="mod">mod</button>
+          </div>
+
+          <!-- 다섯 번째 행: 괄호 & 지우기 -->
+          <div class="button-row">
+            <button class="calc-btn bracket" onclick="ScientificCalc.append('(')" aria-label="(">(</button>
+            <button class="calc-btn bracket" onclick="ScientificCalc.append(')')" aria-label=")">)</button>
+            <button class="calc-btn clear" onclick="ScientificCalc.clear()" aria-label="C">C</button>
+            <button class="calc-btn clear" onclick="ScientificCalc.backspace()" aria-label=""></button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('/')" aria-label="/">/</button>
+          </div>
+
+          <!-- 여섯 번째 행: 숫자 7-9 & 곱하기 -->
+          <div class="button-row">
+            <button class="calc-btn num" onclick="ScientificCalc.append('7')" aria-label="7">7</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('8')" aria-label="8">8</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('9')" aria-label="9">9</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('*')" aria-label="×">×</button>
+            <button class="calc-btn memory" onclick="ScientificCalc.memoryRecall()" aria-label="MR">MR</button>
+          </div>
+
+          <!-- 일곱 번째 행: 숫자 4-6 & 빼기 -->
+          <div class="button-row">
+            <button class="calc-btn num" onclick="ScientificCalc.append('4')" aria-label="4">4</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('5')" aria-label="5">5</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('6')" aria-label="6">6</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('-')" aria-label="−">−</button>
+            <button class="calc-btn memory" onclick="ScientificCalc.memoryStore()" aria-label="MS">MS</button>
+          </div>
+
+          <!-- 여덟 번째 행: 숫자 1-3 & 더하기 -->
+          <div class="button-row">
+            <button class="calc-btn num" onclick="ScientificCalc.append('1')" aria-label="1">1</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('2')" aria-label="2">2</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('3')" aria-label="3">3</button>
+            <button class="calc-btn op" onclick="ScientificCalc.append('+')" aria-label="+">+</button>
+            <button class="calc-btn memory" onclick="ScientificCalc.memoryClear()" aria-label="MC">MC</button>
+          </div>
+
+          <!-- 아홉 번째 행: 0, 소수점, 부호, 계산 -->
+          <div class="button-row">
+            <button class="calc-btn num zero" onclick="ScientificCalc.append('0')" aria-label="0">0</button>
+            <button class="calc-btn num" onclick="ScientificCalc.append('.')" aria-label=".">.</button>
+            <button class="calc-btn op" onclick="ScientificCalc.toggleSign()" aria-label="±">±</button>
+            <button class="calc-btn equals" onclick="ScientificCalc.calculate()" aria-label="=">=</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="/tools/common/tool-base.js?v=20260124"></script>
+  <script src="scientific-calc.js"></script>
+</body>
+</html>

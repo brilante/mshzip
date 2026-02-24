@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>칸반 보드 - 생산성 도구</title>
+    <link rel="stylesheet" href="kanban-board.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>칸반 보드</h1>
+            <p>작업을 시각적으로 관리하세요</p>
+        </header>
+
+        <div class="board">
+            <div class="column" data-status="todo">
+                <div class="column-header">
+                    <h3>할 일</h3>
+                    <span class="count" id="todoCount">0</span>
+                </div>
+                <div class="cards" id="todoCards"></div>
+                <button class="add-card-btn" data-status="todo" aria-label="+ 카드 추가">+ 카드 추가</button>
+            </div>
+
+            <div class="column" data-status="doing">
+                <div class="column-header">
+                    <h3>진행 중</h3>
+                    <span class="count" id="doingCount">0</span>
+                </div>
+                <div class="cards" id="doingCards"></div>
+                <button class="add-card-btn" data-status="doing" aria-label="+ 카드 추가">+ 카드 추가</button>
+            </div>
+
+            <div class="column" data-status="done">
+                <div class="column-header">
+                    <h3>완료</h3>
+                    <span class="count" id="doneCount">0</span>
+                </div>
+                <div class="cards" id="doneCards"></div>
+                <button class="add-card-btn" data-status="done" aria-label="+ 카드 추가">+ 카드 추가</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cardModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modalTitle">새 카드</h3>
+            <input type="text" id="cardTitle" placeholder="제목" aria-label="제목">
+            <textarea id="cardDesc" placeholder="설명"></textarea>
+            <select id="cardPriority">
+                <option value="low">낮음</option>
+                <option value="medium">보통</option>
+                <option value="high">높음</option>
+            </select>
+            <div class="modal-btns">
+                <button id="saveCard" class="btn-save" aria-label="저장">저장</button>
+                <button id="deleteCard" class="btn-delete" aria-label="삭제">삭제</button>
+                <button id="cancelCard" class="btn-cancel" aria-label="취소">취소</button>
+            </div>
+        </div>
+    </div>
+    <script src="kanban-board.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

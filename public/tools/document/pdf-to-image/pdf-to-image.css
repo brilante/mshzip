@@ -1,0 +1,157 @@
+/**
+ * PDF → 이미지 변환 도구 스타일
+ * @created 2026-01-12
+ */
+
+.upload-section { margin-bottom: 24px; }
+
+.upload-dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px; border: 2px dashed var(--border-color, #e9ecef);
+  border-radius: 12px; background: var(--bg-secondary, #f8f9fa);
+  cursor: pointer; transition: all 0.2s;
+}
+.upload-dropzone:hover, .upload-dropzone.dragover {
+  border-color: var(--primary-color, #667eea); background: rgba(102, 126, 234, 0.05);
+}
+.dropzone-icon { font-size: 48px; margin-bottom: 16px; }
+.dropzone-text { font-size: 16px; font-weight: 500; color: var(--text-primary, #333); margin-bottom: 8px; }
+.dropzone-hint { font-size: 13px; color: var(--text-secondary, #666); }
+
+/* 파일 정보 */
+.file-info-section { margin-bottom: 20px; }
+.file-info-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px; background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 12px;
+}
+.file-icon { font-size: 40px; }
+.file-details { flex: 1; }
+.file-name { font-size: 16px; font-weight: 600; color: var(--text-primary, #333); }
+.file-meta { font-size: 13px; color: var(--text-secondary, #666); margin-top: 4px; }
+.change-file-btn {
+  padding: 8px 16px; background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 8px;
+  font-size: 13px; color: var(--text-primary, #333); cursor: pointer;
+  transition: all 0.2s;
+}
+.change-file-btn:hover { background: var(--primary-color, #667eea); color: white; border-color: var(--primary-color, #667eea); }
+
+/* 설정 섹션 */
+.settings-section, .result-section, .progress-section {
+  background: var(--bg-primary, #fff); border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px; padding: 20px; margin-bottom: 20px;
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 16px; }
+
+.settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+
+.setting-group { display: flex; flex-direction: column; gap: 8px; }
+.setting-label { font-size: 13px; font-weight: 600; color: var(--text-secondary, #666); }
+.setting-select, .setting-input {
+  padding: 10px 12px; border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 8px; font-size: 14px; background: var(--bg-secondary, #f8f9fa);
+  color: var(--text-primary, #333); transition: border-color 0.2s;
+}
+.setting-select:focus, .setting-input:focus { outline: none; border-color: var(--primary-color, #667eea); }
+
+/* 형식 옵션 */
+.format-options { display: flex; gap: 12px; }
+.format-option { cursor: pointer; }
+.format-option input { display: none; }
+.format-btn {
+  display: block; padding: 10px 20px;
+  border: 2px solid var(--border-color, #e9ecef); border-radius: 8px;
+  font-size: 14px; font-weight: 500; transition: all 0.2s;
+}
+.format-option:hover .format-btn { border-color: var(--primary-color, #667eea); }
+.format-option input:checked + .format-btn {
+  border-color: var(--primary-color, #667eea);
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--primary-color, #667eea);
+}
+
+/* 품질 슬라이더 */
+.quality-slider { display: flex; align-items: center; gap: 12px; }
+.quality-slider input[type="range"] {
+  flex: 1; height: 8px; border-radius: 4px; -webkit-appearance: none; appearance: none;
+  background: linear-gradient(to right, #ef4444, #eab308, #22c55e);
+}
+.quality-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; background: white;
+  border: 2px solid var(--primary-color, #667eea); border-radius: 50%;
+  cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.quality-slider span { font-size: 14px; font-weight: 600; color: var(--primary-color, #667eea); min-width: 40px; }
+
+.convert-btn { width: 100%; padding: 16px; font-size: 16px; }
+.convert-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* 진행 상태 */
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.progress-info span { font-size: 14px; color: var(--text-primary, #333); }
+.progress-bar { height: 8px; background: var(--bg-secondary, #e9ecef); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--primary-color, #667eea); transition: width 0.3s; }
+
+/* 결과 그리드 */
+.result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.result-item {
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 8px;
+  overflow: hidden; transition: all 0.2s;
+}
+.result-item:hover { border-color: var(--primary-color, #667eea); }
+.result-thumb {
+  aspect-ratio: 3/4; overflow: hidden; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.result-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.result-info { padding: 10px; }
+.result-name { font-size: 12px; font-weight: 500; color: var(--text-primary, #333); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-meta { font-size: 11px; color: var(--text-secondary, #666); margin-top: 4px; }
+.result-download {
+  display: block; width: 100%; padding: 8px; background: var(--primary-color, #667eea);
+  border: none; font-size: 16px; cursor: pointer; transition: background 0.2s;
+}
+.result-download:hover { background: #5a6fd6; }
+
+.result-actions { display: flex; justify-content: center; margin-top: 20px; }
+
+/* 버튼 스타일 */
+.tool-btn-sm { padding: 6px 12px; font-size: 13px; }
+.tool-btn-lg { padding: 14px 24px; font-size: 16px; }
+.tool-btn-primary { background: var(--primary-color, #667eea); color: white; border-color: var(--primary-color, #667eea); }
+.tool-btn-primary:hover { background: #5a6fd6; border-color: #5a6fd6; }
+
+/* 도움말 */
+.tool-help { margin-top: 20px; padding: 18px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px; border-left: 4px solid var(--primary-color, #667eea); }
+.help-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 10px; }
+.help-content { font-size: 13px; color: var(--text-secondary, #666); line-height: 1.6; }
+.help-content ul { margin: 0; padding-left: 20px; }
+.help-content li { margin-bottom: 6px; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .settings-grid { grid-template-columns: 1fr; }
+  .file-info-card { flex-direction: column; text-align: center; }
+  .change-file-btn { width: 100%; }
+  .result-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 다크 모드 (data-theme 선택자로 통일) */
+[data-theme="dark"] .upload-dropzone { background: #252525; border-color: #404040; }
+[data-theme="dark"] .upload-dropzone:hover, [data-theme="dark"] .upload-dropzone.dragover { background: rgba(102, 126, 234, 0.1); }
+[data-theme="dark"] .dropzone-text { color: #e0e0e0; }
+[data-theme="dark"] .file-info-card { background: #1e1e1e; border-color: #404040; }
+[data-theme="dark"] .file-name { color: #e0e0e0; }
+[data-theme="dark"] .change-file-btn { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .settings-section, [data-theme="dark"] .result-section, [data-theme="dark"] .progress-section { background: #1e1e1e; border-color: #404040; }
+[data-theme="dark"] .section-title { color: #e0e0e0; }
+[data-theme="dark"] .setting-select, [data-theme="dark"] .setting-input { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .format-btn { border-color: #404040; }
+[data-theme="dark"] .result-item { background: #252525; border-color: #404040; }
+[data-theme="dark"] .result-name { color: #e0e0e0; }
+[data-theme="dark"] .progress-bar { background: #404040; }
+[data-theme="dark"] .tool-help { background: #252525; }
+[data-theme="dark"] .help-title { color: #e0e0e0; }

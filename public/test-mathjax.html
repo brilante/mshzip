@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>MathJax 렌더링 테스트</title>
+
+    <!-- MathJax Configuration (동일한 설정) -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        },
+        startup: {
+          ready: function () {
+            console.log('MathJax 로드 완료!');
+            MathJax.startup.defaultReady();
+          }
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        h2 { color: #333; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MathJax 렌더링 테스트</h1>
+
+    <div class="test-section">
+        <h2>테스트 1: Display Math (블록 수식)</h2>
+        <p>원주율 공식 (라이프니츠 급수):</p>
+        \[\pi = 4 \sum_{n=0}^{\infty} \frac{(-1)^n}{2n+1}\]
+    </div>
+
+    <div class="test-section">
+        <h2>테스트 2: Inline Math (인라인 수식)</h2>
+        <p>아인슈타인의 유명한 공식: \(E = mc^2\) 는 에너지와 질량의 관계를 나타냅니다.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>테스트 3: 이차방정식 근의 공식</h2>
+        \[x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}\]
+    </div>
+
+    <div class="test-section">
+        <h2>테스트 4: 오일러 공식</h2>
+        <p>수학에서 가장 아름다운 공식:</p>
+        \[e^{i\pi} + 1 = 0\]
+    </div>
+
+    <div class="test-section">
+        <h2>테스트 5: 바젤 문제</h2>
+        \[\frac{\pi^2}{6} = \sum_{n=1}^{\infty} \frac{1}{n^2}\]
+    </div>
+
+    <div class="test-section">
+        <h2>테스트 6: 복합 텍스트 (Bold + LaTeX)</h2>
+        <p>**굵은 텍스트**와 수식 \(\pi\)가 함께 있는 경우입니다.</p>
+        <p>또 다른 예: **중요!** 원의 둘레는 \(C = 2\pi r\) 입니다.</p>
+    </div>
+
+    <div id="results" class="result info">
+        <h2>검증 결과</h2>
+        <p>검증 중...</p>
+    </div>
+
+    <script>
+        // MathJax 렌더링 완료 후 자동 검증
+        setTimeout(() => {
+            const resultsDiv = document.getElementById('results');
+
+            // MathJax 로드 확인
+            const hasMathJax = typeof MathJax !== 'undefined';
+
+            // 렌더링된 수식 요소 확인
+            const mjxContainers = document.querySelectorAll('mjx-container');
+            const mjxCount = mjxContainers.length;
+
+            // 원시 LaTeX 텍스트 확인
+            const bodyText = document.body.innerText;
+            const hasRawDisplayMath = bodyText.includes('\\[');
+            const hasRawInlineMath = bodyText.includes('\\(');
+
+            let html = '<h2>검증 결과</h2><ul>';
+
+            // 결과 판정
+            html += `<li><strong>MathJax 로드:</strong> ${hasMathJax ? '성공' : '실패'}</li>`;
+
+            if (hasMathJax) {
+                html += `<li><strong>MathJax 버전:</strong> ${MathJax.version || 'unknown'}</li>`;
+            }
+
+            html += `<li><strong>렌더링된 수식:</strong> ${mjxCount}개 ${mjxCount >= 6 ? '' : '(최소 6개 필요)'}</li>`;
+
+            if (mjxCount > 0) {
+                html += '<li><strong>렌더링된 요소 목록:</strong><ul>';
+                mjxContainers.forEach((container, index) => {
+                    const text = container.textContent.substring(0, 40);
+                    html += `<li>${index + 1}. ${text}...</li>`;
+                });
+                html += '</ul></li>';
+            }
+
+            html += `<li><strong>원시 Display Math (\\[...\\]):</strong> ${hasRawDisplayMath ? '남아있음 (렌더링 실패)' : '없음'}</li>`;
+            html += `<li><strong>원시 Inline Math (\\(...\\)):</strong> ${hasRawInlineMath ? '남아있음 (렌더링 실패)' : '없음'}</li>`;
+
+            html += '</ul>';
+
+            // 최종 판정
+            const passed = hasMathJax && mjxCount >= 6 && !hasRawDisplayMath && !hasRawInlineMath;
+
+            if (passed) {
+                html += '<h3 style="color: #155724;">모든 테스트 통과!</h3>';
+                html += '<p>MathJax가 정상적으로 LaTeX 수식을 렌더링하고 있습니다.</p>';
+                resultsDiv.className = 'result success';
+            } else {
+                html += '<h3 style="color: #721c24;">테스트 실패</h3>';
+                html += '<p>일부 수식이 제대로 렌더링되지 않았습니다.</p>';
+
+                if (!hasMathJax) {
+                    html += '<p><strong>문제:</strong> MathJax 라이브러리가 로드되지 않음</p>';
+                }
+                if (mjxCount < 6) {
+                    html += `<p><strong>문제:</strong> 렌더링된 수식 개수 부족 (${mjxCount}/6)</p>`;
+                }
+                if (hasRawDisplayMath || hasRawInlineMath) {
+                    html += '<p><strong>문제:</strong> 원시 LaTeX 텍스트가 남아있음</p>';
+                }
+
+                resultsDiv.className = 'result error';
+            }
+
+            resultsDiv.innerHTML = html;
+
+            // 콘솔 로그
+            console.log('=== MathJax 테스트 결과 ===');
+            console.log('MathJax 로드:', hasMathJax);
+            console.log('렌더링 수식:', mjxCount);
+            console.log('테스트 통과:', passed);
+
+        }, 3000); // MathJax 렌더링 대기 (3초)
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>색상 변환기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="color-converter.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">색상 변환기</h1>
+          <p class="tool-description">HEX, RGB, HSL 색상 코드 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">
+          ← 뒤로
+        </button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel color-panel">
+      <!-- 색상 미리보기 -->
+      <div class="color-preview-section">
+        <div class="color-preview" id="colorPreview">
+          <div class="color-preview-inner"></div>
+        </div>
+        <div class="color-picker-wrapper">
+          <input type="color" id="colorPicker" value="#667eea">
+          <label for="colorPicker">색상 선택</label>
+        </div>
+      </div>
+
+      <!-- 색상 입력 폼들 -->
+      <div class="color-inputs">
+        <!-- HEX -->
+        <div class="color-input-group">
+          <div class="input-label">
+            <span class="format-name">HEX</span>
+            <button class="copy-btn" onclick="ColorConverter.copyValue('hex')" aria-label=""></button>
+          </div>
+          <div class="input-row">
+            <span class="hash-prefix">#</span>
+            <input type="text" id="hexInput" class="color-input hex-input"
+                   placeholder="667eea" maxlength="8"
+                   oninput="ColorConverter.fromHex()" aria-label="667eea">
+          </div>
+        </div>
+
+        <!-- RGB -->
+        <div class="color-input-group">
+          <div class="input-label">
+            <span class="format-name">RGB</span>
+            <button class="copy-btn" onclick="ColorConverter.copyValue('rgb')" aria-label=""></button>
+          </div>
+          <div class="input-row rgb-row">
+            <div class="rgb-input-wrapper">
+              <label>R</label>
+              <input type="number" id="rgbR" class="color-input rgb-input"
+                     min="0" max="255" placeholder="102"
+                     oninput="ColorConverter.fromRgb()" aria-label="102">
+            </div>
+            <div class="rgb-input-wrapper">
+              <label>G</label>
+              <input type="number" id="rgbG" class="color-input rgb-input"
+                     min="0" max="255" placeholder="126"
+                     oninput="ColorConverter.fromRgb()" aria-label="126">
+            </div>
+            <div class="rgb-input-wrapper">
+              <label>B</label>
+              <input type="number" id="rgbB" class="color-input rgb-input"
+                     min="0" max="255" placeholder="234"
+                     oninput="ColorConverter.fromRgb()" aria-label="234">
+            </div>
+            <div class="rgb-input-wrapper alpha-wrapper">
+              <label>A</label>
+              <input type="number" id="rgbA" class="color-input rgb-input"
+                     min="0" max="1" step="0.01" placeholder="1"
+                     oninput="ColorConverter.fromRgb()" aria-label="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- HSL -->
+        <div class="color-input-group">
+          <div class="input-label">
+            <span class="format-name">HSL</span>
+            <button class="copy-btn" onclick="ColorConverter.copyValue('hsl')" aria-label=""></button>
+          </div>
+          <div class="input-row hsl-row">
+            <div class="hsl-input-wrapper">
+              <label>H</label>
+              <input type="number" id="hslH" class="color-input hsl-input"
+                     min="0" max="360" placeholder="231"
+                     oninput="ColorConverter.fromHsl()" aria-label="231">
+              <span class="unit">°</span>
+            </div>
+            <div class="hsl-input-wrapper">
+              <label>S</label>
+              <input type="number" id="hslS" class="color-input hsl-input"
+                     min="0" max="100" placeholder="72"
+                     oninput="ColorConverter.fromHsl()" aria-label="72">
+              <span class="unit">%</span>
+            </div>
+            <div class="hsl-input-wrapper">
+              <label>L</label>
+              <input type="number" id="hslL" class="color-input hsl-input"
+                     min="0" max="100" placeholder="66"
+                     oninput="ColorConverter.fromHsl()" aria-label="66">
+              <span class="unit">%</span>
+            </div>
+            <div class="hsl-input-wrapper alpha-wrapper">
+              <label>A</label>
+              <input type="number" id="hslA" class="color-input hsl-input"
+                     min="0" max="1" step="0.01" placeholder="1"
+                     oninput="ColorConverter.fromHsl()" aria-label="1">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSS 코드 출력 -->
+      <div class="css-output-section">
+        <div class="section-header">
+          <div class="section-title">CSS 코드</div>
+          <button class="tool-btn tool-btn-sm" onclick="ColorConverter.copyAllCss()" aria-label="전체 복사">
+            전체 복사
+          </button>
+        </div>
+        <div class="css-codes">
+          <div class="css-code-row">
+            <code id="cssHex">#667eea</code>
+            <button class="copy-btn" onclick="ColorConverter.copyCss('hex')" aria-label=""></button>
+          </div>
+          <div class="css-code-row">
+            <code id="cssRgb">rgb(102, 126, 234)</code>
+            <button class="copy-btn" onclick="ColorConverter.copyCss('rgb')" aria-label=""></button>
+          </div>
+          <div class="css-code-row">
+            <code id="cssHsl">hsl(231, 72%, 66%)</code>
+            <button class="copy-btn" onclick="ColorConverter.copyCss('hsl')" aria-label=""></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 색상 슬라이더 -->
+      <div class="color-sliders-section">
+        <div class="section-title">색상 조절</div>
+        <div class="slider-group">
+          <label>색조 (Hue)</label>
+          <input type="range" id="hueSlider" min="0" max="360" value="231"
+                 oninput="ColorConverter.fromSliders()">
+          <span id="hueValue">231°</span>
+        </div>
+        <div class="slider-group">
+          <label>채도 (Saturation)</label>
+          <input type="range" id="satSlider" min="0" max="100" value="72"
+                 oninput="ColorConverter.fromSliders()">
+          <span id="satValue">72%</span>
+        </div>
+        <div class="slider-group">
+          <label>명도 (Lightness)</label>
+          <input type="range" id="lightSlider" min="0" max="100" value="66"
+                 oninput="ColorConverter.fromSliders()">
+          <span id="lightValue">66%</span>
+        </div>
+        <div class="slider-group">
+          <label>투명도 (Alpha)</label>
+          <input type="range" id="alphaSlider" min="0" max="100" value="100"
+                 oninput="ColorConverter.fromSliders()">
+          <span id="alphaValue">100%</span>
+        </div>
+      </div>
+
+      <!-- 색상 팔레트 -->
+      <div class="palette-section">
+        <div class="section-title">빠른 선택</div>
+        <div class="color-palette" id="colorPalette">
+          <!-- JS로 생성 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="tool-help">
+      <div class="help-title">색상 형식 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>HEX</strong>: #RRGGBB 또는 #RRGGBBAA (16진수)</li>
+          <li><strong>RGB</strong>: Red, Green, Blue (0-255)</li>
+          <li><strong>HSL</strong>: Hue(0-360°), Saturation(0-100%), Lightness(0-100%)</li>
+          <li><strong>Alpha</strong>: 투명도 (0=투명, 1=불투명)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="color-converter.js"></script>
+</body>
+</html>

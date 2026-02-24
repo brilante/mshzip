@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL 포매터 | SQL Formatter</title>
+  <link rel="stylesheet" href="sql-formatter.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>SQL 포매터</h1>
+      <p>SQL 쿼리를 깔끔하게 정리하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="options">
+        <div class="option-group">
+          <label>들여쓰기</label>
+          <select id="indent">
+            <option value="2">2 spaces</option>
+            <option value="4" selected>4 spaces</option>
+            <option value="tab">Tab</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>키워드 스타일</label>
+          <select id="keywordCase">
+            <option value="upper" selected>UPPERCASE</option>
+            <option value="lower">lowercase</option>
+            <option value="preserve">원본 유지</option>
+          </select>
+        </div>
+        <button onclick="formatSQL()" aria-label="포맷하기">포맷하기</button>
+        <button onclick="minifySQL()" class="secondary" aria-label="압축">압축</button>
+        <button onclick="copyResult()" aria-label="복사">복사</button>
+      </div>
+
+      <div class="editor-layout">
+        <div class="editor-panel">
+          <h3>입력</h3>
+          <textarea id="inputSQL" spellcheck="false" placeholder="SQL 쿼리를 입력하세요...">SELECT users.id, users.name, users.email, orders.total FROM users INNER JOIN orders ON users.id = orders.user_id WHERE users.status = 'active' AND orders.created_at > '2024-01-01' ORDER BY orders.total DESC LIMIT 100;</textarea>
+        </div>
+
+        <div class="editor-panel">
+          <h3>출력</h3>
+          <textarea id="outputSQL" spellcheck="false" readonly placeholder="포맷된 SQL이 여기에 표시됩니다..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sql-formatter.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회의 안건 작성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="agenda-builder.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">회의 안건 작성기</h1>
+      <p class="tool-description">효율적인 회의를 위한 안건을 작성하고 관리합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 회의 기본 정보 -->
+      <div class="meeting-info-section">
+        <h3 class="section-title">회의 정보</h3>
+        <div class="info-grid">
+          <div class="input-group">
+            <label>회의 제목</label>
+            <input type="text" id="meetingTitle" class="form-input" placeholder="예: 주간 팀 미팅" aria-label="예: 주간 팀 미팅">
+          </div>
+          <div class="input-group">
+            <label>날짜 및 시간</label>
+            <input type="datetime-local" id="meetingDate" class="form-input">
+          </div>
+          <div class="input-group">
+            <label>장소/링크</label>
+            <input type="text" id="meetingLocation" class="form-input" placeholder="예: 회의실 A 또는 Zoom 링크" aria-label="예: 회의실 A 또는 Zoom 링크">
+          </div>
+          <div class="input-group">
+            <label>진행자</label>
+            <input type="text" id="meetingHost" class="form-input" placeholder="진행자 이름" aria-label="진행자 이름">
+          </div>
+        </div>
+      </div>
+
+      <!-- 참석자 -->
+      <div class="attendees-section">
+        <h3 class="section-title">참석자</h3>
+        <div class="attendee-input">
+          <input type="text" id="attendeeInput" class="form-input" placeholder="참석자 이름 입력" aria-label="참석자 이름 입력">
+          <button class="add-btn" onclick="AgendaBuilder.addAttendee()" aria-label="추가">추가</button>
+        </div>
+        <div class="attendees-list" id="attendeesList"></div>
+      </div>
+
+      <!-- 안건 목록 -->
+      <div class="agenda-section">
+        <h3 class="section-title">안건 목록</h3>
+        <div class="agenda-input">
+          <input type="text" id="agendaTitle" class="form-input" placeholder="안건 제목" aria-label="안건 제목">
+          <input type="number" id="agendaTime" class="form-input time-input" placeholder="분" min="1" value="5" aria-label="분">
+          <select id="agendaType" class="form-select">
+            <option value="discussion">토론</option>
+            <option value="decision">의사결정</option>
+            <option value="info">정보공유</option>
+            <option value="brainstorm">브레인스토밍</option>
+          </select>
+          <button class="add-btn" onclick="AgendaBuilder.addAgenda()" aria-label="추가">추가</button>
+        </div>
+        <div class="agenda-list" id="agendaList">
+          <div class="empty-state">안건을 추가해주세요</div>
+        </div>
+        <div class="total-time">
+          총 예상 시간: <span id="totalTime">0</span>분
+        </div>
+      </div>
+
+      <!-- 회의 규칙 -->
+      <div class="rules-section">
+        <h3 class="section-title">회의 규칙 (선택)</h3>
+        <div class="rules-grid">
+          <label class="rule-checkbox">
+            <input type="checkbox" id="ruleCamera"> 카메라 ON 필수
+          </label>
+          <label class="rule-checkbox">
+            <input type="checkbox" id="ruleMute"> 발언 시 외 음소거
+          </label>
+          <label class="rule-checkbox">
+            <input type="checkbox" id="ruleTime"> 안건별 시간 엄수
+          </label>
+          <label class="rule-checkbox">
+            <input type="checkbox" id="ruleNotes"> 회의록 작성
+          </label>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="action-buttons">
+        <button class="action-btn primary" onclick="AgendaBuilder.exportMarkdown()" aria-label="Markdown 내보내기">Markdown 내보내기</button>
+        <button class="action-btn" onclick="AgendaBuilder.copyToClipboard()" aria-label="클립보드 복사">클립보드 복사</button>
+        <button class="action-btn" onclick="AgendaBuilder.saveAgenda()" aria-label="저장">저장</button>
+        <button class="action-btn secondary" onclick="AgendaBuilder.loadSaved()" aria-label="불러오기">불러오기</button>
+      </div>
+
+      <!-- 미리보기 -->
+      <div class="preview-section">
+        <h3 class="section-title">미리보기</h3>
+        <div class="preview-content" id="previewContent"></div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">효율적인 회의 안건 작성 팁</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>명확한 목표</strong>: 각 안건의 목적을 명확히 정의하세요</li>
+            <li><strong>시간 할당</strong>: 각 안건에 적절한 시간을 배정하세요</li>
+            <li><strong>우선순위</strong>: 중요한 안건을 먼저 배치하세요</li>
+            <li><strong>담당자 지정</strong>: 각 안건의 발표자/책임자를 지정하세요</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="agenda-builder.js"></script>
+</body>
+</html>

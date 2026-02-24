@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이메일 서명 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .signature-layout { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; max-height: 85vh; overflow-y: auto; }
+    .preview-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; margin-top: 1.5rem; }
+    .section-title:first-child { margin-top: 0; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .template-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .template-btn { padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; text-align: center; font-size: 0.85rem; }
+    .template-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .color-picker { display: flex; align-items: center; gap: 0.5rem; }
+    .color-picker input[type="color"] { width: 40px; height: 40px; border: none; border-radius: 8px; cursor: pointer; }
+    .signature-preview-wrapper { background: #fff; border-radius: 8px; padding: 2rem; min-height: 200px; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .help-text { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; }
+    @media (max-width: 900px) { .signature-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">이메일 서명 생성</h1>
+          <p class="tool-description">전문적인 이메일 서명</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="signature-layout">
+      <div class="form-panel">
+        <div class="section-title">템플릿</div>
+        <div class="template-selector">
+          <button class="template-btn active" onclick="document.getElementById('sigTemplate').value='classic';document.querySelectorAll('.template-btn').forEach(b= aria-label="b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">클래식">b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">클래식</button>
+          <button class="template-btn" onclick="document.getElementById('sigTemplate').value='modern';document.querySelectorAll('.template-btn').forEach(b= aria-label="b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">모던">b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">모던</button>
+          <button class="template-btn" onclick="document.getElementById('sigTemplate').value='minimal';document.querySelectorAll('.template-btn').forEach(b= aria-label="b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">미니멀">b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">미니멀</button>
+          <button class="template-btn" onclick="document.getElementById('sigTemplate').value='banner';document.querySelectorAll('.template-btn').forEach(b= aria-label="b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">배너">b.classList.remove('active'));this.classList.add('active');EmailSignature.updatePreview()">배너</button>
+        </div>
+        <input type="hidden" id="sigTemplate" value="classic">
+
+        <div class="control-group">
+          <label>기본 색상</label>
+          <div class="color-picker">
+            <input type="color" id="primaryColor" value="#3b82f6" onchange="EmailSignature.updatePreview()">
+            <span id="colorValue">#3b82f6</span>
+          </div>
+        </div>
+
+        <div class="section-title">기본 정보</div>
+        <div class="control-group">
+          <input type="text" id="sigName" class="tool-input" placeholder="이름" oninput="EmailSignature.updatePreview()" aria-label="이름">
+        </div>
+        <div class="row-2">
+          <input type="text" id="sigTitle" class="tool-input" placeholder="직책" oninput="EmailSignature.updatePreview()" aria-label="직책">
+          <input type="text" id="sigCompany" class="tool-input" placeholder="회사명" oninput="EmailSignature.updatePreview()" aria-label="회사명">
+        </div>
+        <div class="row-2">
+          <input type="email" id="sigEmail" class="tool-input" placeholder="이메일" oninput="EmailSignature.updatePreview()" aria-label="이메일">
+          <input type="tel" id="sigPhone" class="tool-input" placeholder="전화번호" oninput="EmailSignature.updatePreview()" aria-label="전화번호">
+        </div>
+        <div class="control-group">
+          <input type="url" id="sigWebsite" class="tool-input" placeholder="웹사이트 URL" oninput="EmailSignature.updatePreview()" aria-label="웹사이트 URL">
+        </div>
+        <div class="control-group">
+          <input type="text" id="sigAddress" class="tool-input" placeholder="주소" oninput="EmailSignature.updatePreview()" aria-label="주소">
+        </div>
+        <div class="control-group">
+          <input type="url" id="sigPhoto" class="tool-input" placeholder="프로필 사진 URL" oninput="EmailSignature.updatePreview()" aria-label="프로필 사진 URL">
+        </div>
+
+        <div class="section-title">소셜 미디어</div>
+        <div class="control-group">
+          <input type="url" id="sigLinkedin" class="tool-input" placeholder="LinkedIn URL" oninput="EmailSignature.updatePreview()" aria-label="LinkedIn URL">
+        </div>
+        <div class="control-group">
+          <input type="url" id="sigTwitter" class="tool-input" placeholder="Twitter URL" oninput="EmailSignature.updatePreview()" aria-label="Twitter URL">
+        </div>
+        <div class="control-group">
+          <input type="url" id="sigInstagram" class="tool-input" placeholder="Instagram URL" oninput="EmailSignature.updatePreview()" aria-label="Instagram URL">
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-title">미리보기</div>
+        <div class="signature-preview-wrapper">
+          <div id="signaturePreview"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="tool-btn tool-btn-primary" onclick="EmailSignature.copyHTML()" aria-label="HTML 복사">HTML 복사</button>
+          <button class="tool-btn tool-btn-secondary" onclick="EmailSignature.copyPlainText()" aria-label="텍스트 복사">텍스트 복사</button>
+        </div>
+
+        <div class="help-text">
+          <strong>사용 방법:</strong><br>
+          1. "HTML 복사" 버튼 클릭<br>
+          2. 이메일 클라이언트 설정 > 서명 > HTML 편집 모드에서 붙여넣기<br>
+          • Gmail: 설정 > 서명 > 서명 편집<br>
+          • Outlook: 파일 > 옵션 > 메일 > 서명
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="email-signature.js"></script>
+</body>
+</html>

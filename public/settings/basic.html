@@ -1,0 +1,120 @@
+        <section id="content-basic" class="content-section active">
+          <div class="section-header">
+            <div class="section-header-text">
+              <h2 class="section-title" data-i18n="basicTitle">기본 설정</h2>
+              <p class="section-description" data-i18n="basicDescription">마인드맵의 기본 동작을 설정합니다.</p>
+            </div>
+            <button id="resetBasicBtn" class="btn-reset" data-i18n="resetButton">기본값으로 복원</button>
+          </div>
+
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="themeSettingsTitle">테마 설정</h3>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="appTheme" data-i18n="appThemeLabel">화면 테마</label>
+                <p class="setting-description" data-i18n="appThemeDesc">웹 화면의 기본 테마를 설정합니다</p>
+              </div>
+              <div class="setting-control">
+                <select id="appTheme">
+                  <option value="light" data-i18n="themeLight">일반 모드</option>
+                  <option value="dark" data-i18n="themeDark">다크 모드</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="autoSaveInterval" data-i18n="autoSaveIntervalLabel">자동 저장 간격</label>
+                <p class="setting-description" data-i18n="autoSaveIntervalDesc">마인드맵을 자동으로 저장하는 시간 간격 (초)</p>
+              </div>
+              <div class="setting-control">
+                <input type="range" id="autoSaveInterval" min="15" max="60" step="1" value="30" style="width: 200px;">
+                <span id="autoSaveIntervalValue" class="range-value">30초</span>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="defaultNodeExpanded" data-i18n="defaultNodeExpandedLabel">새 노드 펼침 상태</label>
+                <p class="setting-description" data-i18n="defaultNodeExpandedDesc">새로 생성된 노드의 기본 펼침 상태</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="defaultNodeExpanded" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="confirmDelete" data-i18n="confirmDeleteLabel">삭제 확인</label>
+                <p class="setting-description" data-i18n="confirmDeleteDesc">노드 삭제 시 확인 메시지 표시</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="confirmDelete" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="agentSkillsEnabled" data-i18n="agentSkillsLabel">Agent Skills 사용</label>
+                <p class="setting-description" data-i18n="agentSkillsDesc">Claude Code Skill 사용 설정</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="agentSkillsEnabled">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="editorSettingsTitle">에디터 설정</h3>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="editorFontSize" data-i18n="editorFontSizeLabel">에디터 폰트 크기</label>
+                <p class="setting-description" data-i18n="editorFontSizeDesc">마크다운 에디터의 글자 크기</p>
+              </div>
+              <div class="setting-control">
+                <input type="range" id="editorFontSize" min="10" max="26" step="1" value="14" style="width: 200px;">
+                <span id="editorFontSizeValue" class="range-value">14px</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="languageSettingsTitle">언어 설정</h3>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="appLanguage" data-i18n="appLanguageLabel">인터페이스 언어</label>
+                <p class="setting-description" data-i18n="appLanguageDesc">애플리케이션 표시 언어를 선택합니다</p>
+              </div>
+              <div class="setting-control language-control">
+                <div class="language-search-wrapper">
+                  <input type="text" id="languageSearch" data-i18n-placeholder="languageSearchPlaceholder" placeholder="언어 검색..." dir="auto" class="language-search-input">
+                  <button id="languageSearchBtn" class="language-search-btn" data-i18n="searchButton"><span data-icon="search" data-icon-size="14"></span> 검색</button>
+                </div>
+                <div class="language-selection-row">
+                  <select id="appLanguage" class="language-select" size="8">
+                    <!-- 언어 옵션은 JavaScript에서 동적으로 생성됩니다 -->
+                  </select>
+                  <div class="current-language-display">
+                    <div class="current-language-label" data-i18n="currentLanguageLabel">현재 선택:</div>
+                    <div id="currentLanguageText" class="current-language-text">한국어 (Korean)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>

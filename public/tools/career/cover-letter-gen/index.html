@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커버레터 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 800px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .tone-options { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .tone-btn { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); cursor: pointer; font-size: 0.85rem; }
+    .tone-btn:hover { border-color: var(--primary); }
+    .tone-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .letter-preview { background: white; border-radius: 8px; padding: 2rem; font-family: Georgia, serif; line-height: 1.8; white-space: pre-wrap; min-height: 400px; }
+    .template-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .template-btn { padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-primary); cursor: pointer; text-align: left; font-size: 0.85rem; }
+    .template-btn:hover { border-color: var(--primary); }
+    .template-btn.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">커버레터 생성기</h1>
+          <p class="tool-description">맞춤형 자기소개서 작성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">지원자 정보</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">이름 *</label>
+            <input type="text" id="applicantName" class="tool-input" placeholder="홍길동" aria-label="홍길동">
+          </div>
+          <div class="form-group">
+            <label class="form-label">이메일</label>
+            <input type="email" id="applicantEmail" class="tool-input" placeholder="email@example.com" aria-label="email@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">전화번호</label>
+            <input type="tel" id="applicantPhone" class="tool-input" placeholder="010-1234-5678" aria-label="010-1234-5678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">현재 직책</label>
+            <input type="text" id="currentRole" class="tool-input" placeholder="프론트엔드 개발자" aria-label="프론트엔드 개발자">
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">지원 정보</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">회사명 *</label>
+            <input type="text" id="companyName" class="tool-input" placeholder="ABC 회사" aria-label="ABC 회사">
+          </div>
+          <div class="form-group">
+            <label class="form-label">지원 직책 *</label>
+            <input type="text" id="jobTitle" class="tool-input" placeholder="시니어 개발자" aria-label="시니어 개발자">
+          </div>
+          <div class="form-group">
+            <label class="form-label">담당자명 (선택)</label>
+            <input type="text" id="hiringManager" class="tool-input" placeholder="김인사" aria-label="김인사">
+          </div>
+          <div class="form-group">
+            <label class="form-label">경력 연수</label>
+            <input type="text" id="yearsExp" class="tool-input" placeholder="5년" aria-label="5년">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">핵심 역량/기술 (쉼표로 구분)</label>
+          <input type="text" id="keySkills" class="tool-input" placeholder="React, Node.js, TypeScript, 팀 리더십" aria-label="React, Node.js, TypeScript, 팀 리더십">
+        </div>
+        <div class="form-group">
+          <label class="form-label">지원 동기</label>
+          <textarea id="motivation" class="tool-input" rows="2" placeholder="이 회사/직무에 지원하게 된 이유..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">주요 성과 (선택)</label>
+          <textarea id="achievements" class="tool-input" rows="2" placeholder="매출 30% 증가, 시스템 성능 50% 개선 등"></textarea>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">스타일 선택</h3>
+        <div class="tone-options">
+          <button class="tone-btn active" onclick="CoverLetterGen.setTone('professional')" data-tone="professional" aria-label="전문적">전문적</button>
+          <button class="tone-btn" onclick="CoverLetterGen.setTone('enthusiastic')" data-tone="enthusiastic" aria-label="열정적">열정적</button>
+          <button class="tone-btn" onclick="CoverLetterGen.setTone('confident')" data-tone="confident" aria-label="자신감">자신감</button>
+          <button class="tone-btn" onclick="CoverLetterGen.setTone('friendly')" data-tone="friendly" aria-label="친근한">친근한</button>
+        </div>
+        <button class="tool-btn tool-btn-primary" onclick="CoverLetterGen.generate()" style="width: 100%;" aria-label="커버레터 생성">커버레터 생성</button>
+      </div>
+
+      <div class="util-panel" id="resultPanel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h3 style="font-weight: 600;">생성된 커버레터</h3>
+          <span id="wordCount" style="font-size: 0.85rem; color: var(--text-secondary);">0자</span>
+        </div>
+        <div class="letter-preview" id="letterPreview" contenteditable="true"></div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="tool-btn tool-btn-secondary" onclick="CoverLetterGen.copy()" style="flex: 1;" aria-label="복사">복사</button>
+          <button class="tool-btn tool-btn-primary" onclick="CoverLetterGen.download()" style="flex: 1;" aria-label="다운로드">다운로드</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="cover-letter-gen.js"></script>
+</body>
+</html>

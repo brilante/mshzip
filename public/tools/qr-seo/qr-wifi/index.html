@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WiFi QR 코드 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    .qr-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px;
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .qr-preview canvas {
+      border-radius: 8px;
+    }
+    .wifi-info {
+      margin-top: 16px;
+      text-align: center;
+      color: #333;
+    }
+    .wifi-info .ssid {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .wifi-info .security {
+      font-size: 13px;
+      color: #666;
+    }
+    .form-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-field label {
+      font-size: 14px;
+      color: var(--tools-text-secondary);
+    }
+    .security-options {
+      display: flex;
+      gap: 8px;
+    }
+    .security-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--tools-border);
+      background: var(--tools-bg-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .security-btn:hover {
+      border-color: var(--tools-primary);
+    }
+    .security-btn.active {
+      border-color: var(--tools-primary);
+      background: var(--tools-primary);
+      color: white;
+    }
+    .qr-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .color-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .color-option input[type="color"] {
+      width: 40px;
+      height: 32px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">WiFi QR 코드 생성기</h1>
+          <p class="tool-description">WiFi 접속 정보를 QR 코드로 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- QR 미리보기 -->
+    <div class="input-panel">
+      <div class="panel-title">QR 코드</div>
+      <div class="qr-preview" id="qrPreview">
+        <canvas id="qrCanvas"></canvas>
+        <div class="wifi-info" id="wifiInfo">
+          <div class="ssid">WiFi 이름</div>
+          <div class="security">보안 유형</div>
+        </div>
+      </div>
+      <div class="tool-actions">
+        <button class="tool-btn tool-btn-primary" onclick="QRWifi.download()" aria-label="다운로드">다운로드</button>
+        <button class="tool-btn tool-btn-secondary" onclick="QRWifi.copy()" aria-label="복사">복사</button>
+      </div>
+    </div>
+
+    <!-- WiFi 정보 입력 -->
+    <div class="input-panel">
+      <div class="panel-title">WiFi 정보</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>네트워크 이름 (SSID) *</label>
+          <input type="text" id="ssid" class="tool-input" placeholder="WiFi 네트워크 이름"
+                 oninput="QRWifi.generate()" aria-label="WiFi 네트워크 이름">
+        </div>
+
+        <div class="form-field">
+          <label>보안 유형</label>
+          <div class="security-options">
+            <button class="security-btn active" onclick="QRWifi.setSecurity('WPA')" id="secWPA" aria-label="WPA/WPA2">WPA/WPA2</button>
+            <button class="security-btn" onclick="QRWifi.setSecurity('WEP')" id="secWEP" aria-label="WEP">WEP</button>
+            <button class="security-btn" onclick="QRWifi.setSecurity('nopass')" id="secNone" aria-label="없음">없음</button>
+          </div>
+        </div>
+
+        <div class="form-field" id="passwordField">
+          <label>비밀번호</label>
+          <div style="position: relative;">
+            <input type="password" id="password" class="tool-input" placeholder="WiFi 비밀번호"
+                   oninput="QRWifi.generate()" aria-label="WiFi 비밀번호">
+            <button onclick="QRWifi.togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;" aria-label=""></button>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>
+            <input type="checkbox" id="hidden" onchange="QRWifi.generate()">
+            숨겨진 네트워크
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR 옵션 -->
+    <div class="input-panel">
+      <div class="panel-title">QR 코드 옵션</div>
+      <div class="qr-options">
+        <div class="form-field">
+          <label>크기</label>
+          <select id="qrSize" class="tool-input" onchange="QRWifi.generate()">
+            <option value="128">128 x 128</option>
+            <option value="256" selected>256 x 256</option>
+            <option value="512">512 x 512</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>오류 정정</label>
+          <select id="errorLevel" class="tool-input" onchange="QRWifi.generate()">
+            <option value="L">낮음 (L)</option>
+            <option value="M" selected>중간 (M)</option>
+            <option value="Q">높음 (Q)</option>
+            <option value="H">최고 (H)</option>
+          </select>
+        </div>
+        <div class="color-option">
+          <label>전경색</label>
+          <input type="color" id="fgColor" value="#000000" onchange="QRWifi.generate()">
+        </div>
+        <div class="color-option">
+          <label>배경색</label>
+          <input type="color" id="bgColor" value="#ffffff" onchange="QRWifi.generate()">
+        </div>
+      </div>
+    </div>
+
+    <!-- 사용 방법 -->
+    <div class="input-panel">
+      <div class="panel-title">사용 방법</div>
+      <div style="line-height: 1.8; color: var(--tools-text-secondary);">
+        <p>1. WiFi 네트워크 이름(SSID)과 비밀번호를 입력하세요.</p>
+        <p>2. 생성된 QR 코드를 스마트폰 카메라로 스캔하세요.</p>
+        <p>3. 자동으로 WiFi에 연결됩니다.</p>
+        <p style="margin-top: 12px; padding: 12px; background: var(--tools-bg-secondary); border-radius: 8px;">
+          <strong>팁:</strong> QR 코드를 인쇄해서 카페, 사무실, 집 등에 부착하면 방문자가 쉽게 WiFi에 연결할 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="qr-wifi.js"></script>
+</body>
+</html>

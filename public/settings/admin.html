@@ -1,0 +1,148 @@
+        <section id="content-admin" class="content-section admin-only">
+          <h2 class="section-title" data-i18n="logSearchTitle"><span data-icon="clipboard" data-icon-size="16"></span> 로그검색</h2>
+          <p class="section-description" data-i18n="logSearchDesc">시스템 에러 로그를 검색하고 관리합니다.</p>
+
+          <!-- 에러 로그 검색 패널 (바로 표시) -->
+          <div id="adminLogsPanel" class="admin-logs-container" style="display: block;">
+            <!-- 로그 생성 설정 -->
+            <div class="admin-logs-generation">
+              <div class="admin-logs-generation-header">
+                <label data-i18n="logGenerationLabel">로그 생성</label>
+                <span class="generation-desc" data-i18n="logGenerationDesc">체크된 레벨의 로그만 생성됩니다</span>
+              </div>
+              <div class="admin-logs-generation-options">
+                <label class="log-gen-checkbox critical">
+                  <input type="checkbox" id="logGenCritical" checked>
+                  <span>CRITICAL</span>
+                </label>
+                <label class="log-gen-checkbox error">
+                  <input type="checkbox" id="logGenError" checked>
+                  <span>ERROR</span>
+                </label>
+                <label class="log-gen-checkbox warning">
+                  <input type="checkbox" id="logGenWarning" checked>
+                  <span>WARNING</span>
+                </label>
+                <label class="log-gen-checkbox info">
+                  <input type="checkbox" id="logGenInfo" checked>
+                  <span>INFO</span>
+                </label>
+                <label class="log-gen-checkbox debug">
+                  <input type="checkbox" id="logGenDebug">
+                  <span>DEBUG</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 필터 영역 -->
+            <div class="admin-logs-filters">
+              <div class="admin-logs-filters-row">
+                <div class="admin-filter-group">
+                  <label data-i18n="logLevelLabel">로그 레벨</label>
+                  <div class="level-btn-group">
+                    <button type="button" class="level-btn active" data-level="" data-i18n="logLevelAll">전체</button>
+                    <button type="button" class="level-btn critical" data-level="CRITICAL">CRITICAL</button>
+                    <button type="button" class="level-btn error" data-level="ERROR">ERROR</button>
+                    <button type="button" class="level-btn warning" data-level="WARNING">WARNING</button>
+                    <button type="button" class="level-btn info" data-level="INFO">INFO</button>
+                    <button type="button" class="level-btn debug" data-level="DEBUG">DEBUG</button>
+                  </div>
+                </div>
+              </div>
+              <div class="admin-logs-filters-row">
+                <div class="admin-filter-group">
+                  <label data-i18n="logDateFromLabel">시작 날짜</label>
+                  <input type="date" id="adminLogDateFrom">
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logDateToLabel">종료 날짜</label>
+                  <input type="date" id="adminLogDateTo">
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logPeriodPresetLabel">기간 프리셋</label>
+                  <div class="period-presets">
+                    <button type="button" class="period-preset-btn" data-days="1" data-i18n="logPeriodToday">오늘</button>
+                    <button type="button" class="period-preset-btn active" data-days="7" data-i18n="logPeriod7Days">7일</button>
+                    <button type="button" class="period-preset-btn" data-days="30" data-i18n="logPeriod30Days">30일</button>
+                  </div>
+                </div>
+              </div>
+              <div class="admin-logs-filters-row">
+                <div class="admin-filter-group">
+                  <label data-i18n="logSourceLabel">소스</label>
+                  <input type="text" id="adminLogSource" data-i18n-placeholder="logSourcePlaceholder" placeholder="소스 필터">
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logMessageLabel">메시지</label>
+                  <input type="text" id="adminLogMessage" data-i18n-placeholder="logMessagePlaceholder" placeholder="메시지 검색">
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logStatusLabel">상태</label>
+                  <select id="adminLogResolved">
+                    <option value="" data-i18n="logStatusAll">전체</option>
+                    <option value="false" data-i18n="logStatusUnresolved">미해결</option>
+                    <option value="true" data-i18n="logStatusResolved">해결됨</option>
+                  </select>
+                </div>
+                <div class="admin-filter-buttons">
+                  <button type="button" id="adminLogSearchBtn" class="admin-filter-btn search" data-i18n="logSearchBtn">검색</button>
+                  <button type="button" id="adminLogResetBtn" class="admin-filter-btn reset" data-i18n="logResetBtn">초기화</button>
+                  <button type="button" id="adminLogDeleteBtn" class="admin-filter-btn delete" data-i18n="logDeleteBtn">삭제</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 통계 요약 -->
+            <div class="admin-logs-stats" id="adminLogsStats">
+              <div class="admin-stat-item">
+                <span class="stat-badge critical"></span>
+                <span class="stat-label">CRITICAL</span>
+                <span class="stat-count" id="statCritical">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge error"></span>
+                <span class="stat-label">ERROR</span>
+                <span class="stat-count" id="statError">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge warning"></span>
+                <span class="stat-label">WARNING</span>
+                <span class="stat-count" id="statWarning">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge info"></span>
+                <span class="stat-label">INFO</span>
+                <span class="stat-count" id="statInfo">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-label" data-i18n="logStatTotal">총</span>
+                <span class="stat-count" id="statTotal">0</span>
+              </div>
+            </div>
+
+            <!-- 로그 테이블 -->
+            <div class="admin-logs-table-container">
+              <table class="admin-logs-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="logTableLevel">레벨</th>
+                    <th data-i18n="logTableTime">시간</th>
+                    <th data-i18n="logTableMessage">메시지</th>
+                    <th data-i18n="logTableSource">소스</th>
+                    <th data-i18n="logTableStatus">상태</th>
+                  </tr>
+                </thead>
+                <tbody id="adminLogsTableBody">
+                  <!-- 동적으로 로그 항목 추가 -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="admin-logs-pagination" id="adminLogsPagination">
+              <button type="button" class="admin-page-btn" id="adminLogsPrevBtn" onclick="loadAdminLogsPrev()" data-i18n="logPrevBtn">이전</button>
+              <span class="admin-page-info" id="adminLogsPageInfo">페이지 1/1</span>
+              <button type="button" class="admin-page-btn" id="adminLogsNextBtn" onclick="loadAdminLogsNext()" data-i18n="logNextBtn">다음 </button>
+            </div>
+          </div>
+        </section>

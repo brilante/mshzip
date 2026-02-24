@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>룰렛 휠 - JEOGI Tools</title>
+  <link rel="stylesheet" href="roulette-wheel.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>룰렛 휠</h1>
+      <p class="subtitle">나만의 룰렛을 만들어 무작위 선택!</p>
+    </header>
+
+    <main class="main-content">
+      <section class="roulette-section">
+        <div class="roulette-container">
+          <div class="pointer">▼</div>
+          <canvas id="wheelCanvas" width="350" height="350"></canvas>
+        </div>
+        <button class="spin-btn" id="spinBtn">
+          <span></span> 돌리기!
+        </button>
+        <div class="result-display" id="resultDisplay"></div>
+      </section>
+
+      <section class="items-section">
+        <h3>항목 관리</h3>
+        <div class="add-item">
+          <input type="text" id="newItem" placeholder="새 항목 입력..." / aria-label="새 항목 입력...">
+          <button id="addBtn" aria-label="추가">추가</button>
+        </div>
+        <div class="item-list" id="itemList"></div>
+
+        <div class="presets">
+          <h4>빠른 설정</h4>
+          <button class="preset-btn" data-preset="lunch" aria-label="점심메뉴">점심메뉴</button>
+          <button class="preset-btn" data-preset="yesno" aria-label="예/아니오">예/아니오</button>
+          <button class="preset-btn" data-preset="numbers" aria-label="1~10">1~10</button>
+        </div>
+      </section>
+
+      <section class="history-section">
+        <h3>결과 기록</h3>
+        <div class="history-list" id="historyList"></div>
+        <button class="clear-btn" id="clearBtn" aria-label="기록 삭제">기록 삭제</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="roulette-wheel.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

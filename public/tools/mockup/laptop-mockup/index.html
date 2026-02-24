@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>노트북 목업 | Laptop Mockup</title>
+  <link rel="stylesheet" href="laptop-mockup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>노트북 목업</h1>
+      <p>MacBook, 노트북 프레임으로 웹사이트 스크린샷을 표시하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="layout">
+        <div class="controls-panel">
+          <div class="upload-section">
+            <label>스크린샷 업로드</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="imageInput" accept="image/*" hidden>
+              <p>클릭하거나 드래그</p>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>노트북 모델</label>
+            <select id="laptopModel">
+              <option value="macbook-pro">MacBook Pro</option>
+              <option value="macbook-air">MacBook Air</option>
+              <option value="generic">일반 노트북</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>색상</label>
+            <select id="laptopColor">
+              <option value="silver">실버</option>
+              <option value="space-gray">스페이스 그레이</option>
+              <option value="gold">골드</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>배경색</label>
+            <input type="color" id="bgColor" value="#ffffff">
+          </div>
+
+          <div class="control-group">
+            <label>시점</label>
+            <select id="perspective">
+              <option value="front">정면</option>
+              <option value="tilted">기울임</option>
+            </select>
+          </div>
+
+          <button class="download-btn" onclick="downloadImage()" aria-label="이미지 다운로드">이미지 다운로드</button>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-container" id="previewContainer">
+            <div class="laptop-frame macbook-pro silver" id="laptopFrame">
+              <div class="laptop-screen" id="laptopScreen">
+                <div class="placeholder">스크린샷을 업로드하세요</div>
+              </div>
+              <div class="laptop-base">
+                <div class="laptop-notch"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="laptop-mockup.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

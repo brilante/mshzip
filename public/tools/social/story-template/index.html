@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스토리 템플릿 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .story-container { max-width: 1100px; margin: 0 auto; }
+    .story-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+    .templates-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .preview-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .category-tab { padding: 0.5rem 1rem; border-radius: 20px; background: var(--bg-primary); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .category-tab:hover { background: rgba(59, 130, 246, 0.1); }
+    .category-tab.active { background: var(--primary); color: white; }
+    .templates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .template-card { aspect-ratio: 9/16; border-radius: 12px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; border: 3px solid transparent; }
+    .template-card:hover { transform: scale(1.02); }
+    .template-card.active { border-color: var(--primary); }
+    .template-preview { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; text-align: center; }
+    .template-name { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem; background: rgba(0,0,0,0.7); color: white; font-size: 0.7rem; text-align: center; }
+    .phone-frame { background: #1a1a1a; border-radius: 30px; padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .phone-screen { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 9/16; position: relative; }
+    .story-preview { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; }
+    .story-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .story-subtitle { font-size: 0.9rem; opacity: 0.8; }
+    .customize-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .action-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; }
+    @media (max-width: 900px) {
+      .story-grid { grid-template-columns: 1fr; }
+      .templates-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .templates-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">스토리 템플릿</h1>
+          <p class="tool-description">Instagram/TikTok 스토리 템플릿</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="story-container">
+      <div class="story-grid">
+        <div class="templates-panel">
+          <div class="section-title">카테고리</div>
+          <div class="category-tabs">
+            <span class="category-tab active" data-category="all" onclick="StoryTemplate.selectCategory('all')">전체</span>
+            <span class="category-tab" data-category="quote" onclick="StoryTemplate.selectCategory('quote')">명언</span>
+            <span class="category-tab" data-category="promo" onclick="StoryTemplate.selectCategory('promo')">프로모션</span>
+            <span class="category-tab" data-category="announcement" onclick="StoryTemplate.selectCategory('announcement')">공지</span>
+            <span class="category-tab" data-category="qna" onclick="StoryTemplate.selectCategory('qna')">Q&A</span>
+            <span class="category-tab" data-category="countdown" onclick="StoryTemplate.selectCategory('countdown')">카운트다운</span>
+          </div>
+
+          <div class="section-title">템플릿 선택</div>
+          <div class="templates-grid" id="templatesGrid"></div>
+
+          <div class="customize-section">
+            <div class="section-title">커스터마이징</div>
+            <div class="input-group">
+              <label class="input-label">메인 텍스트</label>
+              <input type="text" id="mainText" class="tool-input" placeholder="메인 텍스트 입력" value="오늘의 한마디" oninput="StoryTemplate.updatePreview()" aria-label="메인 텍스트 입력">
+            </div>
+            <div class="input-group">
+              <label class="input-label">서브 텍스트</label>
+              <input type="text" id="subText" class="tool-input" placeholder="서브 텍스트 입력 (선택)" oninput="StoryTemplate.updatePreview()" aria-label="서브 텍스트 입력 (선택)">
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="section-title">미리보기</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="story-preview" id="storyPreview">
+                <div class="story-title" id="previewTitle">오늘의 한마디</div>
+                <div class="story-subtitle" id="previewSubtitle"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="tool-btn tool-btn-primary" onclick="StoryTemplate.download()" aria-label="이미지 다운로드">
+              이미지 다운로드
+            </button>
+            <button class="tool-btn tool-btn-secondary" onclick="StoryTemplate.copyCSS()" aria-label="CSS 코드 복사">
+              CSS 코드 복사
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="story-template.js"></script>
+</body>
+</html>

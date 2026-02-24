@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주사위 굴리기 - JEOGI Tools</title>
+  <link rel="stylesheet" href="dice-roller.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>주사위 굴리기</h1>
+      <p class="subtitle">D4부터 D20까지 다양한 주사위를 굴려보세요</p>
+    </header>
+
+    <main class="main-content">
+      <section class="dice-selector">
+        <button class="dice-btn" data-sides="4" aria-label="D4">D4</button>
+        <button class="dice-btn active" data-sides="6" aria-label="D6">D6</button>
+        <button class="dice-btn" data-sides="8" aria-label="D8">D8</button>
+        <button class="dice-btn" data-sides="10" aria-label="D10">D10</button>
+        <button class="dice-btn" data-sides="12" aria-label="D12">D12</button>
+        <button class="dice-btn" data-sides="20" aria-label="D20">D20</button>
+        <button class="dice-btn" data-sides="100" aria-label="D100">D100</button>
+      </section>
+
+      <section class="dice-count">
+        <label>굴릴 개수:</label>
+        <div class="count-controls">
+          <button class="count-btn" id="decreaseBtn" aria-label="−">−</button>
+          <span id="diceCount">1</span>
+          <button class="count-btn" id="increaseBtn" aria-label="+">+</button>
+        </div>
+      </section>
+
+      <section class="roll-section">
+        <div class="dice-display" id="diceDisplay">
+          <div class="dice d6">
+            <span class="dice-value">?</span>
+          </div>
+        </div>
+
+        <button class="roll-btn" id="rollBtn">
+          <span></span> 굴리기!
+        </button>
+      </section>
+
+      <section class="results-section">
+        <div class="total-display">
+          <span class="label">합계:</span>
+          <span class="total-value" id="totalValue">0</span>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">평균</span>
+            <span class="stat-value" id="avgValue">-</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">최소</span>
+            <span class="stat-value" id="minValue">-</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">최대</span>
+            <span class="stat-value" id="maxValue">-</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-section">
+        <h3>굴린 기록</h3>
+        <div class="history-list" id="historyList"></div>
+        <button class="clear-btn" id="clearBtn" aria-label="기록 삭제">기록 삭제</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="dice-roller.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

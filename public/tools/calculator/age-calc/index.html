@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나이 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .age-result-card {
+      background: linear-gradient(135deg, var(--tools-primary), var(--tools-secondary));
+      color: white;
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .age-main {
+      font-size: 64px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .age-label {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    .age-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .age-detail-card {
+      background: var(--tools-bg-secondary);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid var(--tools-border);
+    }
+    .age-detail-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--tools-primary);
+    }
+    .age-detail-label {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+      margin-top: 4px;
+    }
+    .milestone-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--tools-bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--tools-border);
+    }
+    .milestone-icon {
+      font-size: 24px;
+    }
+    .milestone-info {
+      flex: 1;
+    }
+    .milestone-title {
+      font-weight: 600;
+      color: var(--tools-text);
+    }
+    .milestone-date {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+    }
+    .milestone-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+    .milestone-passed {
+      background: var(--tools-success);
+      color: white;
+    }
+    .milestone-upcoming {
+      background: var(--tools-warning);
+      color: white;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">나이 계산기</h1>
+          <p class="tool-description">생년월일로 정확한 나이 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 입력 패널 -->
+    <div class="input-panel">
+      <div class="panel-title">생년월일 입력</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--tools-text-secondary);">생년월일</label>
+          <input type="date" id="birthDate" class="tool-input" onchange="AgeCalc.calculate()">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--tools-text-secondary);">기준일 (선택)</label>
+          <input type="date" id="targetDate" class="tool-input" onchange="AgeCalc.calculate()">
+        </div>
+      </div>
+      <div class="tool-actions">
+        <button class="tool-btn tool-btn-primary" onclick="AgeCalc.calculate()" aria-label="계산하기">계산하기</button>
+        <button class="tool-btn tool-btn-secondary" onclick="AgeCalc.setToday()" aria-label="오늘 기준">오늘 기준</button>
+        <button class="tool-btn tool-btn-secondary" onclick="AgeCalc.clear()" aria-label="초기화">초기화</button>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div id="resultSection" style="display: none;">
+      <!-- 메인 결과 -->
+      <div class="age-result-card">
+        <div class="age-main" id="ageMain">-</div>
+        <div class="age-label">만 나이</div>
+        <div style="margin-top: 8px; opacity: 0.8;" id="koreanAge">한국 나이: -세</div>
+      </div>
+
+      <!-- 상세 정보 -->
+      <div class="age-detail-grid">
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="totalYears">-</div>
+          <div class="age-detail-label">년</div>
+        </div>
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="totalMonths">-</div>
+          <div class="age-detail-label">개월</div>
+        </div>
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="totalDays">-</div>
+          <div class="age-detail-label">일</div>
+        </div>
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="totalWeeks">-</div>
+          <div class="age-detail-label">주</div>
+        </div>
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="totalHours">-</div>
+          <div class="age-detail-label">시간</div>
+        </div>
+        <div class="age-detail-card">
+          <div class="age-detail-value" id="nextBirthday">-</div>
+          <div class="age-detail-label">다음 생일까지</div>
+        </div>
+      </div>
+
+      <!-- 띠 & 별자리 -->
+      <div class="input-panel" style="margin-top: 24px;">
+        <div class="panel-title">띠 & 별자리</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="age-detail-card">
+            <div class="age-detail-value" id="zodiacAnimal">-</div>
+            <div class="age-detail-label">띠</div>
+          </div>
+          <div class="age-detail-card">
+            <div class="age-detail-value" id="zodiacSign">-</div>
+            <div class="age-detail-label">별자리</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 인생 이정표 -->
+      <div class="input-panel" style="margin-top: 24px;">
+        <div class="panel-title">인생 이정표</div>
+        <div class="milestone-list" id="milestoneList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="/tools/common/tool-base.js?v=20260124"></script>
+  <script src="age-calc.js"></script>
+</body>
+</html>

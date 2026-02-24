@@ -1,0 +1,20 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 600px; margin: 0 auto; }
+header { text-align: center; color: white; margin-bottom: 30px; }
+header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.category-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
+.tab { padding: 10px 16px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+.tab.active { background: white; color: #00b894; }
+.card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+.converter { display: flex; align-items: center; gap: 20px; }
+.input-group { flex: 1; }
+.input-group input { width: 100%; padding: 16px; border: 2px solid #e0e0e0; border-radius: 8px 8px 0 0; font-size: 24px; text-align: center; }
+.input-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; font-size: 14px; background: #f9f9f9; }
+.swap-btn { width: 50px; height: 50px; background: linear-gradient(135deg, #00b894, #00cec9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; flex-shrink: 0; }
+#conversionTable h4 { margin-bottom: 16px; color: #333; }
+.conv-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+.conv-row:last-child { border-bottom: none; }
+.conv-row .from { color: #00b894; font-weight: 500; }
+.conv-row .to { color: #666; }
+@media (max-width: 500px) { .converter { flex-direction: column; } .swap-btn { transform: rotate(90deg); } }

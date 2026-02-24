@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>노트 작성기 - 학습 도구</title>
+    <link rel="stylesheet" href="note-taking.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>내 노트</h2>
+                <button id="newNote" class="btn-new" aria-label="+ 새 노트">+ 새 노트</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchNote" placeholder="노트 검색..." aria-label="노트 검색...">
+            </div>
+            <div id="noteList" class="note-list"></div>
+        </aside>
+
+        <main class="editor-area">
+            <div class="editor-header">
+                <input type="text" id="noteTitle" placeholder="제목 없음" aria-label="제목 없음">
+                <div class="editor-actions">
+                    <button id="togglePreview" class="btn-action" aria-label="미리보기">미리보기</button>
+                    <button id="exportMd" class="btn-action" aria-label="내보내기">내보내기</button>
+                    <button id="deleteNote" class="btn-action btn-danger" aria-label="삭제">삭제</button>
+                </div>
+            </div>
+            <div class="editor-body">
+                <textarea id="noteContent" placeholder="마크다운으로 작성하세요..."></textarea>
+                <div id="preview" class="preview hidden"></div>
+            </div>
+            <div class="editor-footer">
+                <span id="wordCount">0 단어</span>
+                <span id="charCount">0 자</span>
+                <span id="lastSaved">자동 저장됨</span>
+            </div>
+        </main>
+    </div>
+    <script src="note-taking.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

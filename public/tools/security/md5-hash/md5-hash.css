@@ -1,0 +1,259 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    opacity: 0.9;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    background: rgba(255,255,255,0.2);
+}
+
+.tab-content {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    font-family: 'Roboto Mono', monospace;
+    resize: vertical;
+}
+
+textarea::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #4facfe;
+}
+
+.options {
+    margin-top: 15px;
+}
+
+.options label {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.file-drop {
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-drop:hover {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.1);
+}
+
+.file-drop.dragover {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.2);
+}
+
+.drop-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.file-drop p {
+    color: rgba(255,255,255,0.7);
+}
+
+.file-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: white;
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+}
+
+.result-section {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+}
+
+.result-section h3 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.hash-display {
+    display: flex;
+    gap: 10px;
+}
+
+.hash-display input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    background: rgba(0,0,0,0.3);
+    color: #4facfe;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+}
+
+.copy-btn {
+    padding: 15px 20px;
+    background: #4facfe;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.copy-btn:hover {
+    background: #3d9be9;
+}
+
+.other-hashes {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+}
+
+.other-hashes h3 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.hash-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.hash-item label {
+    display: block;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.hash-row {
+    display: flex;
+    gap: 10px;
+}
+
+.hash-row input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.3);
+    color: #4facfe;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+}
+
+.hash-row button {
+    padding: 10px 15px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.info-section {
+    background: rgba(231, 76, 60, 0.2);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.info-section h3 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.info-section p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    line-height: 1.6;
+}

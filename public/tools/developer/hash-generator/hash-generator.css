@@ -1,0 +1,368 @@
+/**
+ * 해시 생성기 전용 스타일
+ * @created 2026-01-12
+ */
+
+/* 해시 패널 */
+.hash-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 입력 섹션 */
+.input-section {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--bg-secondary, #f8f9fa);
+  border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 해시 입력 */
+.hash-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: none;
+  resize: vertical;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #333);
+}
+
+.hash-input:focus {
+  outline: none;
+}
+
+.hash-input::placeholder {
+  color: var(--text-secondary, #999);
+}
+
+/* 입력 정보 */
+.input-info {
+  display: flex;
+  gap: 20px;
+  padding: 10px 18px;
+  background: var(--bg-secondary, #f8f9fa);
+  border-top: 1px solid var(--border-color, #e9ecef);
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+}
+
+.input-info strong {
+  color: var(--primary-color, #667eea);
+  font-weight: 600;
+}
+
+/* 출력 섹션 */
+.output-section {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 해시 출력 */
+.hash-output-wrapper {
+  padding: 16px 18px;
+}
+
+.hash-output {
+  display: block;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary, #333);
+  word-break: break-all;
+  background: var(--bg-secondary, #f8f9fa);
+  padding: 14px 16px;
+  border-radius: 8px;
+  min-height: 44px;
+}
+
+/* 모든 해시 섹션 */
+.all-hashes-section {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.all-hashes-container {
+  padding: 12px 18px;
+}
+
+.all-hashes-container.hidden {
+  display: none;
+}
+
+.hash-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.hash-row:last-child {
+  border-bottom: none;
+}
+
+.hash-label {
+  min-width: 70px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+}
+
+.hash-value {
+  flex: 1;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--text-primary, #333);
+  word-break: break-all;
+  background: var(--bg-secondary, #f8f9fa);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.hash-copy-btn {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.hash-copy-btn:hover {
+  background: var(--primary-color, #667eea);
+  border-color: var(--primary-color, #667eea);
+}
+
+/* 검증 섹션 */
+.verify-section {
+  padding: 18px;
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px;
+}
+
+.verify-section .section-title {
+  margin-bottom: 12px;
+}
+
+.verify-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.verify-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 8px;
+  background: var(--bg-secondary, #f8f9fa);
+  transition: border-color 0.15s;
+}
+
+.verify-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #667eea);
+  background: var(--bg-primary, #fff);
+}
+
+.verify-result {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 120px;
+  text-align: center;
+}
+
+.verify-result.valid {
+  color: #10b981;
+}
+
+.verify-result.invalid {
+  color: #ef4444;
+}
+
+/* 도움말 */
+.tool-help {
+  margin-top: 20px;
+  padding: 18px;
+  background: var(--bg-secondary, #f8f9fa);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary-color, #667eea);
+}
+
+.help-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+  margin-bottom: 10px;
+}
+
+.help-content {
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  line-height: 1.6;
+}
+
+.help-content p {
+  margin-bottom: 8px;
+}
+
+.help-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 4px;
+}
+
+.help-content code {
+  padding: 2px 6px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--primary-color, #667eea);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .section-actions {
+    width: 100%;
+  }
+
+  .section-actions .tool-btn {
+    flex: 1;
+  }
+
+  .verify-input-wrapper {
+    flex-direction: column;
+  }
+
+  .verify-result {
+    width: 100%;
+    text-align: left;
+  }
+
+  .hash-row {
+    flex-wrap: wrap;
+  }
+
+  .hash-value {
+    order: 3;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .input-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* 다크 모드 (data-theme 선택자로 통일) */
+[data-theme="dark"] .input-section,
+[data-theme="dark"] .output-section,
+[data-theme="dark"] .all-hashes-section,
+[data-theme="dark"] .verify-section {
+  background: #1e1e1e;
+  border-color: #404040;
+}
+
+[data-theme="dark"] .section-header {
+  background: #252525;
+  border-color: #404040;
+}
+
+[data-theme="dark"] .hash-input {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .hash-input::placeholder {
+  color: #666;
+}
+
+[data-theme="dark"] .input-info {
+  background: #252525;
+  border-color: #404040;
+  color: #aaa;
+}
+
+[data-theme="dark"] .hash-output {
+  background: #252525;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .hash-row {
+  border-color: #404040;
+}
+
+[data-theme="dark"] .hash-value {
+  background: #252525;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .hash-copy-btn {
+  border-color: #404040;
+}
+
+[data-theme="dark"] .verify-input {
+  background: #252525;
+  border-color: #404040;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .verify-input:focus {
+  background: #1e1e1e;
+}
+
+[data-theme="dark"] .tool-help {
+  background: #252525;
+}
+
+[data-theme="dark"] .help-title {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .help-content {
+  color: #aaa;
+}

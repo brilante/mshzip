@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>호흡 운동 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .breath-container { max-width: 500px; margin: 0 auto; }
+    .breath-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; text-align: center; }
+    .technique-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .technique-tab { flex: 1; min-width: 100px; padding: 0.75rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; background: var(--bg-primary); }
+    .technique-tab.active { background: var(--primary); color: white; }
+    .circle-container { position: relative; width: 250px; height: 250px; margin: 2rem auto; }
+    .breath-circle { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #06b6d4); display: flex; align-items: center; justify-content: center; transition: transform 4s ease-in-out; }
+    .breath-circle.inhale { transform: scale(1.3); }
+    .breath-circle.exhale { transform: scale(1); }
+    .breath-text { font-size: 1.5rem; font-weight: 700; color: white; }
+    .timer-display { font-size: 3rem; font-weight: 700; margin: 1rem 0; font-family: monospace; }
+    .cycle-info { color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .controls { display: flex; gap: 1rem; justify-content: center; }
+    .control-btn { padding: 1rem 2rem; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
+    .control-btn.primary { background: var(--primary); color: white; }
+    .control-btn.secondary { background: var(--bg-primary); }
+    .instruction { margin-top: 1.5rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; font-size: 0.85rem; text-align: left; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">호흡 운동</h1>
+          <p class="tool-description">다양한 호흡 기법으로 마음 안정</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="breath-container">
+      <div class="breath-panel">
+        <div class="technique-tabs">
+          <button class="technique-tab active" data-tech="478" onclick="Breathing.setTechnique('478')" aria-label="4-7-8">4-7-8</button>
+          <button class="technique-tab" data-tech="box" onclick="Breathing.setTechnique('box')" aria-label="박스 호흡">박스 호흡</button>
+          <button class="technique-tab" data-tech="relaxing" onclick="Breathing.setTechnique('relaxing')" aria-label="이완 호흡">이완 호흡</button>
+        </div>
+
+        <div class="circle-container">
+          <div class="breath-circle" id="breathCircle">
+            <span class="breath-text" id="breathText">시작</span>
+          </div>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">0</div>
+        <div class="cycle-info" id="cycleInfo">사이클 0/4</div>
+
+        <div class="controls">
+          <button class="control-btn primary" id="startBtn" onclick="Breathing.toggleStart()" aria-label="시작">시작</button>
+          <button class="control-btn secondary" onclick="Breathing.reset()" aria-label="↺ 초기화">↺ 초기화</button>
+        </div>
+
+        <div class="instruction" id="instruction">
+          <strong>4-7-8 호흡법</strong><br>
+          스트레스 해소와 수면에 효과적인 호흡법입니다.<br>
+          4초 들숨 → 7초 유지 → 8초 날숨
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="breathing-exercise.js"></script>
+</body>
+</html>

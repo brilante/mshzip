@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box Shadow 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="box-shadow-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">Box Shadow 생성기</h1>
+          <p class="tool-description">CSS box-shadow를 시각적으로 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <div class="generator-layout">
+      <!-- 컨트롤 패널 -->
+      <div class="controls-panel">
+        <div class="section-title">그림자 설정</div>
+
+        <!-- 그림자 레이어 -->
+        <div class="shadow-layers" id="shadowLayers"></div>
+        <button class="add-layer-btn" onclick="BoxShadowGen.addLayer()" aria-label="+ 레이어 추가">+ 레이어 추가</button>
+
+        <!-- 프리셋 -->
+        <div class="presets-section">
+          <div class="section-title">프리셋</div>
+          <div class="presets-grid" id="presetsGrid"></div>
+        </div>
+      </div>
+
+      <!-- 프리뷰 패널 -->
+      <div class="preview-panel">
+        <div class="section-title">미리보기</div>
+        <div class="preview-options">
+          <label>배경색:</label>
+          <input type="color" id="bgColor" value="#f0f0f0" onchange="BoxShadowGen.updateBgColor()">
+          <label>박스 색:</label>
+          <input type="color" id="boxColor" value="#ffffff" onchange="BoxShadowGen.updateBoxColor()">
+        </div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-box" id="previewBox"></div>
+        </div>
+
+        <!-- CSS 코드 -->
+        <div class="code-output">
+          <div class="code-header">
+            <span>CSS 코드</span>
+            <button class="copy-btn" onclick="BoxShadowGen.copyCode()" aria-label="복사">복사</button>
+          </div>
+          <pre id="cssCode"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="box-shadow-gen.js"></script>
+</body>
+</html>

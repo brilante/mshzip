@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML → JSON 변환기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">YAML ↔ JSON 변환기</h1>
+          <p class="tool-description">YAML과 JSON 형식 간 상호 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 옵션 -->
+    <div class="tool-options">
+      <div class="tool-option">
+        <label for="indent">들여쓰기:</label>
+        <select id="indent">
+          <option value="2">2 spaces</option>
+          <option value="4">4 spaces</option>
+        </select>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="sortKeys"> 키 정렬
+        </label>
+      </div>
+    </div>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel">
+      <!-- 입력 패널 -->
+      <div class="input-panel">
+        <div class="panel-title">YAML 입력</div>
+        <textarea
+          id="yamlInput"
+          class="tool-textarea"
+          placeholder="YAML 데이터를 입력하세요...&#10;예:&#10;name: 홍길동&#10;age: 30&#10;city: 서울&#10;hobbies:&#10;  - 독서&#10;  - 운동"
+          spellcheck="false"
+        ></textarea>
+        <div class="tool-actions">
+          <label class="tool-btn tool-btn-secondary" style="cursor: pointer;">
+            파일 선택
+            <input type="file" accept=".yaml,.yml,.txt" style="display: none;" onchange="YamlToJson.loadFile(this, 'yaml')">
+          </label>
+          <button class="tool-btn tool-btn-primary" onclick="YamlToJson.convertToJson()" aria-label="YAML → JSON">
+            YAML → JSON
+          </button>
+        </div>
+      </div>
+
+      <!-- 출력 패널 -->
+      <div class="output-panel" style="position: relative;">
+        <div class="panel-title">JSON 출력</div>
+        <button class="copy-btn" onclick="YamlToJson.copyOutput('json')" aria-label="복사">복사</button>
+        <textarea
+          id="jsonOutput"
+          class="tool-textarea"
+          placeholder="변환 결과가 여기에 표시됩니다..."
+          spellcheck="false"
+        ></textarea>
+        <div class="tool-actions">
+          <label class="tool-btn tool-btn-secondary" style="cursor: pointer;">
+            파일 선택
+            <input type="file" accept=".json" style="display: none;" onchange="YamlToJson.loadFile(this, 'json')">
+          </label>
+          <button class="tool-btn tool-btn-primary" onclick="YamlToJson.convertToYaml()" aria-label="JSON → YAML">
+            JSON → YAML
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div class="tool-actions" style="justify-content: center; margin-top: 16px;">
+      <button class="tool-btn tool-btn-secondary" onclick="YamlToJson.swap()" aria-label="↔ 입출력 교체">
+        ↔ 입출력 교체
+      </button>
+      <button class="tool-btn tool-btn-secondary" onclick="YamlToJson.downloadYaml()" aria-label="YAML 다운로드">
+        YAML 다운로드
+      </button>
+      <button class="tool-btn tool-btn-secondary" onclick="YamlToJson.downloadJson()" aria-label="JSON 다운로드">
+        JSON 다운로드
+      </button>
+      <button class="tool-btn tool-btn-secondary" onclick="YamlToJson.clear()" aria-label="초기화">
+        초기화
+      </button>
+    </div>
+
+    <!-- 통계 -->
+    <div class="tool-stats">
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statYamlSize">0 B</div>
+        <div class="tool-stat-label">YAML 크기</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statJsonSize">0 B</div>
+        <div class="tool-stat-label">JSON 크기</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statStatus">-</div>
+        <div class="tool-stat-label">상태</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="yaml-to-json.js"></script>
+</body>
+</html>

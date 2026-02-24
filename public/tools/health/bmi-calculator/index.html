@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI 계산기 - 건강 도구</title>
+    <link rel="stylesheet" href="bmi-calculator.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>BMI 계산기</h1>
+            <p>체질량지수로 건강 상태를 확인하세요</p>
+        </header>
+
+        <div class="calculator card">
+            <div class="input-group">
+                <label>키 (cm)</label>
+                <input type="number" id="height" placeholder="예: 170" min="100" max="250" aria-label="예: 170">
+            </div>
+            <div class="input-group">
+                <label>체중 (kg)</label>
+                <input type="number" id="weight" placeholder="예: 65" min="30" max="300" aria-label="예: 65">
+            </div>
+            <button id="calculateBtn" aria-label="계산하기">계산하기</button>
+        </div>
+
+        <div class="result card" id="result" style="display: none;">
+            <div class="bmi-display">
+                <div class="bmi-value" id="bmiValue">0</div>
+                <div class="bmi-category" id="bmiCategory">-</div>
+            </div>
+            <div class="bmi-bar">
+                <div class="bar-fill" id="barFill"></div>
+                <div class="bar-marker" id="barMarker"></div>
+            </div>
+            <div class="bar-labels">
+                <span>저체중</span>
+                <span>정상</span>
+                <span>과체중</span>
+                <span>비만</span>
+            </div>
+            <div class="info-box" id="infoBox"></div>
+        </div>
+
+        <div class="guide card">
+            <h3>BMI 분류 기준</h3>
+            <table>
+                <tr><th>분류</th><th>BMI</th></tr>
+                <tr><td>저체중</td><td>18.5 미만</td></tr>
+                <tr><td>정상</td><td>18.5 - 22.9</td></tr>
+                <tr><td>과체중</td><td>23 - 24.9</td></tr>
+                <tr><td>비만</td><td>25 이상</td></tr>
+            </table>
+            <p class="note">* 아시아-태평양 기준 적용</p>
+        </div>
+    </div>
+    <script src="bmi-calculator.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

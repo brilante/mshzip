@@ -1,0 +1,316 @@
+/* 공학용 계산기 스타일 */
+
+.calculator-panel {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* 모드 선택 */
+.mode-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mode-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.mode-indicator {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* 디스플레이 */
+.display-section {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  min-height: 80px;
+}
+
+.expression-display {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  min-height: 1.5em;
+  text-align: right;
+  word-break: break-all;
+}
+
+.result-display {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+/* 히스토리 토글 */
+.history-toggle {
+  margin-bottom: 1rem;
+}
+
+.toggle-btn {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  background: var(--bg-secondary);
+}
+
+/* 히스토리 패널 */
+.history-panel {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.clear-history-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.history-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.history-expr {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.history-result {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.empty-history {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* 버튼 패드 */
+.button-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.button-row:last-child {
+  grid-template-columns: 2fr 1fr 1fr 2fr;
+}
+
+.calc-btn {
+  padding: 0.9rem 0.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.calc-btn:active {
+  transform: scale(0.95);
+}
+
+/* 버튼 타입별 스타일 */
+.calc-btn.num {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.calc-btn.num:hover {
+  background: var(--border-color);
+}
+
+.calc-btn.op {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.calc-btn.op:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.calc-btn.func {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+  font-size: 0.85rem;
+}
+
+.calc-btn.func:hover {
+  background: rgba(139, 92, 246, 0.25);
+}
+
+.calc-btn.const {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.calc-btn.const:hover {
+  background: rgba(234, 179, 8, 0.25);
+}
+
+.calc-btn.bracket {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.calc-btn.bracket:hover {
+  background: var(--border-color);
+}
+
+.calc-btn.clear {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.calc-btn.clear:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.calc-btn.memory {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  font-size: 0.85rem;
+}
+
+.calc-btn.memory:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.calc-btn.equals {
+  background: var(--primary);
+  color: white;
+  font-size: 1.5rem;
+}
+
+.calc-btn.equals:hover {
+  background: #2563eb;
+}
+
+.calc-btn.zero {
+  grid-column: span 1;
+}
+
+/* 토스트 메시지 */
+.calc-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  z-index: 1000;
+  animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .calculator-panel {
+    padding: 0.75rem;
+  }
+
+  .result-display {
+    font-size: 2rem;
+  }
+
+  .calc-btn {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .calc-btn.func {
+    font-size: 0.75rem;
+  }
+
+  .button-row {
+    gap: 0.35rem;
+  }
+}

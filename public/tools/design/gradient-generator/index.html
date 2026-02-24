@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>그라디언트 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .gradient-preview {
+      width: 100%;
+      height: 200px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px solid var(--tools-border);
+      transition: all 0.3s ease;
+    }
+    .color-stops {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .color-stop {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--tools-bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--tools-border);
+    }
+    .color-stop input[type="color"] {
+      width: 50px;
+      height: 40px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .color-stop input[type="range"] {
+      flex: 1;
+    }
+    .color-stop-value {
+      min-width: 40px;
+      text-align: right;
+      font-weight: 600;
+      color: var(--tools-primary);
+    }
+    .color-stop-remove {
+      background: var(--tools-error);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .direction-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .direction-btn {
+      padding: 12px;
+      border: 2px solid var(--tools-border);
+      background: var(--tools-bg-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all 0.2s;
+    }
+    .direction-btn:hover {
+      border-color: var(--tools-primary);
+    }
+    .direction-btn.active {
+      border-color: var(--tools-primary);
+      background: var(--tools-primary-light);
+    }
+    .type-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .type-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--tools-border);
+      background: var(--tools-bg-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .type-btn.active {
+      border-color: var(--tools-primary);
+      background: var(--tools-primary);
+      color: white;
+    }
+    .preset-colors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .preset-color {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid var(--tools-border);
+      transition: transform 0.2s;
+    }
+    .preset-color:hover {
+      transform: scale(1.1);
+    }
+    .code-output {
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">그라디언트 생성기</h1>
+          <p class="tool-description">CSS 그라디언트를 시각적으로 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 미리보기 -->
+    <div class="input-panel">
+      <div class="panel-title">미리보기</div>
+      <div class="gradient-preview" id="gradientPreview"></div>
+
+      <!-- 타입 선택 -->
+      <div class="type-toggle">
+        <button class="type-btn active" onclick="GradientGen.setType('linear')" id="typeLinear" aria-label="선형 (Linear)">선형 (Linear)</button>
+        <button class="type-btn" onclick="GradientGen.setType('radial')" id="typeRadial" aria-label="원형 (Radial)">원형 (Radial)</button>
+        <button class="type-btn" onclick="GradientGen.setType('conic')" id="typeConic" aria-label="원뿔 (Conic)">원뿔 (Conic)</button>
+      </div>
+
+      <!-- 방향 선택 (Linear) -->
+      <div id="directionSection">
+        <div class="panel-title" style="margin-top: 16px;">방향</div>
+        <div class="direction-grid">
+          <button class="direction-btn" onclick="GradientGen.setDirection('to top')" title="위로" aria-label="↑">↑</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to top right')" title="우상단" aria-label="↗">↗</button>
+          <button class="direction-btn active" onclick="GradientGen.setDirection('to right')" title="오른쪽" aria-label="→">→</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to bottom right')" title="우하단" aria-label="↘">↘</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to bottom')" title="아래로" aria-label="↓">↓</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to bottom left')" title="좌하단" aria-label="↙">↙</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to left')" title="왼쪽" aria-label="←">←</button>
+          <button class="direction-btn" onclick="GradientGen.setDirection('to top left')" title="좌상단" aria-label="↖">↖</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label>각도:</label>
+          <input type="range" min="0" max="360" value="90" id="angleSlider" oninput="GradientGen.setAngle(this.value)">
+          <span id="angleValue" style="min-width: 40px; font-weight: 600;">90°</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 색상 정류장 -->
+    <div class="input-panel">
+      <div class="panel-title">색상 정류장</div>
+
+      <!-- 프리셋 색상 -->
+      <div class="preset-colors" id="presetColors"></div>
+
+      <div class="color-stops" id="colorStops"></div>
+
+      <button class="tool-btn tool-btn-secondary" onclick="GradientGen.addStop()" style="width: 100%;" aria-label="+ 색상 추가">
+        + 색상 추가
+      </button>
+    </div>
+
+    <!-- 프리셋 그라디언트 -->
+    <div class="input-panel">
+      <div class="panel-title">프리셋 그라디언트</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;" id="presetGradients"></div>
+    </div>
+
+    <!-- CSS 코드 출력 -->
+    <div class="output-panel" style="position: relative;">
+      <div class="panel-title">CSS 코드</div>
+      <button class="copy-btn" onclick="GradientGen.copyCode()" aria-label="복사">복사</button>
+      <div class="code-output" id="codeOutput"></div>
+
+      <div class="tool-actions" style="margin-top: 16px;">
+        <button class="tool-btn tool-btn-primary" onclick="GradientGen.randomize()" aria-label="랜덤 생성">랜덤 생성</button>
+        <button class="tool-btn tool-btn-secondary" onclick="GradientGen.reset()" aria-label="초기화">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="gradient-generator.js"></script>
+</body>
+</html>

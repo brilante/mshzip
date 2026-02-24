@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>연비 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .input-row { display: flex; gap: 0.5rem; align-items: center; }
+    .input-row input { flex: 1; }
+    .input-unit { color: var(--text-secondary); font-size: 0.9rem; min-width: 40px; }
+    .result-display { text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; color: white; margin: 1rem 0; }
+    .result-value { font-size: 3.5rem; font-weight: 700; }
+    .result-unit { font-size: 1.25rem; opacity: 0.9; }
+    .result-label { font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+    .stat-card { background: var(--bg-primary); padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .mode-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .mode-tab { flex: 1; padding: 0.75rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; text-align: center; }
+    .mode-tab.active { background: var(--primary); color: white; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">연비 계산기</h1>
+          <p class="tool-description">자동차 연비 측정</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="mode-tabs">
+          <div class="mode-tab active" data-mode="distance" onclick="FuelCalc.setMode('distance')">주행 거리로</div>
+          <div class="mode-tab" data-mode="fuel" onclick="FuelCalc.setMode('fuel')">주유량으로</div>
+        </div>
+
+        <div id="distanceMode">
+          <div class="input-group">
+            <label class="input-label">주행 거리</label>
+            <div class="input-row">
+              <input type="number" id="distance" class="tool-input" placeholder="0" oninput="FuelCalc.calculate()" aria-label="0">
+              <span class="input-unit">km</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">사용한 연료량</label>
+            <div class="input-row">
+              <input type="number" id="fuelUsed" class="tool-input" placeholder="0" oninput="FuelCalc.calculate()" aria-label="0">
+              <span class="input-unit">L</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="fuelMode" style="display: none;">
+          <div class="input-group">
+            <label class="input-label">목표 연비</label>
+            <div class="input-row">
+              <input type="number" id="targetMileage" class="tool-input" value="12" oninput="FuelCalc.calculate()">
+              <span class="input-unit">km/L</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">주유량</label>
+            <div class="input-row">
+              <input type="number" id="fuelAmount" class="tool-input" placeholder="0" oninput="FuelCalc.calculate()" aria-label="0">
+              <span class="input-unit">L</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">연료 가격 (선택)</label>
+          <div class="input-row">
+            <input type="number" id="fuelPrice" class="tool-input" value="1650" oninput="FuelCalc.calculate()">
+            <span class="input-unit">원/L</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-display">
+        <div class="result-value" id="resultValue">0</div>
+        <div class="result-unit" id="resultUnit">km/L</div>
+        <div class="result-label" id="resultLabel">연비</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="costPerKm">0원</div>
+          <div class="stat-label">km당 비용</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalCost">0원</div>
+          <div class="stat-label">총 연료비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="distancePer10L">0km</div>
+          <div class="stat-label">10L당 거리</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="fuelPer100km">0L</div>
+          <div class="stat-label">100km당 소비</div>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">연비 기준</h3>
+        <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.8;">
+          <div>경차: 15~20 km/L</div>
+          <div>소형차: 12~16 km/L</div>
+          <div>중형차: 10~14 km/L</div>
+          <div>대형차/SUV: 8~12 km/L</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="fuel-calc.js"></script>
+</body>
+</html>

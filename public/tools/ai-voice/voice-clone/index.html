@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>음성 복제 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .ai-container { max-width: 900px; margin: 0 auto; }
+    .ai-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .model-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .model-btn { padding: 0.6rem 1rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .model-btn:hover { border-color: var(--primary); }
+    .model-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .steps-container { display: flex; flex-direction: column; gap: 1.5rem; }
+    .step-card { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--primary); }
+    .step-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .step-number { width: 30px; height: 30px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .step-title { font-weight: 600; }
+    .upload-area { border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .upload-area:hover { border-color: var(--primary); }
+    .text-input { min-height: 100px; resize: vertical; margin-top: 0.5rem; }
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .premium-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 10px; font-size: 0.65rem; font-weight: 600; }
+    .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #b45309; }
+    .voice-preview { margin-top: 1rem; }
+    audio { width: 100%; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">음성 복제</h1>
+          <p class="tool-description">AI로 음성을 복제하여 새 콘텐츠 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <span class="premium-badge">Premium</span>
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="ai-container">
+      <div class="ai-panel">
+        <div class="warning-box">
+          <strong>주의:</strong> 음성 복제 기능은 본인의 음성 또는 정당한 권한이 있는 경우에만 사용하세요. 타인의 음성을 무단으로 복제하는 것은 법적 문제가 될 수 있습니다.
+        </div>
+
+        <div class="section-title">AI 모델 선택</div>
+        <div class="model-selector">
+          <div class="model-btn active" data-model="elevenlabs" onclick="VoiceClone.selectModel('elevenlabs')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">ElevenLabs</span>
+          </div>
+          <div class="model-btn" data-model="resemble" onclick="VoiceClone.selectModel('resemble')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">Resemble AI</span>
+          </div>
+          <div class="model-btn" data-model="coqui" onclick="VoiceClone.selectModel('coqui')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">Coqui TTS</span>
+          </div>
+        </div>
+
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">1</div>
+              <div class="step-title">음성 샘플 업로드</div>
+            </div>
+            <div class="upload-area" onclick="document.getElementById('voiceInput').click()">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;"></div>
+              <div>복제할 음성 파일 업로드</div>
+              <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem;">최소 30초 이상의 깨끗한 음성 권장</div>
+              <input type="file" id="voiceInput" accept="audio/*" style="display: none;" onchange="VoiceClone.handleVoice(event)">
+            </div>
+            <div class="voice-preview" id="voicePreview" style="display: none;">
+              <audio id="voiceAudio" controls></audio>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">2</div>
+              <div class="step-title">생성할 텍스트 입력</div>
+            </div>
+            <textarea id="textInput" class="tool-input text-input" placeholder="복제된 음성으로 말할 텍스트를 입력하세요..."></textarea>
+          </div>
+
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">3</div>
+              <div class="step-title">결과</div>
+            </div>
+            <div id="resultSection" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+              음성 복제 결과가 여기에 표시됩니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="tool-btn tool-btn-primary" style="flex: 1;" onclick="VoiceClone.generate()" id="generateBtn" disabled aria-label="음성 복제 및 생성">
+            음성 복제 및 생성
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="VoiceClone.download()" id="downloadBtn" disabled aria-label="다운로드">
+            다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="voice-clone.js"></script>
+</body>
+</html>

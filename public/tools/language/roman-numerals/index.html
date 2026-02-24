@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로마숫자 변환기 - ALLINONE</title>
+    <link rel="stylesheet" href="roman-numerals.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>로마숫자 변환기</h1>
+            <p class="subtitle">아라비아 숫자와 로마숫자를 상호 변환합니다</p>
+        </header>
+        <main class="main-content">
+            <div class="converter-section">
+                <div class="converter-panel">
+                    <h3>아라비아 숫자 → 로마숫자</h3>
+                    <div class="input-row">
+                        <input type="number" id="arabicInput" placeholder="숫자 입력 (1-3999)" min="1" max="3999" aria-label="숫자 입력 (1-3999)">
+                        <button class="convert-btn" onclick="arabicToRoman()" aria-label="변환 →">변환 →</button>
+                    </div>
+                    <div class="result-box" id="romanResult">로마숫자가 여기에 표시됩니다</div>
+                </div>
+                <div class="converter-panel">
+                    <h3>로마숫자 → 아라비아 숫자</h3>
+                    <div class="input-row">
+                        <input type="text" id="romanInput" placeholder="로마숫자 입력 (예: XIV)" style="text-transform:uppercase" aria-label="로마숫자 입력 (예: XIV)">
+                        <button class="convert-btn" onclick="romanToArabic()" aria-label="변환 →">변환 →</button>
+                    </div>
+                    <div class="result-box" id="arabicResult">아라비아 숫자가 여기에 표시됩니다</div>
+                </div>
+            </div>
+            <div class="quick-convert">
+                <h3>빠른 변환</h3>
+                <div class="quick-grid" id="quickGrid"></div>
+            </div>
+            <div class="reference-section">
+                <h3>로마숫자 기호 참조표</h3>
+                <div class="reference-grid">
+                    <div class="ref-item"><span class="ref-roman">I</span><span class="ref-value">= 1</span></div>
+                    <div class="ref-item"><span class="ref-roman">V</span><span class="ref-value">= 5</span></div>
+                    <div class="ref-item"><span class="ref-roman">X</span><span class="ref-value">= 10</span></div>
+                    <div class="ref-item"><span class="ref-roman">L</span><span class="ref-value">= 50</span></div>
+                    <div class="ref-item"><span class="ref-roman">C</span><span class="ref-value">= 100</span></div>
+                    <div class="ref-item"><span class="ref-roman">D</span><span class="ref-value">= 500</span></div>
+                    <div class="ref-item"><span class="ref-roman">M</span><span class="ref-value">= 1000</span></div>
+                </div>
+                <div class="rules">
+                    <h4>규칙</h4>
+                    <ul>
+                        <li>작은 숫자가 큰 숫자 앞에 오면 뺍니다 (IV = 4)</li>
+                        <li>작은 숫자가 큰 숫자 뒤에 오면 더합니다 (VI = 6)</li>
+                        <li>같은 기호는 연속 3번까지만 사용 가능</li>
+                        <li>표준 표기법은 1~3999까지 표현 가능</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="roman-numerals.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

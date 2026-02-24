@@ -1,0 +1,321 @@
+/* 칼로리 계산기 스타일 */
+
+.input-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.input-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.gender-selector {
+  display: flex;
+  gap: 1rem;
+}
+
+.gender-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.gender-option input {
+  display: none;
+}
+
+.gender-btn {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.gender-option input:checked + .gender-btn {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+
+.calc-input,
+.calc-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color 0.2s;
+}
+
+.calc-input:focus,
+.calc-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.calc-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem;
+  font-size: 1.1rem;
+}
+
+/* 결과 섹션 */
+.result-section {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-header h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.main-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+}
+
+.result-icon {
+  font-size: 2.5rem;
+}
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.result-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.result-unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.bmr-card {
+  border-left: 4px solid #f97316;
+}
+
+.tdee-card {
+  border-left: 4px solid #3b82f6;
+}
+
+/* 목표별 칼로리 */
+.goals-section {
+  margin-bottom: 2rem;
+}
+
+.goal-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.goal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.goal-card:hover {
+  transform: translateY(-2px);
+}
+
+.goal-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.goal-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.goal-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.goal-unit {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.loss-extreme {
+  background: rgba(239, 68, 68, 0.15);
+}
+.loss-extreme .goal-value { color: #ef4444; }
+
+.loss-moderate {
+  background: rgba(249, 115, 22, 0.15);
+}
+.loss-moderate .goal-value { color: #f97316; }
+
+.maintain {
+  background: rgba(34, 197, 94, 0.15);
+}
+.maintain .goal-value { color: #22c55e; }
+
+.gain-moderate {
+  background: rgba(59, 130, 246, 0.15);
+}
+.gain-moderate .goal-value { color: #3b82f6; }
+
+.gain-extreme {
+  background: rgba(139, 92, 246, 0.15);
+}
+.gain-extreme .goal-value { color: #8b5cf6; }
+
+/* 영양소 비율 */
+.macros-section {
+  margin-bottom: 1.5rem;
+}
+
+.macro-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.macro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.macro-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.macro-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.macro-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.macro-percent {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.macro-card.protein {
+  background: rgba(239, 68, 68, 0.1);
+}
+.macro-card.protein .macro-value { color: #ef4444; }
+
+.macro-card.carb {
+  background: rgba(234, 179, 8, 0.1);
+}
+.macro-card.carb .macro-value { color: #eab308; }
+
+.macro-card.fat {
+  background: rgba(34, 197, 94, 0.1);
+}
+.macro-card.fat .macro-value { color: #22c55e; }
+
+/* 도움말 */
+.tool-help {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.help-content p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 반응형 */
+@media (max-width: 640px) {
+  .main-results {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .macro-cards {
+    grid-template-columns: 1fr;
+  }
+}

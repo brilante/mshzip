@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>에코 챌린지 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .streak-card { background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 16px; padding: 2rem; color: white; text-align: center; margin-bottom: 1rem; }
+    .streak-value { font-size: 4rem; font-weight: 700; }
+    .streak-label { font-size: 0.9rem; opacity: 0.9; }
+    .stats-row { display: flex; justify-content: space-around; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 600; }
+    .stat-label { font-size: 0.7rem; opacity: 0.8; }
+    .challenge-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .challenge-card { background: var(--bg-primary); border-radius: 12px; padding: 1rem; border-left: 4px solid var(--border-color); transition: all 0.2s; }
+    .challenge-card.active { border-left-color: #22c55e; }
+    .challenge-card.completed { border-left-color: #3b82f6; opacity: 0.7; }
+    .challenge-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+    .challenge-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .challenge-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .badge-daily { background: #dcfce7; color: #166534; }
+    .badge-weekly { background: #dbeafe; color: #1e40af; }
+    .badge-monthly { background: #fef3c7; color: #92400e; }
+    .challenge-desc { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+    .challenge-progress { display: flex; align-items: center; gap: 0.75rem; }
+    .progress-bar { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.3s; }
+    .progress-text { font-size: 0.8rem; color: var(--text-secondary); min-width: 60px; text-align: right; }
+    .challenge-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .btn-action { padding: 0.4rem 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; }
+    .btn-check { background: #22c55e; color: white; }
+    .btn-join { background: var(--primary); color: white; }
+    .btn-leave { background: #ef4444; color: white; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .calendar-day.empty { background: transparent; }
+    .calendar-day.inactive { background: var(--bg-primary); color: var(--text-secondary); }
+    .calendar-day.completed { background: #22c55e; color: white; }
+    .calendar-day.today { border: 2px solid var(--primary); }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">에코 챌린지</h1>
+          <p class="tool-description">친환경 습관 만들기 챌린지</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="streak-card">
+        <div class="streak-label">연속 달성</div>
+        <div class="streak-value" id="streakDays">0</div>
+        <div class="streak-label">일</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value" id="totalCompleted">0</div>
+            <div class="stat-label">완료한 챌린지</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="activeCount">0</div>
+            <div class="stat-label">진행 중</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="totalPoints">0</div>
+            <div class="stat-label">획득 포인트</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">이번 달 기록</h3>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">진행 중인 챌린지</h3>
+        <div class="challenge-list" id="activeChallenges"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">참여 가능한 챌린지</h3>
+        <div class="challenge-list" id="availableChallenges"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="eco-challenge.js"></script>
+</body>
+</html>

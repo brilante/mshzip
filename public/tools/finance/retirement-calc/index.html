@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>은퇴 자금 계산기 - ALLINONE</title>
+    <link rel="stylesheet" href="retirement-calc.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>은퇴 자금 계산기</h1>
+            <p class="subtitle">은퇴까지 필요한 자금과 저축 계획을 세워보세요</p>
+        </header>
+        <main class="main-content">
+            <div class="calc-section">
+                <h2>기본 정보</h2>
+                <div class="input-group">
+                    <label>현재 나이</label>
+                    <input type="number" id="currentAge" value="30" min="18" max="80">
+                    <span class="unit">세</span>
+                </div>
+                <div class="input-group">
+                    <label>은퇴 희망 나이</label>
+                    <input type="number" id="retireAge" value="60" min="40" max="80">
+                    <span class="unit">세</span>
+                </div>
+                <div class="input-group">
+                    <label>기대 수명</label>
+                    <input type="number" id="lifeExpectancy" value="85" min="60" max="100">
+                    <span class="unit">세</span>
+                </div>
+                <h2>재정 정보</h2>
+                <div class="input-group">
+                    <label>현재 저축액</label>
+                    <input type="number" id="currentSavings" value="50000000" min="0" step="1000000">
+                    <span class="unit">원</span>
+                </div>
+                <div class="input-group">
+                    <label>월 저축 가능액</label>
+                    <input type="number" id="monthlySavings" value="1000000" min="0" step="100000">
+                    <span class="unit">원</span>
+                </div>
+                <div class="input-group">
+                    <label>은퇴 후 월 생활비</label>
+                    <input type="number" id="monthlyExpense" value="3000000" min="0" step="100000">
+                    <span class="unit">원</span>
+                </div>
+                <h2>수익률 설정</h2>
+                <div class="input-group">
+                    <label>연평균 투자 수익률 (은퇴 전)</label>
+                    <input type="number" id="preRetireReturn" value="6" min="0" max="20" step="0.5">
+                    <span class="unit">%</span>
+                </div>
+                <div class="input-group">
+                    <label>연평균 투자 수익률 (은퇴 후)</label>
+                    <input type="number" id="postRetireReturn" value="3" min="0" max="20" step="0.5">
+                    <span class="unit">%</span>
+                </div>
+                <div class="input-group">
+                    <label>예상 물가 상승률</label>
+                    <input type="number" id="inflationRate" value="2.5" min="0" max="10" step="0.5">
+                    <span class="unit">%</span>
+                </div>
+                <button class="calc-btn" onclick="calculate()" aria-label="계산하기">계산하기</button>
+            </div>
+            <div class="result-section" id="resultSection">
+                <h2>계산 결과</h2>
+                <div class="result-cards">
+                    <div class="result-card">
+                        <span class="label">은퇴까지 남은 기간</span>
+                        <span class="value" id="yearsToRetire">-</span>
+                    </div>
+                    <div class="result-card">
+                        <span class="label">은퇴 후 생활 기간</span>
+                        <span class="value" id="retirementYears">-</span>
+                    </div>
+                    <div class="result-card primary">
+                        <span class="label">필요 은퇴 자금</span>
+                        <span class="value" id="requiredFund">-</span>
+                    </div>
+                    <div class="result-card">
+                        <span class="label">은퇴 시점 예상 자산</span>
+                        <span class="value" id="expectedFund">-</span>
+                    </div>
+                    <div class="result-card" id="gapCard">
+                        <span class="label">자금 과부족</span>
+                        <span class="value" id="fundGap">-</span>
+                    </div>
+                    <div class="result-card">
+                        <span class="label">추가 필요 월 저축액</span>
+                        <span class="value" id="additionalSavings">-</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fundChart" width="600" height="300"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="retirement-calc.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

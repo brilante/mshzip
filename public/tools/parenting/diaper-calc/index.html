@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기저귀 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .input-row { display: flex; gap: 0.5rem; align-items: center; }
+    .input-row input, .input-row select { flex: 1; }
+    .result-display { text-align: center; padding: 2rem; background: linear-gradient(135deg, #10b981, #059669); border-radius: 16px; color: white; margin: 1rem 0; }
+    .result-value { font-size: 2.5rem; font-weight: 700; }
+    .result-label { font-size: 0.9rem; opacity: 0.9; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1rem 0; }
+    .stat-card { background: var(--bg-primary); padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .size-guide { margin-top: 1rem; }
+    .size-item { display: flex; justify-content: space-between; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .size-item.active { background: var(--primary); color: white; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">기저귀 계산기</h1>
+          <p class="tool-description">기저귀 사용량 및 비용 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="input-group">
+          <label class="input-label">아기 개월수</label>
+          <div class="input-row">
+            <input type="number" id="ageMonths" class="tool-input" value="3" min="0" max="36" oninput="DiaperCalc.calculate()">
+            <span style="color: var(--text-secondary);">개월</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">기저귀 사이즈</label>
+          <select id="diaperSize" class="tool-input" onchange="DiaperCalc.calculate()">
+            <option value="nb">신생아 (NB)</option>
+            <option value="s">소형 (S)</option>
+            <option value="m" selected>중형 (M)</option>
+            <option value="l">대형 (L)</option>
+            <option value="xl">특대형 (XL)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">하루 사용량</label>
+          <div class="input-row">
+            <input type="number" id="dailyUsage" class="tool-input" value="8" min="1" max="15" oninput="DiaperCalc.calculate()">
+            <span style="color: var(--text-secondary);">개</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">1개당 가격</label>
+          <div class="input-row">
+            <input type="number" id="pricePerUnit" class="tool-input" value="300" step="10" oninput="DiaperCalc.calculate()">
+            <span style="color: var(--text-secondary);">원</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-display">
+        <div class="result-label">월간 예상 비용</div>
+        <div class="result-value" id="monthlyCost">0원</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="monthlyCount">0개</div>
+          <div class="stat-label">월간 사용량</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="yearlyCount">0개</div>
+          <div class="stat-label">연간 사용량</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="weeklyCost">0원</div>
+          <div class="stat-label">주간 비용</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="yearlyCost">0원</div>
+          <div class="stat-label">연간 비용</div>
+        </div>
+      </div>
+
+      <div class="util-panel size-guide">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">사이즈 가이드</h3>
+        <div class="size-item" id="sizeNb">
+          <span>신생아 (NB)</span>
+          <span>~4kg</span>
+        </div>
+        <div class="size-item" id="sizeS">
+          <span>소형 (S)</span>
+          <span>4~8kg</span>
+        </div>
+        <div class="size-item" id="sizeM">
+          <span>중형 (M)</span>
+          <span>6~11kg</span>
+        </div>
+        <div class="size-item" id="sizeL">
+          <span>대형 (L)</span>
+          <span>9~14kg</span>
+        </div>
+        <div class="size-item" id="sizeXl">
+          <span>특대형 (XL)</span>
+          <span>12kg~</span>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">월령별 평균 사용량</h3>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8;">
+          <div>0-1개월: 10-12개/일</div>
+          <div>1-3개월: 8-10개/일</div>
+          <div>3-6개월: 6-8개/일</div>
+          <div>6-12개월: 5-7개/일</div>
+          <div>12개월+: 4-6개/일</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="diaper-calc.js"></script>
+</body>
+</html>

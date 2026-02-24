@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팀 분배기 - JEOGI Tools</title>
+  <link rel="stylesheet" href="team-picker.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>팀 분배기</h1>
+      <p class="subtitle">참가자를 랜덤하게 팀으로 나눠보세요</p>
+    </header>
+
+    <main class="main-content">
+      <section class="input-section">
+        <h3>참가자 입력</h3>
+        <div class="input-methods">
+          <div class="single-input">
+            <input type="text" id="memberInput" placeholder="이름 입력 후 Enter" / aria-label="이름 입력 후 Enter">
+            <button id="addMemberBtn" aria-label="추가">추가</button>
+          </div>
+          <div class="bulk-input">
+            <textarea id="bulkInput" placeholder="여러 명 입력 (줄바꿈 또는 쉼표로 구분)"></textarea>
+            <button id="bulkAddBtn" aria-label="일괄 추가">일괄 추가</button>
+          </div>
+        </div>
+
+        <div class="members-list">
+          <div class="members-header">
+            <span>참가자 (<span id="memberCount">0</span>명)</span>
+            <button id="clearMembersBtn" aria-label="전체 삭제">전체 삭제</button>
+          </div>
+          <div class="members-tags" id="membersTags"></div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>팀 설정</h3>
+        <div class="settings-options">
+          <div class="setting-item">
+            <label>
+              <input type="radio" name="teamMode" value="count" checked />
+              팀 개수로 나누기
+            </label>
+            <input type="number" id="teamCount" value="2" min="2" max="20" />
+          </div>
+          <div class="setting-item">
+            <label>
+              <input type="radio" name="teamMode" value="size" />
+              팀 인원수로 나누기
+            </label>
+            <input type="number" id="teamSize" value="4" min="1" max="20" disabled />
+          </div>
+        </div>
+
+        <button class="shuffle-btn" id="shuffleBtn">
+          <span></span> 팀 나누기!
+        </button>
+      </section>
+
+      <section class="result-section" id="resultSection" style="display:none;">
+        <h3>결과</h3>
+        <div class="teams-container" id="teamsContainer"></div>
+        <div class="result-actions">
+          <button id="reshuffleBtn" aria-label="다시 섞기">다시 섞기</button>
+          <button id="copyResultBtn" aria-label="결과 복사">결과 복사</button>
+        </div>
+      </section>
+
+      <section class="history-section">
+        <h3>이전 결과</h3>
+        <div class="history-list" id="historyList"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="team-picker.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

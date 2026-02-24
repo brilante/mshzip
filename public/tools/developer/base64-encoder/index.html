@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base64 인코더/디코더 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="base64-encoder.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon">B64</div>
+        <div>
+          <h1 class="tool-title">Base64 인코더/디코더</h1>
+          <p class="tool-description">텍스트, 이미지, 파일의 Base64 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">
+          ← 뒤로
+        </button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      // iframe 내부인지 확인하고 헤더 숨김
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      // 뒤로가기 함수
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 탭 -->
+    <div class="tool-tabs">
+      <button class="tool-tab active" data-tab="text" onclick="Base64Encoder.switchTab('text')" aria-label="텍스트">
+        텍스트
+      </button>
+      <button class="tool-tab" data-tab="image" onclick="Base64Encoder.switchTab('image')" aria-label="이미지">
+        이미지
+      </button>
+      <button class="tool-tab" data-tab="file" onclick="Base64Encoder.switchTab('file')" aria-label="파일">
+        파일
+      </button>
+    </div>
+
+    <!-- 옵션 -->
+    <div class="tool-options">
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="urlSafe"> URL Safe 모드
+        </label>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="lineBreak"> 줄바꿈 (76자)
+        </label>
+      </div>
+    </div>
+
+    <!-- 텍스트 탭 -->
+    <div id="textTab" class="tab-content active">
+      <div class="tool-panel">
+        <!-- 입력 패널 -->
+        <div class="input-panel">
+          <div class="panel-title">입력 텍스트</div>
+          <textarea
+            id="textInput"
+            class="tool-textarea"
+            placeholder="인코딩할 텍스트를 입력하세요..."
+            spellcheck="false"
+          ></textarea>
+          <div class="tool-actions">
+            <button class="tool-btn tool-btn-primary" onclick="Base64Encoder.encode()" aria-label="인코딩 →">
+              인코딩 →
+            </button>
+            <button class="tool-btn tool-btn-secondary" onclick="Base64Encoder.clearText()" aria-label="초기화">
+              초기화
+            </button>
+          </div>
+        </div>
+
+        <!-- 출력 패널 -->
+        <div class="output-panel">
+          <div class="panel-title">Base64 결과</div>
+          <button class="copy-btn" onclick="Base64Encoder.copyOutput()" aria-label="복사">복사</button>
+          <textarea
+            id="base64Output"
+            class="tool-textarea"
+            placeholder="Base64로 인코딩된 결과가 여기에 표시됩니다..."
+            spellcheck="false"
+          ></textarea>
+          <div class="tool-actions">
+            <button class="tool-btn tool-btn-primary" onclick="Base64Encoder.decode()" aria-label="← 디코딩">
+              ← 디코딩
+            </button>
+            <button class="tool-btn tool-btn-secondary" onclick="Base64Encoder.downloadText()" aria-label="다운로드">
+              다운로드
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이미지 탭 -->
+    <div id="imageTab" class="tab-content">
+      <div class="tool-panel image-panel">
+        <!-- 이미지 업로드 영역 -->
+        <div class="upload-area">
+          <div class="upload-zone" id="imageDropZone">
+            <div class="upload-icon"></div>
+            <p class="upload-text">이미지를 드래그하거나 클릭하여 업로드</p>
+            <p class="upload-hint">PNG, JPG, GIF, WebP, SVG 지원</p>
+            <input type="file" id="imageInput" accept="image/*" hidden>
+          </div>
+          <div class="image-preview" id="imagePreview" style="display: none;">
+            <img id="previewImg" alt="미리보기">
+            <button class="remove-btn" onclick="Base64Encoder.removeImage()" aria-label=""></button>
+          </div>
+        </div>
+
+        <!-- Base64 결과 -->
+        <div class="output-panel">
+          <div class="panel-title">이미지 Base64</div>
+          <div class="output-options">
+            <label>
+              <input type="checkbox" id="includeDataUri" checked> Data URI 포함
+            </label>
+          </div>
+          <button class="copy-btn" onclick="Base64Encoder.copyImageOutput()" aria-label="복사">복사</button>
+          <textarea
+            id="imageBase64Output"
+            class="tool-textarea"
+            placeholder="이미지의 Base64 결과가 여기에 표시됩니다..."
+            readonly
+          ></textarea>
+          <div class="tool-actions">
+            <button class="tool-btn tool-btn-secondary" onclick="Base64Encoder.downloadImageBase64()" aria-label="텍스트 다운로드">
+              텍스트 다운로드
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Base64 → 이미지 변환 -->
+      <div class="decode-section">
+        <h3 class="section-title">Base64 → 이미지 변환</h3>
+        <textarea
+          id="imageBase64Input"
+          class="tool-textarea"
+          placeholder="이미지 Base64 문자열을 붙여넣으세요...&#10;(Data URI 형식 또는 순수 Base64 모두 지원)"
+          spellcheck="false"
+        ></textarea>
+        <div class="tool-actions">
+          <button class="tool-btn tool-btn-primary" onclick="Base64Encoder.decodeImage()" aria-label="이미지로 변환">
+            이미지로 변환
+          </button>
+        </div>
+        <div class="decoded-image" id="decodedImageArea" style="display: none;">
+          <img id="decodedImg" alt="변환된 이미지">
+          <button class="tool-btn tool-btn-secondary" onclick="Base64Encoder.downloadDecodedImage()" aria-label="이미지 다운로드">
+            이미지 다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 파일 탭 -->
+    <div id="fileTab" class="tab-content">
+      <div class="tool-panel file-panel">
+        <!-- 파일 업로드 영역 -->
+        <div class="upload-area">
+          <div class="upload-zone" id="fileDropZone">
+            <div class="upload-icon"></div>
+            <p class="upload-text">파일을 드래그하거나 클릭하여 업로드</p>
+            <p class="upload-hint">최대 10MB, 모든 파일 형식 지원</p>
+            <input type="file" id="fileInput" hidden>
+          </div>
+          <div class="file-info" id="fileInfo" style="display: none;">
+            <div class="file-icon"></div>
+            <div class="file-details">
+              <span class="file-name" id="fileName"></span>
+              <span class="file-size" id="fileSize"></span>
+            </div>
+            <button class="remove-btn" onclick="Base64Encoder.removeFile()" aria-label=""></button>
+          </div>
+        </div>
+
+        <!-- Base64 결과 -->
+        <div class="output-panel">
+          <div class="panel-title">파일 Base64</div>
+          <button class="copy-btn" onclick="Base64Encoder.copyFileOutput()" aria-label="복사">복사</button>
+          <textarea
+            id="fileBase64Output"
+            class="tool-textarea"
+            placeholder="파일의 Base64 결과가 여기에 표시됩니다..."
+            readonly
+          ></textarea>
+          <div class="tool-actions">
+            <button class="tool-btn tool-btn-secondary" onclick="Base64Encoder.downloadFileBase64()" aria-label="텍스트 다운로드">
+              텍스트 다운로드
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="tool-stats" id="stats" style="display: none;">
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statOriginalSize">0</div>
+        <div class="tool-stat-label">원본 크기</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statEncodedSize">0</div>
+        <div class="tool-stat-label">인코딩 크기</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statRatio">0%</div>
+        <div class="tool-stat-label">크기 비율</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statCharCount">0</div>
+        <div class="tool-stat-label">문자 수</div>
+      </div>
+    </div>
+
+    <!-- 에러 표시 -->
+    <div id="errorPanel" class="error-panel" style="display: none;">
+      <div class="error-title">오류</div>
+      <div id="errorMessage" class="error-message"></div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="base64-encoder.js"></script>
+</body>
+</html>

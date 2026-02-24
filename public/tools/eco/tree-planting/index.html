@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나무 심기 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .result-card { background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 16px; padding: 2rem; color: white; text-align: center; margin-bottom: 1rem; }
+    .tree-visual { font-size: 4rem; margin-bottom: 0.5rem; }
+    .result-value { font-size: 3rem; font-weight: 700; }
+    .result-unit { font-size: 1rem; }
+    .result-label { font-size: 0.9rem; opacity: 0.9; margin-top: 0.5rem; }
+    .impact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem; }
+    .impact-item { background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 8px; text-align: center; }
+    .impact-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .impact-value { font-size: 1.25rem; font-weight: 600; }
+    .impact-label { font-size: 0.7rem; opacity: 0.8; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block; }
+    .tree-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem; }
+    .tree-card { background: var(--bg-primary); border-radius: 12px; padding: 1rem; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .tree-card:hover { border-color: var(--primary); }
+    .tree-card.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+    .tree-icon { font-size: 2rem; margin-bottom: 0.25rem; }
+    .tree-name { font-weight: 600; font-size: 0.9rem; }
+    .tree-co2 { font-size: 0.75rem; color: var(--text-secondary); }
+    .forest-visual { display: flex; flex-wrap: wrap; gap: 4px; padding: 1rem; background: var(--bg-primary); border-radius: 8px; min-height: 80px; justify-content: center; align-items: center; }
+    .mini-tree { font-size: 1.25rem; animation: grow 0.3s ease-out; }
+    @keyframes grow { from { transform: scale(0); } to { transform: scale(1); } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">나무 심기 계산기</h1>
+          <p class="tool-description">탄소 상쇄에 필요한 나무 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="result-card">
+        <div class="tree-visual"></div>
+        <div><span class="result-value" id="treesNeeded">0</span><span class="result-unit"> 그루</span></div>
+        <div class="result-label">탄소 상쇄에 필요한 나무</div>
+        <div class="impact-grid">
+          <div class="impact-item">
+            <div class="impact-icon"></div>
+            <div class="impact-value" id="co2Absorbed">0</div>
+            <div class="impact-label">CO₂ 흡수량 (kg/년)</div>
+          </div>
+          <div class="impact-item">
+            <div class="impact-icon"></div>
+            <div class="impact-value" id="o2Produced">0</div>
+            <div class="impact-label">산소 생산 (kg/년)</div>
+          </div>
+          <div class="impact-item">
+            <div class="impact-icon"></div>
+            <div class="impact-value" id="areaNeeded">0</div>
+            <div class="impact-label">필요 면적 (m²)</div>
+          </div>
+          <div class="impact-item">
+            <div class="impact-icon"></div>
+            <div class="impact-value" id="costEstimate">0</div>
+            <div class="impact-label">예상 비용 (만원)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">탄소 배출량 입력</h3>
+        <div class="input-group">
+          <label class="input-label">연간 CO₂ 배출량 (kg)</label>
+          <input type="number" id="co2Input" class="tool-input" value="2000" oninput="TreePlanting.calculate()">
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            한국인 평균: 약 11,000 kg/년
+          </div>
+        </div>
+
+        <h3 style="font-weight: 600; margin: 1rem 0 0.75rem;">나무 종류 선택</h3>
+        <div class="tree-types" id="treeTypes"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">나의 숲</h3>
+        <div class="forest-visual" id="forestVisual">
+          <span style="color: var(--text-secondary);">나무를 심어보세요</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="tree-planting.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webhook 테스터 | Webhook Tester</title>
+  <link rel="stylesheet" href="webhook-tester.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>Webhook 테스터</h1>
+      <p>Webhook 페이로드를 생성하고 테스트하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="webhook-info">
+        <div class="info-card">
+          <h4>Webhook 테스트 방법</h4>
+          <p>실제 Webhook을 테스트하려면 <a href="https://webhook.site" target="_blank">webhook.site</a> 또는 <a href="https://requestbin.com" target="_blank">RequestBin</a>에서 임시 URL을 생성하세요.</p>
+        </div>
+      </div>
+
+      <div class="send-section">
+        <div class="form-group">
+          <label>Webhook URL</label>
+          <input type="text" id="webhookUrl" placeholder="https://webhook.site/your-unique-url" aria-label="https://webhook.site/your-unique-url">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Method</label>
+            <select id="method">
+              <option value="POST" selected>POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Content-Type</label>
+            <select id="contentType">
+              <option value="application/json" selected>application/json</option>
+              <option value="application/x-www-form-urlencoded">form-urlencoded</option>
+              <option value="text/plain">text/plain</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Payload</label>
+          <textarea id="payload" rows="10">{
+  "event": "user.created",
+  "data": {
+    "id": 12345,
+    "name": "홍길동",
+    "email": "hong@example.com",
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Custom Headers (선택)</label>
+          <textarea id="customHeaders" rows="3">{
+  "X-Webhook-Secret": "your-secret-key"
+}</textarea>
+        </div>
+
+        <button class="send-btn" onclick="sendWebhook()" aria-label="Webhook 전송">Webhook 전송</button>
+      </div>
+
+      <div class="templates-section">
+        <h4>페이로드 템플릿</h4>
+        <div class="templates-grid">
+          <button onclick="loadTemplate('github')" aria-label="GitHub Push">GitHub Push</button>
+          <button onclick="loadTemplate('stripe')" aria-label="Stripe Payment">Stripe Payment</button>
+          <button onclick="loadTemplate('slack')" aria-label="Slack Message">Slack Message</button>
+          <button onclick="loadTemplate('custom')" aria-label="사용자 이벤트">사용자 이벤트</button>
+        </div>
+      </div>
+
+      <div class="response-section" id="responseSection" style="display: none;">
+        <h4>응답</h4>
+        <div class="response-info" id="responseInfo"></div>
+        <pre id="responseBody"></pre>
+      </div>
+    </div>
+  </div>
+  <script src="webhook-tester.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

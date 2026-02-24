@@ -1,0 +1,2010 @@
+/**
+ * 관리자 UI 스타일
+ *
+ * 포함된 스타일:
+ * 1. 비밀번호 확인 팝업
+ * 2. 관리자 메뉴 섹션
+ * 3. 에러 로그 검색 UI
+ */
+
+/* ============================================ */
+/* 1. 관리자 비밀번호 확인 팝업 */
+/* ============================================ */
+
+.admin-password-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100002; /* 설정 팝업(99999) 위에 표시 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-password-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.admin-password-modal {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: adminModalFadeIn 0.2s ease-out;
+}
+
+@keyframes adminModalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-password-modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-password-modal p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.admin-password-modal input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.admin-password-modal input[type="password"]:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.admin-password-modal input[type="password"].error {
+  border-color: #f44336;
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+.admin-password-error {
+  min-height: 20px;
+  margin: 8px 0 12px 0;
+  font-size: 12px;
+  color: #f44336;
+}
+
+.admin-password-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.admin-password-buttons button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+#adminPasswordCancelBtn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+#adminPasswordCancelBtn:hover {
+  background: #e8e8e8;
+}
+
+#adminPasswordConfirmBtn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+}
+
+#adminPasswordConfirmBtn:hover {
+  background: #43a047;
+}
+
+#adminPasswordConfirmBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ============================================ */
+/* 2. 관리자 메뉴 섹션 (설정 페이지 내) */
+/* ============================================ */
+
+.admin-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.admin-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #d32f2f;
+  margin-bottom: 16px;
+}
+
+.admin-section .admin-icon {
+  font-size: 18px;
+}
+
+.admin-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-menu-item:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.admin-menu-item .menu-icon {
+  font-size: 18px;
+  margin-right: 12px;
+}
+
+.admin-menu-item .menu-label {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.admin-menu-item .menu-arrow {
+  font-size: 18px;
+  color: #999;
+}
+
+/* ============================================ */
+/* 3. 에러 로그 검색 UI */
+/* ============================================ */
+
+.admin-logs-container {
+  padding: 20px;
+}
+
+/* 필터 영역 */
+.admin-logs-filters {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-logs-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-logs-filters-row:last-child {
+  margin-bottom: 0;
+}
+
+.admin-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-filter-group label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.admin-filter-group select,
+.admin-filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+}
+
+.admin-filter-group select:focus,
+.admin-filter-group input:focus {
+  border-color: #4CAF50;
+}
+
+/* 레벨 버튼 그룹 */
+.level-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.level-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.level-btn:hover {
+  background: #f0f0f0;
+}
+
+.level-btn.active {
+  color: white;
+  border: 2px solid #333;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 전체 버튼 - 모노크롬 */
+.level-btn:not(.critical):not(.error):not(.warning):not(.info).active {
+  background: transparent;
+  border-color: #1d1d1f;
+  color: #1d1d1f;
+}
+
+.level-btn.critical { background: transparent; border: 1px solid #d2d2d7; color: #86868b; }
+.level-btn.critical.active { border-color: #1d1d1f; color: #1d1d1f; background: transparent; }
+.level-btn.error { background: transparent; border: 1px solid #d2d2d7; color: #86868b; }
+.level-btn.error.active { border-color: #1d1d1f; color: #1d1d1f; }
+.level-btn.warning { background: transparent; border: 1px solid #d2d2d7; color: #86868b; }
+.level-btn.warning.active { border-color: #1d1d1f; color: #1d1d1f; background: transparent; }
+.level-btn.info { background: transparent; border: 1px solid #d2d2d7; color: #86868b; }
+.level-btn.info.active { border-color: #1d1d1f; color: #1d1d1f; }
+.level-btn.debug { background: transparent; border: 1px solid #d2d2d7; color: #86868b; }
+.level-btn.debug.active { border-color: #1d1d1f; color: #1d1d1f; }
+
+/* 기간 프리셋 버튼 */
+.period-presets {
+  display: flex;
+  gap: 6px;
+}
+
+.period-preset-btn {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.period-preset-btn:hover {
+  background: #f0f0f0;
+}
+
+.period-preset-btn.active {
+  background: transparent;
+  color: #1d1d1f;
+  border-color: #1d1d1f;
+}
+
+/* 필터 버튼 */
+.admin-filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-filter-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.admin-filter-btn.search {
+  background: transparent;
+  color: #86868b;
+  border: 1px solid #d2d2d7;
+}
+
+.admin-filter-btn.search:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+}
+
+.admin-filter-btn.reset {
+  background: transparent;
+  border: 1px solid #d2d2d7;
+  color: #86868b;
+}
+
+.admin-filter-btn.reset:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+}
+
+.admin-filter-btn.delete {
+  background: transparent;
+  color: #86868b;
+  border: 1px solid #d2d2d7;
+}
+
+.admin-filter-btn.delete:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+}
+
+/* 통계 요약 */
+.admin-logs-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.admin-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-stat-item .stat-badge {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.admin-stat-item .stat-badge.critical { background: #d32f2f; }
+.admin-stat-item .stat-badge.error { background: #f57c00; }
+.admin-stat-item .stat-badge.warning { background: #fbc02d; }
+.admin-stat-item .stat-badge.info { background: #4caf50; }
+
+.admin-stat-item .stat-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.admin-stat-item .stat-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 로그 테이블 */
+.admin-logs-table-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.admin-logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-logs-table th,
+.admin-logs-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.admin-logs-table th {
+  background: #f8f9fa;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.admin-logs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-logs-table tr:hover {
+  background: #f8f9fa;
+}
+
+.admin-logs-table tr.clickable {
+  cursor: pointer;
+}
+
+/* 레벨 배지 */
+.log-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.log-level-badge.critical {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.log-level-badge.error {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.log-level-badge.warning {
+  background: #fffde7;
+  color: #f9a825;
+}
+
+.log-level-badge.info {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.log-level-badge.debug {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+/* 상태 체크박스 */
+.log-resolved-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* 페이지네이션 */
+.admin-logs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-page-btn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.admin-page-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-page-info {
+  font-size: 13px;
+  color: #666;
+  padding: 0 12px;
+}
+
+/* 로그 상세 모달 */
+.admin-log-detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100003;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-log-detail-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.admin-log-detail-content {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 700px;
+  max-height: 80vh;
+  width: 90%;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-log-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.admin-log-detail-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.admin-log-detail-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.admin-log-detail-close:hover {
+  color: #666;
+}
+
+.admin-log-detail-info {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.admin-log-detail-info .label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.admin-log-detail-info .value {
+  font-size: 13px;
+  color: #333;
+  word-break: break-all;
+}
+
+.admin-log-stack {
+  margin-top: 20px;
+}
+
+.admin-log-stack h4 {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.admin-log-stack pre {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.admin-log-detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.admin-action-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.admin-action-btn.resolve {
+  background: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.admin-action-btn.resolve:hover {
+  background: #43a047;
+}
+
+.admin-action-btn.unresolve {
+  background: #ff9800;
+  color: white;
+  border: none;
+}
+
+.admin-action-btn.unresolve:hover {
+  background: #f57c00;
+}
+
+.admin-action-btn.copy {
+  background: white;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.admin-action-btn.copy:hover {
+  background: #f5f5f5;
+}
+
+/* 로딩 상태 */
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #666;
+}
+
+.admin-loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: adminSpin 0.8s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes adminSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 빈 상태 */
+.admin-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.admin-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.admin-empty-text {
+  font-size: 14px;
+}
+
+/* ============================================ */
+/* 반응형 레이아웃 */
+/* ============================================ */
+
+@media (max-width: 768px) {
+  .admin-password-modal {
+    padding: 20px;
+    max-width: 100%;
+    margin: 0 16px;
+  }
+
+  .admin-logs-filters-row {
+    flex-direction: column;
+  }
+
+  .admin-filter-group {
+    width: 100%;
+  }
+
+  .admin-filter-buttons {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .admin-logs-stats {
+    flex-direction: column;
+  }
+
+  .admin-logs-table-container {
+    overflow-x: auto;
+  }
+
+  .admin-log-detail-info {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-log-detail-info .label {
+    color: #999;
+    font-size: 12px;
+  }
+}
+
+/* ============================================ */
+/* 다크모드 스타일 */
+/* ============================================ */
+
+[data-theme="dark"] .admin-password-modal {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-password-modal h3 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-password-modal p {
+  color: #888888 !important;
+}
+
+[data-theme="dark"] .admin-password-modal input[type="password"] {
+  background-color: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-password-modal input[type="password"]:focus {
+  border-color: #4CAF50 !important;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2) !important;
+}
+
+[data-theme="dark"] #adminPasswordCancelBtn {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #adminPasswordCancelBtn:hover {
+  background: #3a3a3a !important;
+}
+
+[data-theme="dark"] .admin-section {
+  border-top-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-menu-item {
+  background: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-menu-item:hover {
+  background: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-menu-item .menu-label {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-logs-filters {
+  background: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-filter-group select,
+[data-theme="dark"] .admin-filter-group input {
+  background-color: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .level-btn {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .period-preset-btn {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-filter-btn.reset {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-filter-btn.delete {
+  background: #c62828 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-filter-btn.delete:hover {
+  background: #b71c1c !important;
+}
+
+[data-theme="dark"] .admin-logs-stats {
+  background: #1a1a1a !important;
+}
+
+[data-theme="dark"] .admin-stat-item {
+  background: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-stat-item .stat-label {
+  color: #888888 !important;
+}
+
+[data-theme="dark"] .admin-stat-item .stat-count {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-logs-table-container {
+  border-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-logs-table th {
+  background: #1a1a1a !important;
+  color: #888888 !important;
+}
+
+[data-theme="dark"] .admin-logs-table td {
+  border-bottom-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-logs-table tr:hover {
+  background: #1a1a1a !important;
+}
+
+[data-theme="dark"] .admin-page-btn {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-log-detail-content {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-log-detail-header h3 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-log-detail-info .label {
+  color: #888888 !important;
+}
+
+[data-theme="dark"] .admin-log-detail-info .value {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-log-stack pre {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-log-detail-actions {
+  border-top-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .admin-action-btn.copy {
+  background: #2a2a2a !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
+}
+
+/* ============================================ */
+/* 6. 모델 동기화 로그 스타일 */
+/* ============================================ */
+
+/* 서비스 배지 */
+.service-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.service-badge.gpt {
+  background: #10a37f;
+  color: white;
+}
+
+.service-badge.claude {
+  background: #d97706;
+  color: white;
+}
+
+.service-badge.gemini {
+  background: #4285f4;
+  color: white;
+}
+
+.service-badge.grok {
+  background: #6366f1;
+  color: white;
+}
+
+/* 상태 배지 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-badge.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* 배치 종류 배지 */
+.batch-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.batch-type-badge[data-batch-type="model_sync"] {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.batch-type-badge[data-batch-type="exchange_rate"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.batch-type-badge[data-batch-type="subscription"] {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.batch-type-badge[data-batch-type="credit_rate"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.batch-type-badge[data-batch-type="backup"] {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.batch-type-badge[data-batch-type="error_cleanup"] {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.batch-type-badge[data-batch-type="daily_credit"] {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.batch-type-badge[data-batch-type="qa_auto_reply"] {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+/* 다크 모드 배치 종류 배지 */
+[data-theme="dark"] .batch-type-badge {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="model_sync"] {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="exchange_rate"] {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="subscription"] {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="credit_rate"] {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="backup"] {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="error_cleanup"] {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f9a8d4;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="daily_credit"] {
+  background: rgba(20, 184, 166, 0.2);
+  color: #5eead4;
+}
+
+[data-theme="dark"] .batch-type-badge[data-batch-type="qa_auto_reply"] {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fdba74;
+}
+
+/* 동기화 로그 테이블 스타일 조정 */
+#modelSyncLogsTableBody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#modelSyncLogsTableBody td:first-child {
+  text-align: left;
+}
+
+#modelSyncLogsTableBody td:last-child {
+  text-align: left;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 다크 모드 지원 */
+[data-theme="dark"] .service-badge.gpt {
+  background: #10a37f;
+}
+
+[data-theme="dark"] .service-badge.claude {
+  background: #d97706;
+}
+
+[data-theme="dark"] .service-badge.gemini {
+  background: #4285f4;
+}
+
+[data-theme="dark"] .service-badge.grok {
+  background: #6366f1;
+}
+
+[data-theme="dark"] .status-badge.success {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+[data-theme="dark"] .status-badge.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+/* ============================================ */
+/* 5. 동기화 로그 상세 팝업 */
+/* ============================================ */
+
+/* 클릭 가능한 행 스타일 */
+.sync-log-row.clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.sync-log-row.clickable:hover {
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+[data-theme="dark"] .sync-log-row.clickable:hover {
+  background-color: rgba(99, 102, 241, 0.15);
+}
+
+/* 상세 팝업 섹션 */
+.sync-detail-section {
+  margin-bottom: 24px;
+}
+
+.sync-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.sync-detail-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+[data-theme="dark"] .sync-detail-title {
+  color: #e5e7eb;
+  border-bottom-color: #4b5563;
+}
+
+/* 기본 정보 그리드 */
+.sync-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.sync-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+[data-theme="dark"] .sync-detail-item {
+  background: #374151;
+}
+
+.sync-detail-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .sync-detail-label {
+  color: #9ca3af;
+}
+
+.sync-detail-value {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .sync-detail-value {
+  color: #f3f4f6;
+}
+
+/* 모델 통계 박스 */
+.sync-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.sync-stat-box {
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 2px solid transparent;
+}
+
+[data-theme="dark"] .sync-stat-box {
+  background: #374151;
+}
+
+.sync-stat-box.found {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.sync-stat-box.added {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.sync-stat-box.updated {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.sync-stat-box.deprecated {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+[data-theme="dark"] .sync-stat-box.found {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="dark"] .sync-stat-box.added {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme="dark"] .sync-stat-box.updated {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] .sync-stat-box.deprecated {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.sync-stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+[data-theme="dark"] .sync-stat-number {
+  color: #f3f4f6;
+}
+
+.sync-stat-box.found .sync-stat-number { color: #6366f1; }
+.sync-stat-box.added .sync-stat-number { color: #10b981; }
+.sync-stat-box.updated .sync-stat-number { color: #3b82f6; }
+.sync-stat-box.deprecated .sync-stat-number { color: #f59e0b; }
+
+.sync-stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .sync-stat-label {
+  color: #9ca3af;
+}
+
+/* 에러 메시지 박스 */
+.sync-detail-error {
+  padding: 14px 16px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+[data-theme="dark"] .sync-detail-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* 반응형 */
+@media (max-width: 640px) {
+  .sync-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sync-detail-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 동기화 로그 삭제 버튼 */
+.sync-log-delete-btn {
+  padding: 2px 6px;
+  font-size: 11px;
+  background: #fecaca;
+  color: #991b1b;
+  border: 1px solid #f87171;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sync-log-delete-btn:hover {
+  background: #fca5a5;
+  border-color: #ef4444;
+}
+
+/* 다크모드 */
+.dark .sync-log-delete-btn {
+  background: rgba(254, 202, 202, 0.2);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.dark .sync-log-delete-btn:hover {
+  background: rgba(252, 165, 165, 0.3);
+  border-color: #f87171;
+}
+
+/* 로그 생성 설정 */
+.admin-logs-generation {
+  background: #f0f5ff;
+  border: 1px solid #b0c4de;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.admin-logs-generation-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-logs-generation-header label {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 14px;
+}
+
+.admin-logs-generation-header .generation-desc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.admin-logs-generation-options {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.log-gen-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.log-gen-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.log-gen-checkbox.critical {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.log-gen-checkbox.error {
+  background: rgba(234, 88, 12, 0.1);
+  color: #ea580c;
+}
+
+.log-gen-checkbox.warning {
+  background: rgba(202, 138, 4, 0.1);
+  color: #ca8a04;
+}
+
+.log-gen-checkbox.info {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.log-gen-checkbox.debug {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+/* 다크모드 */
+.dark .admin-logs-generation {
+  background: rgba(30, 64, 175, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.dark .admin-logs-generation-header label {
+  color: #93c5fd;
+}
+
+.dark .admin-logs-generation-header .generation-desc {
+  color: #9ca3af;
+}
+
+.dark .log-gen-checkbox.critical {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+.dark .log-gen-checkbox.error {
+  background: rgba(234, 88, 12, 0.2);
+  color: #fdba74;
+}
+
+.dark .log-gen-checkbox.warning {
+  background: rgba(202, 138, 4, 0.2);
+  color: #fde047;
+}
+
+.dark .log-gen-checkbox.info {
+  background: rgba(22, 163, 74, 0.2);
+  color: #86efac;
+}
+
+.dark .log-gen-checkbox.debug {
+  background: rgba(139, 92, 246, 0.2);
+  color: #c4b5fd;
+}
+
+/* ============================================ */
+/* 9. 배치 수동 실행 버튼 */
+/* ============================================ */
+
+.batch-run-btn:hover {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+  transform: translateY(-1px);
+}
+
+.batch-run-btn:active {
+  transform: translateY(0);
+}
+
+.batch-run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 다크 모드 */
+.dark .batch-buttons-section {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .batch-buttons-section > div:first-child {
+  color: #e5e7eb !important;
+}
+
+.dark .batch-run-btn {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .batch-run-btn:hover {
+  background: #4b5563 !important;
+  border-color: #6b7280 !important;
+}
+
+/* 배치 버튼 기본 스타일 */
+.batch-run-btn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+/* 커스텀 툴팁 스타일 */
+.batch-run-btn.has-tooltip {
+  position: relative;
+}
+
+.batch-run-btn.has-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-line;
+  max-width: 280px;
+  min-width: 200px;
+  text-align: left;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+.batch-run-btn.has-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+.batch-run-btn.has-tooltip:hover::after,
+.batch-run-btn.has-tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 다크 모드 툴팁 */
+.dark .batch-run-btn.has-tooltip::after {
+  background: #f3f4f6;
+  color: #1f2937;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .batch-run-btn.has-tooltip::before {
+  border-top-color: #f3f4f6;
+}
+
+/* ============================================ */
+/* 7. 도구설정 스타일 */
+/* ============================================ */
+
+.tool-settings-container {
+  display: block;
+}
+
+/* 통계 요약 */
+.tool-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.tool-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+}
+
+.tool-stat-item .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.tool-stat-item .stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 필터 영역 */
+.tool-filters {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.tool-filters-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.tool-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tool-filter-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.tool-filter-group select,
+.tool-filter-group input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid #d2d2d7;
+  border-radius: 6px;
+  font-size: 13px;
+  min-width: 150px;
+  background: white;
+}
+
+.tool-filter-group select:focus,
+.tool-filter-group input[type="text"]:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.tool-filter-buttons {
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.tool-filter-buttons button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* 도구 테이블 */
+.tool-table-container {
+  border: 1px solid #d2d2d7;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.tool-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tool-table th {
+  background: #f5f5f7;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 1px solid #d2d2d7;
+}
+
+.tool-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.tool-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tool-table tr:hover {
+  background: #f8f9fa;
+}
+
+.tool-table .loading-row {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+}
+
+/* 카테고리 배지 */
+.tool-category-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #e5e5e7;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+}
+
+/* 상태 토글 */
+.tool-status-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #e5e5e7;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tool-status-toggle.active {
+  background: #34c759;
+}
+
+.tool-status-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tool-status-toggle.active::after {
+  transform: translateX(20px);
+}
+
+/* 순서 입력 */
+.tool-order-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #d2d2d7;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.tool-order-input:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+/* 작업 버튼 */
+.tool-action-btn {
+  padding: 6px 12px;
+  border: 1px solid #d2d2d7;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-action-btn:hover {
+  background: #f5f5f7;
+}
+
+.tool-action-btn.edit {
+  color: #007aff;
+  border-color: #007aff;
+}
+
+.tool-action-btn.edit:hover {
+  background: #007aff;
+  color: white;
+}
+
+/* 일괄 작업 */
+.tool-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f0f7ff;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.tool-bulk-actions span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #007aff;
+}
+
+.tool-bulk-actions button {
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-success {
+  background: #34c759;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #2da44e;
+}
+
+.btn-warning {
+  background: #ff9500;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #e68600;
+}
+
+/* 페이지네이션 */
+.tool-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.tool-page-btn {
+  padding: 8px 16px;
+  border: 1px solid #d2d2d7;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-page-btn:hover:not(:disabled) {
+  background: #f5f5f7;
+}
+
+.tool-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tool-page-info {
+  font-size: 13px;
+  color: #666;
+}
+
+/* 다크모드 - 도구설정 */
+[data-theme="dark"] .tool-stats {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .tool-stat-item {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .tool-stat-item .stat-value {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-stat-item .stat-label {
+  color: #888;
+}
+
+[data-theme="dark"] .tool-filters {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .tool-filter-group label {
+  color: #888;
+}
+
+[data-theme="dark"] .tool-filter-group select,
+[data-theme="dark"] .tool-filter-group input[type="text"] {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-table-container {
+  border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .tool-table th {
+  background: #1a1a1a;
+  color: #888;
+  border-bottom-color: #3a3a3a;
+}
+
+[data-theme="dark"] .tool-table td {
+  border-bottom-color: #2a2a2a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-table tr:hover {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .tool-category-badge {
+  background: #3a3a3a;
+  color: #ccc;
+}
+
+[data-theme="dark"] .tool-status-toggle {
+  background: #3a3a3a;
+}
+
+[data-theme="dark"] .tool-order-input {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-action-btn {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-action-btn:hover {
+  background: #3a3a3a;
+}
+
+[data-theme="dark"] .tool-bulk-actions {
+  background: #1a2a3a;
+}
+
+[data-theme="dark"] .tool-page-btn {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tool-page-info {
+  color: #888;
+}
+
+/* 도구 경로 코드 */
+.tool-path-code {
+  font-size: 11px;
+  background: #f5f5f7;
+  color: #333;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 도구 설명 텍스트 */
+.tool-desc-text {
+  color: #666;
+}
+
+/* 다크모드 - 도구 경로/설명 */
+[data-theme="dark"] .tool-path-code {
+  background: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #3a3a3a;
+}
+
+[data-theme="dark"] .tool-desc-text {
+  color: #888;
+}

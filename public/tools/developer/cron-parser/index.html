@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cron 파서 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .cron-input-section {
+      background: var(--tools-card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .cron-input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .cron-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      color: var(--tools-text);
+      font-family: 'Consolas', monospace;
+      font-size: 18px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .cron-input:focus {
+      outline: none;
+      border-color: var(--tools-primary);
+    }
+    .cron-input.error { border-color: var(--tools-danger); }
+    .cron-parts {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .cron-part {
+      text-align: center;
+      padding: 12px 8px;
+      background: var(--tools-bg);
+      border-radius: 8px;
+      border: 1px solid var(--tools-border);
+    }
+    .cron-part-value {
+      font-family: 'Consolas', monospace;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--tools-primary);
+      margin-bottom: 4px;
+    }
+    .cron-part-label {
+      font-size: 11px;
+      color: var(--tools-text-secondary);
+    }
+    .description-box {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .description-text {
+      font-size: 16px;
+      color: var(--tools-text);
+      line-height: 1.6;
+    }
+    .next-runs-section {
+      background: var(--tools-card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--tools-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .next-run-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .next-run-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--tools-bg);
+      border-radius: 8px;
+    }
+    .next-run-index {
+      width: 24px;
+      height: 24px;
+      background: var(--tools-primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .next-run-date {
+      font-family: 'Consolas', monospace;
+      font-size: 14px;
+      color: var(--tools-text);
+    }
+    .next-run-relative {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+    }
+    .presets-section {
+      background: var(--tools-card-bg);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .preset-btn {
+      padding: 12px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .preset-btn:hover {
+      border-color: var(--tools-primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .preset-cron {
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      color: var(--tools-primary);
+      margin-bottom: 4px;
+    }
+    .preset-desc {
+      font-size: 12px;
+      color: var(--tools-text-secondary);
+    }
+    .syntax-help {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--tools-bg);
+      border-radius: 8px;
+    }
+    .syntax-table {
+      width: 100%;
+      font-size: 13px;
+      border-collapse: collapse;
+    }
+    .syntax-table th, .syntax-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--tools-border);
+    }
+    .syntax-table th {
+      color: var(--tools-text-secondary);
+      font-weight: 500;
+    }
+    .syntax-table td {
+      color: var(--tools-text);
+    }
+    .syntax-table code {
+      background: var(--tools-card-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">Cron 파서</h1>
+          <p class="tool-description">Cron 표현식 분석 및 다음 실행 시간 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() {
+        if (window.self !== window.top) window.parent.postMessage('tools:back', '*');
+        else window.history.back();
+      }
+    </script>
+
+    <div class="tool-panel">
+      <!-- Cron 입력 -->
+      <div class="cron-input-section">
+        <div class="cron-input-wrapper">
+          <input
+            type="text"
+            class="cron-input"
+            id="cronInput"
+            value="* * * * *"
+            placeholder="* * * * *"
+            oninput="CronParser.parse()"
+           aria-label="* * * * *">
+        </div>
+        <div class="cron-parts" id="cronParts">
+          <div class="cron-part">
+            <div class="cron-part-value" id="partMinute">*</div>
+            <div class="cron-part-label">분 (0-59)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-part-value" id="partHour">*</div>
+            <div class="cron-part-label">시 (0-23)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-part-value" id="partDay">*</div>
+            <div class="cron-part-label">일 (1-31)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-part-value" id="partMonth">*</div>
+            <div class="cron-part-label">월 (1-12)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-part-value" id="partWeekday">*</div>
+            <div class="cron-part-label">요일 (0-6)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 설명 -->
+      <div class="description-box">
+        <div class="description-text" id="cronDescription">
+          매 분마다 실행
+        </div>
+      </div>
+
+      <!-- 다음 실행 시간 -->
+      <div class="next-runs-section">
+        <div class="section-title">다음 실행 시간 (5회)</div>
+        <div class="next-run-list" id="nextRunList">
+          <!-- 동적으로 생성 -->
+        </div>
+      </div>
+
+      <!-- 프리셋 -->
+      <div class="presets-section">
+        <div class="section-title">자주 쓰는 표현식</div>
+        <div class="presets-grid">
+          <button class="preset-btn" onclick="CronParser.loadPreset('* * * * *')">
+            <div class="preset-cron">* * * * *</div>
+            <div class="preset-desc">매 분마다</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 * * * *')">
+            <div class="preset-cron">0 * * * *</div>
+            <div class="preset-desc">매 시간</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 0 * * *')">
+            <div class="preset-cron">0 0 * * *</div>
+            <div class="preset-desc">매일 자정</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 9 * * 1-5')">
+            <div class="preset-cron">0 9 * * 1-5</div>
+            <div class="preset-desc">평일 오전 9시</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 0 * * 0')">
+            <div class="preset-cron">0 0 * * 0</div>
+            <div class="preset-desc">매주 일요일 자정</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 0 1 * *')">
+            <div class="preset-cron">0 0 1 * *</div>
+            <div class="preset-desc">매월 1일 자정</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('*/5 * * * *')">
+            <div class="preset-cron">*/5 * * * *</div>
+            <div class="preset-desc">5분마다</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 */2 * * *')">
+            <div class="preset-cron">0 */2 * * *</div>
+            <div class="preset-desc">2시간마다</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('30 4 * * *')">
+            <div class="preset-cron">30 4 * * *</div>
+            <div class="preset-desc">매일 새벽 4:30</div>
+          </button>
+          <button class="preset-btn" onclick="CronParser.loadPreset('0 0 1 1 *')">
+            <div class="preset-cron">0 0 1 1 *</div>
+            <div class="preset-desc">매년 1월 1일</div>
+          </button>
+        </div>
+
+        <!-- 문법 도움말 -->
+        <div class="syntax-help">
+          <table class="syntax-table">
+            <thead>
+              <tr>
+                <th>기호</th>
+                <th>설명</th>
+                <th>예시</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>*</code></td>
+                <td>모든 값</td>
+                <td>모든 분, 모든 시간</td>
+              </tr>
+              <tr>
+                <td><code>,</code></td>
+                <td>값 목록</td>
+                <td><code>1,3,5</code> = 1, 3, 5</td>
+              </tr>
+              <tr>
+                <td><code>-</code></td>
+                <td>범위</td>
+                <td><code>1-5</code> = 1부터 5까지</td>
+              </tr>
+              <tr>
+                <td><code>/</code></td>
+                <td>간격</td>
+                <td><code>*/15</code> = 15마다</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tool-help">
+      <div class="help-title">Cron 파서 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>형식</strong>: 분 시 일 월 요일 (5필드)</li>
+          <li><strong>요일</strong>: 0=일요일, 1=월요일, ..., 6=토요일</li>
+          <li>프리셋을 클릭하면 자동으로 입력됩니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="cron-parser.js"></script>
+</body>
+</html>

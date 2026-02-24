@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영역 차트 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="area-chart.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">영역 차트 생성기</h1>
+      <p class="tool-description">시계열 데이터를 영역 차트로 시각화합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="chart-preview">
+        <canvas id="areaChart"></canvas>
+      </div>
+
+      <div class="data-section">
+        <h3 class="section-title">데이터 입력</h3>
+        <div class="data-input-area">
+          <div class="input-row header-row">
+            <span>레이블</span>
+            <span>값</span>
+            <span></span>
+          </div>
+          <div id="dataRows"></div>
+          <button class="add-row-btn" onclick="AreaChart.addRow()" aria-label="+ 데이터 추가">+ 데이터 추가</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="section-title">차트 설정</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>차트 제목</label>
+            <input type="text" id="chartTitle" class="form-input" value="영역 차트" onchange="AreaChart.updateChart()">
+          </div>
+          <div class="setting-item">
+            <label>영역 색상</label>
+            <input type="color" id="areaColor" class="form-input color" value="#667eea" onchange="AreaChart.updateChart()">
+          </div>
+          <div class="setting-item">
+            <label>투명도</label>
+            <select id="opacity" class="form-input" onchange="AreaChart.updateChart()">
+              <option value="0.2">20%</option>
+              <option value="0.4" selected>40%</option>
+              <option value="0.6">60%</option>
+              <option value="0.8">80%</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>곡선 스타일</label>
+            <select id="tension" class="form-input" onchange="AreaChart.updateChart()">
+              <option value="0">직선</option>
+              <option value="0.3" selected>부드러움</option>
+              <option value="0.5">매우 부드러움</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="AreaChart.exportImage('png')" aria-label="PNG 다운로드">PNG 다운로드</button>
+          <button class="export-btn" onclick="AreaChart.exportImage('jpg')" aria-label="JPG 다운로드">JPG 다운로드</button>
+          <button class="export-btn secondary" onclick="AreaChart.exportData()" aria-label="데이터 내보내기">데이터 내보내기</button>
+        </div>
+      </div>
+
+      <div class="preset-section">
+        <h3 class="section-title">프리셋</h3>
+        <div class="preset-buttons">
+          <button class="preset-btn" onclick="AreaChart.loadPreset('traffic')" aria-label="웹 트래픽">웹 트래픽</button>
+          <button class="preset-btn" onclick="AreaChart.loadPreset('revenue')" aria-label="월별 수익">월별 수익</button>
+          <button class="preset-btn" onclick="AreaChart.loadPreset('users')" aria-label="사용자 증가">사용자 증가</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="area-chart.js"></script>
+</body>
+</html>

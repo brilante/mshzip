@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단위 변환기 - 유틸리티</title>
+    <link rel="stylesheet" href="unit-converter.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>단위 변환기</h1>
+            <p>다양한 단위를 쉽게 변환하세요</p>
+        </header>
+
+        <div class="category-tabs">
+            <button class="tab active" data-cat="length" aria-label="길이">길이</button>
+            <button class="tab" data-cat="weight" aria-label="무게">무게</button>
+            <button class="tab" data-cat="area" aria-label="면적">면적</button>
+            <button class="tab" data-cat="volume" aria-label="부피">부피</button>
+            <button class="tab" data-cat="temperature" aria-label="온도">온도</button>
+            <button class="tab" data-cat="data" aria-label="데이터">데이터</button>
+        </div>
+
+        <div class="converter card">
+            <div class="input-group">
+                <input type="number" id="inputValue" value="1" step="any">
+                <select id="fromUnit"></select>
+            </div>
+            <div class="swap-btn" onclick="swapUnits()">⇄</div>
+            <div class="input-group">
+                <input type="number" id="outputValue" readonly>
+                <select id="toUnit"></select>
+            </div>
+        </div>
+
+        <div class="conversion-table card" id="conversionTable"></div>
+    </div>
+    <script src="unit-converter.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

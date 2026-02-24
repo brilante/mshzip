@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영수증 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="receipt-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">영수증 생성기</h1>
+      <p class="tool-description">간단한 영수증을 빠르게 생성합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="form-section">
+        <h3 class="section-title">정보 입력</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>상호명</label>
+            <input type="text" id="storeName" class="form-input" placeholder="상호명" aria-label="상호명">
+          </div>
+          <div class="form-group">
+            <label>사업자번호</label>
+            <input type="text" id="bizNum" class="form-input" placeholder="000-00-00000" aria-label="000-00-00000">
+          </div>
+          <div class="form-group">
+            <label>거래일시</label>
+            <input type="datetime-local" id="transDate" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>결제방법</label>
+            <select id="payMethod" class="form-input">
+              <option value="현금">현금</option>
+              <option value="카드">카드</option>
+              <option value="계좌이체">계좌이체</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>품목 (품목명:수량:단가, 줄바꿈 구분)</label>
+            <textarea id="items" class="form-input" placeholder="커피:2:5000&#10;케이크:1:7000">커피:2:5000
+케이크:1:7000</textarea>
+          </div>
+        </div>
+        <button class="generate-btn" onclick="ReceiptGen.generate()" aria-label="영수증 생성">영수증 생성</button>
+      </div>
+
+      <div class="preview-section">
+        <h3 class="section-title">미리보기</h3>
+        <div class="document-preview" id="preview"></div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="ReceiptGen.copyText()" aria-label="텍스트 복사">텍스트 복사</button>
+          <button class="export-btn secondary" onclick="ReceiptGen.print()" aria-label="인쇄">인쇄</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="receipt-gen.js"></script>
+</body>
+</html>

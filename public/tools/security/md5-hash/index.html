@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD5 해시 생성기 - ALLINONE</title>
+    <link rel="stylesheet" href="md5-hash.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>MD5 해시 생성기</h1>
+            <p class="subtitle">텍스트나 파일의 MD5 해시를 생성합니다</p>
+        </header>
+        <main class="main-content">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('text')" aria-label="텍스트">텍스트</button>
+                <button class="tab-btn" onclick="switchTab('file')" aria-label="파일">파일</button>
+            </div>
+            <div id="textTab" class="tab-content">
+                <textarea id="textInput" placeholder="해시를 생성할 텍스트를 입력하세요..."></textarea>
+                <div class="options">
+                    <label><input type="checkbox" id="uppercase"> 대문자로 출력</label>
+                </div>
+            </div>
+            <div id="fileTab" class="tab-content hidden">
+                <div class="file-drop" id="fileDrop">
+                    <div class="drop-icon"></div>
+                    <p>파일을 드래그하거나 클릭하여 선택</p>
+                    <input type="file" id="fileInput" hidden>
+                </div>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+            <div class="result-section">
+                <h3>MD5 해시</h3>
+                <div class="hash-display">
+                    <input type="text" id="hashResult" readonly placeholder="해시값이 여기에 표시됩니다" aria-label="해시값이 여기에 표시됩니다">
+                    <button class="copy-btn" onclick="copyHash()" aria-label=""></button>
+                </div>
+            </div>
+            <div class="other-hashes">
+                <h3>다른 해시 알고리즘</h3>
+                <div class="hash-grid">
+                    <div class="hash-item">
+                        <label>SHA-1</label>
+                        <div class="hash-row">
+                            <input type="text" id="sha1Result" readonly>
+                            <button onclick="copyTo('sha1Result')" aria-label=""></button>
+                        </div>
+                    </div>
+                    <div class="hash-item">
+                        <label>SHA-256</label>
+                        <div class="hash-row">
+                            <input type="text" id="sha256Result" readonly>
+                            <button onclick="copyTo('sha256Result')" aria-label=""></button>
+                        </div>
+                    </div>
+                    <div class="hash-item">
+                        <label>SHA-512</label>
+                        <div class="hash-row">
+                            <input type="text" id="sha512Result" readonly>
+                            <button onclick="copyTo('sha512Result')" aria-label=""></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="info-section">
+                <h3>주의사항</h3>
+                <p>MD5는 빠른 속도로 인해 파일 무결성 검증에 유용하지만, 보안 목적(비밀번호 해싱)으로는 권장되지 않습니다. 보안이 중요한 경우 SHA-256 이상을 사용하세요.</p>
+            </div>
+        </main>
+    </div>
+    <script src="md5-hash.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

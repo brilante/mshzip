@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyMind2 Replica Test</title>
+    <script>
+        window.addEventListener('load', function() {
+            // Open the main page in a new window for testing
+            const testWindow = window.open('http://localhost:3888/index-exact-mymind2.html', '_blank', 'width=1200,height=800');
+
+            // Wait for page to load, then run tests
+            setTimeout(function() {
+                try {
+                    const testDoc = testWindow.document;
+                    const results = [];
+
+                    // Test 1: Check if MyMind3 is available
+                    results.push('MyMind3 available: ' + (testWindow.MyMind3 ? 'YES' : 'NO'));
+
+                    // Test 2: Check if NodeRenderer is available
+                    results.push('NodeRenderer available: ' + (testWindow.MyMind3?.NodeRenderer ? 'YES' : 'NO'));
+
+                    // Test 3: Check for nodes on page
+                    const nodes = testDoc.querySelectorAll('.mind-node');
+                    results.push('Mind nodes found: ' + nodes.length);
+
+                    // Test 4: Check for main button
+                    const addBtn = testDoc.getElementById('addMainTitleBtn');
+                    results.push('Add main button found: ' + (addBtn ? 'YES' : 'NO'));
+
+                    // Test 5: Check for panels
+                    const sidebar = testDoc.querySelector('.sidebar');
+                    const content = testDoc.querySelector('.content');
+                    const llm = testDoc.querySelector('.llm-response');
+                    results.push('Sidebar panel: ' + (sidebar ? 'YES' : 'NO'));
+                    results.push('Content panel: ' + (content ? 'YES' : 'NO'));
+                    results.push('LLM panel: ' + (llm ? 'YES' : 'NO'));
+
+                    // Test 6: Try to create a node
+                    if (testWindow.MyMind3 && testWindow.MyMind3.MindMapData) {
+                        try {
+                            testWindow.MyMind3.MindMapData.createMainTitle('Test Node');
+                            testWindow.MyMind3.NodeRenderer.renderMindMap();
+                            results.push('Node creation test: SUCCESS');
+                        } catch (e) {
+                            results.push('Node creation test: FAILED - ' + e.message);
+                        }
+                    }
+
+                    // Display results
+                    document.getElementById('results').innerHTML = results.join('<br>');
+
+                } catch (e) {
+                    document.getElementById('results').innerHTML = 'Test failed: ' + e.message;
+                }
+            }, 3000);
+        });
+    </script>
+</head>
+<body>
+    <h1>MyMind2 Replica Test Results</h1>
+    <div id="results">Running tests...</div>
+</body>
+</html>

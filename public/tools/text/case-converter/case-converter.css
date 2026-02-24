@@ -1,0 +1,64 @@
+/**
+ * 대소문자 변환 도구 스타일
+ * @created 2026-01-12
+ */
+
+.input-section, .result-section { margin-bottom: 20px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); }
+
+.text-input, .text-output {
+  width: 100%; min-height: 120px; padding: 16px;
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 12px;
+  font-size: 15px; line-height: 1.6; resize: vertical;
+  background: var(--bg-primary, #fff); color: var(--text-primary, #333);
+  transition: border-color 0.2s;
+}
+.text-input:focus { outline: none; border-color: var(--primary-color, #667eea); }
+.text-output { background: var(--bg-secondary, #f8f9fa); }
+
+/* 변환 옵션 */
+.convert-options {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 20px;
+}
+.convert-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 12px; background: var(--bg-primary, #fff);
+  border: 2px solid var(--border-color, #e9ecef); border-radius: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.convert-btn:hover {
+  border-color: var(--primary-color, #667eea);
+  background: rgba(102, 126, 234, 0.05);
+}
+.btn-icon { font-size: 20px; font-weight: 700; color: var(--primary-color, #667eea); font-family: monospace; }
+.btn-label { font-size: 12px; color: var(--text-secondary, #666); }
+
+/* 버튼 */
+.tool-btn-sm { padding: 6px 12px; font-size: 13px; }
+.tool-btn-primary { background: var(--primary-color, #667eea); color: white; border-color: var(--primary-color, #667eea); }
+.tool-btn-primary:hover { background: #5a6fd6; }
+
+/* 도움말 */
+.tool-help { padding: 18px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px; border-left: 4px solid var(--primary-color, #667eea); }
+.help-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 10px; }
+.help-content { font-size: 13px; color: var(--text-secondary, #666); line-height: 1.6; }
+.help-content ul { margin: 0; padding-left: 20px; }
+.help-content li { margin-bottom: 6px; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .convert-options { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 480px) {
+  .convert-options { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 다크 모드 (data-theme 선택자로 통일) */
+[data-theme="dark"] .text-input { background: #1e1e1e; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .text-output { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .convert-btn { background: #1e1e1e; border-color: #404040; }
+[data-theme="dark"] .convert-btn:hover { background: rgba(102, 126, 234, 0.1); }
+[data-theme="dark"] .tool-help { background: #252525; }
+[data-theme="dark"] .help-title { color: #e0e0e0; }

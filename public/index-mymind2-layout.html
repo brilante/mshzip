@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMind3 - MyMind2 Layout</title>
+
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+
+    <!-- External Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <!-- Custom Stylesheets -->
+    <link rel="stylesheet" href="/css/mymind2-layout.css">
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div id="app" class="app-container">
+        <!-- Left Panel - Mind Map -->
+        <div class="panel left-panel">
+            <div class="panel-header">
+                <div class="panel-title">Mind Map</div>
+                <div class="panel-header-btns">
+                    <button class="panel-toggle-btn" data-panel="left" title="Toggle Panel">⇄</button>
+                </div>
+            </div>
+
+            <div id="mindmap" class="mindmap-container">
+                <div id="mindmapLayout" class="mindmap-layout">
+                    <svg id="mindmap-svg" class="mindmap-canvas">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                                    refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                            </marker>
+                        </defs>
+                        <g id="connections-layer"></g>
+                        <g id="nodes-layer"></g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Bottom Input Container -->
+            <div class="question-input-container">
+                <input type="text" id="nodeTitle" class="input-field" placeholder="Enter node title...">
+                <button id="addNodeBtn" class="btn btn-primary">Add Node</button>
+            </div>
+        </div>
+
+        <!-- Vertical Divider -->
+        <div class="divider vertical-divider" id="divider1"></div>
+
+        <!-- Middle Panel - Editor -->
+        <div class="panel middle-panel">
+            <div class="panel-header">
+                <div class="panel-title">Content Editor</div>
+                <div class="panel-header-btns">
+                    <button class="panel-toggle-btn" data-panel="middle" title="Toggle Panel">⇄</button>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <button class="editor-btn" data-cmd="bold">B</button>
+                    <button class="editor-btn" data-cmd="italic">I</button>
+                    <button class="editor-btn" data-cmd="underline">U</button>
+                    <span class="toolbar-separator">|</span>
+                    <button class="editor-btn" data-cmd="heading">H</button>
+                    <button class="editor-btn" data-cmd="list">List</button>
+                    <button class="editor-btn" data-cmd="link">Link</button>
+                </div>
+                <div id="editor-content" class="editor-content" contenteditable="true">
+                    <p>Select a node to edit its content...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vertical Divider -->
+        <div class="divider vertical-divider" id="divider2"></div>
+
+        <!-- Right Panel - Properties/AI -->
+        <div class="panel right-panel">
+            <div class="panel-header">
+                <div class="panel-title">Properties & AI</div>
+                <div class="panel-header-btns">
+                    <button class="panel-toggle-btn" data-panel="right" title="Toggle Panel">⇄</button>
+                </div>
+            </div>
+
+            <div class="panel-tabs">
+                <button class="tab-btn active" data-tab="properties">Properties</button>
+                <button class="tab-btn" data-tab="ai">AI Assistant</button>
+            </div>
+
+            <!-- Properties Tab -->
+            <div class="tab-content active" data-tab-content="properties">
+                <div class="properties-container">
+                    <div class="property-group">
+                        <label>Node ID:</label>
+                        <input type="text" id="nodeId" class="property-input" readonly>
+                    </div>
+                    <div class="property-group">
+                        <label>Level:</label>
+                        <input type="text" id="nodeLevel" class="property-input" readonly>
+                    </div>
+                    <div class="property-group">
+                        <label>Position:</label>
+                        <input type="text" id="nodePosition" class="property-input" readonly>
+                    </div>
+                    <div class="property-group">
+                        <label>Children Count:</label>
+                        <input type="text" id="nodeChildren" class="property-input" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Tab -->
+            <div class="tab-content" data-tab-content="ai">
+                <div class="ai-container">
+                    <div class="ai-chat" id="ai-chat"></div>
+                    <div class="ai-input-container">
+                        <textarea id="ai-input" placeholder="Ask AI..." rows="3"></textarea>
+                        <button id="ai-send" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core JavaScript Files -->
+    <script src="/js/core/constants.js"></script>
+    <script src="/js/core/utils.js"></script>
+    <script src="/js/core/events.js"></script>
+    <script src="/js/core/storage.js"></script>
+    <script src="/js/core/mindmap-data.js"></script>
+
+    <!-- Mind Map Engine -->
+    <script src="/js/mindmap/node-renderer.js"></script>
+    <script src="/js/mindmap/renderer.js"></script>
+    <script src="/js/mindmap/nodes.js"></script>
+    <script src="/js/mindmap/connections.js"></script>
+    <script src="/js/mindmap/layout.js"></script>
+
+    <!-- Simple Application -->
+    <script src="/js/app-simple.js"></script>
+
+    <!-- Initialize Application with MyMind2 Layout -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing MyMind3 with MyMind2 Layout...');
+
+            // Initialize the application
+            if (window.MyMind3 && window.MyMind3.MindMapData) {
+                window.MyMind3.MindMapData.initialize();
+                window.MyMind3.MindMapData.initializeSampleData();
+            }
+
+            if (window.MyMind3 && window.MyMind3.NodeRenderer) {
+                window.MyMind3.NodeRenderer.initialize();
+                window.MyMind3.NodeRenderer.renderMindMap();
+            }
+
+            // Setup panel resizing
+            setupPanelResizing();
+
+            // Setup panel toggle buttons
+            setupPanelToggles();
+
+            // Setup editor
+            setupEditor();
+
+            // Setup tabs
+            setupTabs();
+
+            // Setup add node button
+            document.getElementById('addNodeBtn').addEventListener('click', function() {
+                const title = document.getElementById('nodeTitle').value;
+                if (title && window.MyMind3 && window.MyMind3.MindMapData) {
+                    const currentNodeId = window.MyMind3.MindMapData.currentEditingNodeId;
+                    if (currentNodeId) {
+                        window.MyMind3.MindMapData.createChildNode(currentNodeId, title);
+                    } else {
+                        window.MyMind3.MindMapData.createMainTitle(title);
+                    }
+                    window.MyMind3.NodeRenderer.renderMindMap();
+                    document.getElementById('nodeTitle').value = '';
+                }
+            });
+
+            console.log('MyMind3 with MyMind2 Layout initialized');
+        });
+
+        function setupPanelResizing() {
+            const dividers = document.querySelectorAll('.divider');
+            const panels = document.querySelectorAll('.panel');
+
+            dividers.forEach((divider, index) => {
+                let isResizing = false;
+                let startX = 0;
+                let startWidths = [];
+
+                divider.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startWidths = [
+                        panels[index].offsetWidth,
+                        panels[index + 1].offsetWidth
+                    ];
+                    document.body.style.cursor = 'col-resize';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const deltaX = e.clientX - startX;
+                    const newWidth1 = startWidths[0] + deltaX;
+                    const newWidth2 = startWidths[1] - deltaX;
+
+                    const totalWidth = startWidths[0] + startWidths[1];
+                    const percent1 = (newWidth1 / window.innerWidth) * 100;
+                    const percent2 = (newWidth2 / window.innerWidth) * 100;
+
+                    if (percent1 > 10 && percent2 > 10) {
+                        panels[index].style.width = percent1 + '%';
+                        panels[index + 1].style.width = percent2 + '%';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                });
+            });
+        }
+
+        function setupPanelToggles() {
+            const toggleBtns = document.querySelectorAll('.panel-toggle-btn');
+
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const panelName = btn.dataset.panel;
+                    const panels = document.querySelectorAll('.panel');
+                    const currentPanel = document.querySelector(`.${panelName}-panel`);
+
+                    if (currentPanel.classList.contains('expanded')) {
+                        // Restore to normal
+                        panels.forEach(panel => {
+                            panel.style.width = '33.33%';
+                            panel.classList.remove('expanded', 'collapsed');
+                        });
+                    } else {
+                        // Expand current panel
+                        panels.forEach(panel => {
+                            if (panel === currentPanel) {
+                                panel.style.width = '80%';
+                                panel.classList.add('expanded');
+                            } else {
+                                panel.style.width = '10%';
+                                panel.classList.add('collapsed');
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        function setupEditor() {
+            const editorBtns = document.querySelectorAll('.editor-btn');
+            const editorContent = document.getElementById('editor-content');
+
+            editorBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cmd = btn.dataset.cmd;
+
+                    switch(cmd) {
+                        case 'bold':
+                            document.execCommand('bold', false, null);
+                            break;
+                        case 'italic':
+                            document.execCommand('italic', false, null);
+                            break;
+                        case 'underline':
+                            document.execCommand('underline', false, null);
+                            break;
+                        case 'heading':
+                            document.execCommand('formatBlock', false, 'h2');
+                            break;
+                        case 'list':
+                            document.execCommand('insertUnorderedList', false, null);
+                            break;
+                        case 'link':
+                            const url = prompt('Enter URL:');
+                            if (url) {
+                                document.execCommand('createLink', false, url);
+                            }
+                            break;
+                    }
+
+                    editorContent.focus();
+                });
+            });
+        }
+
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        if (content.dataset.tabContent === tab) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+</html>

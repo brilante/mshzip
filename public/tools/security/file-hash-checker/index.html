@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파일 해시 체커 - ALLINONE</title>
+    <link rel="stylesheet" href="file-hash-checker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>파일 해시 체커</h1>
+            <p class="subtitle">파일의 무결성을 확인하세요</p>
+        </header>
+        <main class="main-content">
+            <div class="upload-section">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-icon"></div>
+                    <p>파일을 드래그하거나 클릭하여 선택</p>
+                    <span class="drop-hint">모든 파일 형식 지원</span>
+                    <input type="file" id="fileInput" hidden>
+                </div>
+            </div>
+            <div class="file-info hidden" id="fileInfo">
+                <div class="file-icon"></div>
+                <div class="file-details">
+                    <div class="file-name" id="fileName">-</div>
+                    <div class="file-size" id="fileSize">-</div>
+                </div>
+            </div>
+            <div class="progress-section hidden" id="progressSection">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">계산 중...</div>
+            </div>
+            <div class="results-section hidden" id="resultsSection">
+                <h3>해시 결과</h3>
+                <div class="hash-result">
+                    <div class="hash-label">MD5</div>
+                    <div class="hash-value" id="md5Hash">-</div>
+                    <button class="copy-btn" onclick="copyHash('md5Hash')" aria-label=""></button>
+                </div>
+                <div class="hash-result">
+                    <div class="hash-label">SHA-1</div>
+                    <div class="hash-value" id="sha1Hash">-</div>
+                    <button class="copy-btn" onclick="copyHash('sha1Hash')" aria-label=""></button>
+                </div>
+                <div class="hash-result">
+                    <div class="hash-label">SHA-256</div>
+                    <div class="hash-value" id="sha256Hash">-</div>
+                    <button class="copy-btn" onclick="copyHash('sha256Hash')" aria-label=""></button>
+                </div>
+            </div>
+            <div class="verify-section hidden" id="verifySection">
+                <h3>해시 검증</h3>
+                <input type="text" id="verifyHash" placeholder="비교할 해시값을 입력하세요" aria-label="비교할 해시값을 입력하세요">
+                <div class="verify-result" id="verifyResult"></div>
+            </div>
+        </main>
+    </div>
+    <script src="file-hash-checker.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

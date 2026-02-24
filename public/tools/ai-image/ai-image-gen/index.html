@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 이미지 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .ai-container { max-width: 1100px; margin: 0 auto; }
+    .ai-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .model-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .model-btn { padding: 0.6rem 1rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .model-btn:hover { border-color: var(--primary); }
+    .model-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .model-icon { font-size: 1.2rem; }
+    .model-info { display: flex; flex-direction: column; }
+    .model-name { font-weight: 600; }
+    .model-desc { font-size: 0.7rem; color: var(--text-secondary); }
+    .gen-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; }
+    .gen-panel { display: flex; flex-direction: column; gap: 1rem; }
+    .prompt-textarea { min-height: 120px; resize: vertical; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .option-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .option-select { width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-primary); }
+    .style-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .style-chip { padding: 0.5rem 0.75rem; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-primary); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+    .style-chip:hover { border-color: var(--primary); }
+    .style-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .output-area { background: var(--bg-primary); border-radius: 12px; min-height: 400px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .output-placeholder { text-align: center; color: var(--text-secondary); }
+    .output-placeholder-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .generated-image { max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; }
+    .image-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.5rem; width: 100%; }
+    .image-grid img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
+    .image-grid img:hover { transform: scale(1.02); }
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .premium-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 10px; font-size: 0.65rem; font-weight: 600; }
+    .loading-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; color: white; }
+    .loading-overlay.active { display: flex; }
+    .loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-bar { width: 200px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+    .negative-prompt { margin-top: 0.5rem; }
+    .negative-input { font-size: 0.85rem; padding: 0.5rem; }
+    @media (max-width: 800px) { .gen-grid { grid-template-columns: 1fr; } .options-grid { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+</style>
+</head>
+<body>
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">AI 이미지 생성</h1>
+          <p class="tool-description">텍스트 프롬프트로 이미지 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <span class="premium-badge">Premium</span>
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="ai-container">
+      <div class="ai-panel">
+        <div class="section-title">AI 모델 선택</div>
+        <div class="model-selector">
+          <div class="model-btn active" data-model="dall-e-3" onclick="AIImageGen.selectModel('dall-e-3')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">DALL·E 3</span>
+              <span class="model-desc">고품질 이미지</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="stable-diffusion" onclick="AIImageGen.selectModel('stable-diffusion')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Stable Diffusion XL</span>
+              <span class="model-desc">다양한 스타일</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="midjourney" onclick="AIImageGen.selectModel('midjourney')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Midjourney</span>
+              <span class="model-desc">예술적 표현</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="imagen-3" onclick="AIImageGen.selectModel('imagen-3')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Imagen 3</span>
+              <span class="model-desc">사실적 이미지</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-grid">
+          <div class="gen-panel">
+            <div class="section-title">프롬프트</div>
+            <textarea id="promptInput" class="tool-input prompt-textarea" placeholder="생성할 이미지를 설명하세요...
+
+예: A serene Japanese garden with cherry blossoms, koi pond, traditional wooden bridge, soft morning light, photorealistic"></textarea>
+
+            <div class="negative-prompt">
+              <label style="font-size: 0.85rem; color: var(--text-secondary);">네거티브 프롬프트 (제외할 요소)</label>
+              <input type="text" id="negativePrompt" class="tool-input negative-input" placeholder="예: blurry, low quality, watermark" aria-label="예: blurry, low quality, watermark">
+            </div>
+
+            <div class="section-title" style="margin-top: 1rem;">스타일</div>
+            <div class="style-chips">
+              <div class="style-chip active" data-style="photorealistic" onclick="AIImageGen.selectStyle('photorealistic')">사실적</div>
+              <div class="style-chip" data-style="artistic" onclick="AIImageGen.selectStyle('artistic')">예술적</div>
+              <div class="style-chip" data-style="anime" onclick="AIImageGen.selectStyle('anime')">애니메</div>
+              <div class="style-chip" data-style="3d" onclick="AIImageGen.selectStyle('3d')">3D</div>
+              <div class="style-chip" data-style="watercolor" onclick="AIImageGen.selectStyle('watercolor')">수채화</div>
+              <div class="style-chip" data-style="oil" onclick="AIImageGen.selectStyle('oil')">유화</div>
+            </div>
+
+            <div class="options-grid" style="margin-top: 1rem;">
+              <div class="option-group">
+                <label>이미지 크기</label>
+                <select id="sizeSelect" class="option-select">
+                  <option value="1024x1024">1024 × 1024 (정사각형)</option>
+                  <option value="1792x1024">1792 × 1024 (가로)</option>
+                  <option value="1024x1792">1024 × 1792 (세로)</option>
+                  <option value="512x512">512 × 512 (작게)</option>
+                </select>
+              </div>
+              <div class="option-group">
+                <label>생성 개수</label>
+                <select id="countSelect" class="option-select">
+                  <option value="1">1장</option>
+                  <option value="2">2장</option>
+                  <option value="4" selected>4장</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="tool-btn tool-btn-primary" style="flex: 1;" onclick="AIImageGen.generate()" aria-label="이미지 생성">
+                이미지 생성
+              </button>
+            </div>
+          </div>
+
+          <div class="gen-panel">
+            <div class="section-title">생성된 이미지</div>
+            <div class="output-area" id="outputArea">
+              <div class="output-placeholder">
+                <div class="output-placeholder-icon"></div>
+                <div>프롬프트를 입력하고 이미지를 생성하세요</div>
+              </div>
+              <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-spinner"></div>
+                <div>이미지 생성 중...</div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="tool-btn tool-btn-secondary" onclick="AIImageGen.downloadAll()" aria-label="모두 다운로드">모두 다운로드</button>
+              <button class="tool-btn tool-btn-secondary" onclick="AIImageGen.regenerate()" aria-label="다시 생성">다시 생성</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="ai-image-gen.js"></script>
+</body>
+</html>

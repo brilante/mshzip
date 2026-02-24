@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 페이지 번호 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="pdf-page-numbers.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">PDF 페이지 번호</h1>
+      <p class="tool-description">PDF 파일에 페이지 번호를 추가합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- PDF 업로드 영역 -->
+        <div class="upload-section">
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".pdf" hidden>
+            <div class="dropzone-icon"></div>
+            <div class="dropzone-text">PDF 파일을 드래그하거나 클릭하여 선택</div>
+            <div class="dropzone-hint">최대 50MB까지 지원</div>
+          </div>
+        </div>
+
+        <!-- 파일 정보 -->
+        <div class="file-info" id="fileInfo" style="display: none;">
+          <div class="file-card">
+            <span class="file-icon"></span>
+            <div class="file-details">
+              <div class="file-name" id="fileName"></div>
+              <div class="file-meta" id="fileMeta"></div>
+            </div>
+            <button class="file-remove" onclick="PdfPageNumbers.removeFile()" aria-label=""></button>
+          </div>
+        </div>
+
+        <!-- 페이지 번호 설정 -->
+        <div class="settings-section" id="settingsSection" style="display: none;">
+          <div class="section-title">페이지 번호 설정</div>
+
+          <!-- 위치 선택 -->
+          <div class="position-selector">
+            <div class="position-label">위치 선택</div>
+            <div class="position-grid">
+              <button class="position-btn" data-position="top-left" onclick="PdfPageNumbers.setPosition('top-left')" aria-label="↖">↖</button>
+              <button class="position-btn" data-position="top-center" onclick="PdfPageNumbers.setPosition('top-center')" aria-label="↑">↑</button>
+              <button class="position-btn" data-position="top-right" onclick="PdfPageNumbers.setPosition('top-right')" aria-label="↗">↗</button>
+              <button class="position-btn" data-position="bottom-left" onclick="PdfPageNumbers.setPosition('bottom-left')" aria-label="↙">↙</button>
+              <button class="position-btn active" data-position="bottom-center" onclick="PdfPageNumbers.setPosition('bottom-center')" aria-label="↓">↓</button>
+              <button class="position-btn" data-position="bottom-right" onclick="PdfPageNumbers.setPosition('bottom-right')" aria-label="↘">↘</button>
+            </div>
+          </div>
+
+          <!-- 스타일 설정 -->
+          <div class="settings-group">
+            <div class="setting-row">
+              <label class="setting-label">번호 형식</label>
+              <select id="numberFormat" class="setting-select">
+                <option value="number">1, 2, 3...</option>
+                <option value="number-total">1 / 10, 2 / 10...</option>
+                <option value="page-number">페이지 1, 페이지 2...</option>
+                <option value="page-of">Page 1 of 10...</option>
+                <option value="dash">- 1 -, - 2 -...</option>
+                <option value="bracket">[1], [2], [3]...</option>
+                <option value="roman">I, II, III...</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-label">시작 번호</label>
+              <input type="number" id="startNumber" class="setting-input" value="1" min="1">
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-label">글꼴 크기</label>
+              <input type="range" id="fontSize" min="8" max="24" value="12" class="setting-slider">
+              <span class="slider-value" id="fontSizeValue">12px</span>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-label">색상</label>
+              <input type="color" id="textColor" value="#000000" class="setting-color">
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-label">여백</label>
+              <input type="range" id="margin" min="20" max="80" value="40" class="setting-slider">
+              <span class="slider-value" id="marginValue">40px</span>
+            </div>
+          </div>
+
+          <!-- 페이지 범위 -->
+          <div class="settings-group">
+            <div class="setting-row">
+              <label class="setting-label">적용 페이지</label>
+              <select id="pageRange" class="setting-select">
+                <option value="all">모든 페이지</option>
+                <option value="skip-first">첫 페이지 제외</option>
+                <option value="odd">홀수 페이지만</option>
+                <option value="even">짝수 페이지만</option>
+                <option value="custom">직접 입력</option>
+              </select>
+            </div>
+            <div class="setting-row" id="customRangeRow" style="display: none;">
+              <label class="setting-label">페이지 범위</label>
+              <input type="text" id="customRange" class="setting-input" placeholder="예: 2-10, 15-20" aria-label="예: 2-10, 15-20">
+            </div>
+          </div>
+
+          <!-- 미리보기 -->
+          <div class="preview-section">
+            <div class="preview-label">미리보기</div>
+            <div class="preview-page" id="previewPage">
+              <div class="preview-number" id="previewNumber">1</div>
+            </div>
+          </div>
+
+          <button class="tool-btn tool-btn-primary tool-btn-lg apply-btn" id="applyBtn" onclick="PdfPageNumbers.apply()" aria-label="페이지 번호 추가">
+            페이지 번호 추가
+          </button>
+        </div>
+
+        <!-- 결과 -->
+        <div class="result-section" id="resultSection" style="display: none;">
+          <div class="section-header">
+            <span class="section-title">페이지 번호 추가 완료</span>
+          </div>
+          <div class="result-info" id="resultInfo"></div>
+          <div class="result-actions">
+            <button class="tool-btn tool-btn-primary" onclick="PdfPageNumbers.download()" aria-label="다운로드">다운로드</button>
+            <button class="tool-btn" onclick="PdfPageNumbers.reset()" aria-label="새로 시작">새로 시작</button>
+          </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사용 팁</div>
+          <div class="help-content">
+            <ul>
+              <li><strong>첫 페이지 제외</strong>: 표지가 있는 문서에서 유용</li>
+              <li><strong>로마 숫자</strong>: 서문, 목차 등에 적합</li>
+              <li><strong>커스텀 범위</strong>: 특정 페이지에만 번호 추가 가능</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="pdf-page-numbers.js"></script>
+</body>
+</html>

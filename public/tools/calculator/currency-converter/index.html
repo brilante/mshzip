@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>환율 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="currency-converter.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">환율 계산기</h1>
+      <p class="tool-description">실시간 환율로 다양한 통화를 변환합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- 환율 정보 -->
+        <div class="rate-info" id="rateInfo">
+          <span class="rate-update">환율 데이터 로딩 중...</span>
+        </div>
+
+        <!-- 변환기 -->
+        <div class="converter-section">
+          <div class="currency-input-group">
+            <div class="currency-selector">
+              <select id="fromCurrency" class="currency-select" onchange="CurrencyConverter.convert()">
+                <!-- 옵션이 동적으로 추가됨 -->
+              </select>
+              <span class="currency-flag" id="fromFlag">🇺🇸</span>
+            </div>
+            <input type="number" id="fromAmount" class="amount-input" value="1" min="0" step="any" oninput="CurrencyConverter.convert()">
+          </div>
+
+          <button class="swap-btn" onclick="CurrencyConverter.swap()" title="통화 교환">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/>
+            </svg>
+          </button>
+
+          <div class="currency-input-group">
+            <div class="currency-selector">
+              <select id="toCurrency" class="currency-select" onchange="CurrencyConverter.convert()">
+                <!-- 옵션이 동적으로 추가됨 -->
+              </select>
+              <span class="currency-flag" id="toFlag">🇰🇷</span>
+            </div>
+            <input type="number" id="toAmount" class="amount-input" readonly>
+          </div>
+        </div>
+
+        <!-- 환율 상세 -->
+        <div id="rateDetail" class="rate-detail" style="display: none;">
+          <div class="rate-card">
+            <span class="rate-label">1 <span id="fromCode">USD</span> =</span>
+            <span class="rate-value" id="rateValue">0</span>
+            <span class="rate-to" id="toCode">KRW</span>
+          </div>
+          <div class="rate-card inverse">
+            <span class="rate-label">1 <span id="toCodeInverse">KRW</span> =</span>
+            <span class="rate-value" id="rateValueInverse">0</span>
+            <span class="rate-to" id="fromCodeInverse">USD</span>
+          </div>
+        </div>
+
+        <!-- 인기 통화 빠른 변환 -->
+        <div class="quick-convert-section">
+          <div class="section-title">빠른 변환</div>
+          <div class="quick-buttons">
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('USD', 'KRW')" aria-label="🇺🇸 USD → 🇰🇷 KRW">🇺🇸 USD → 🇰🇷 KRW</button>
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('KRW', 'USD')" aria-label="🇰🇷 KRW → 🇺🇸 USD">🇰🇷 KRW → 🇺🇸 USD</button>
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('USD', 'JPY')" aria-label="🇺🇸 USD → 🇯🇵 JPY">🇺🇸 USD → 🇯🇵 JPY</button>
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('EUR', 'KRW')" aria-label="🇪🇺 EUR → 🇰🇷 KRW">🇪🇺 EUR → 🇰🇷 KRW</button>
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('CNY', 'KRW')" aria-label="🇨🇳 CNY → 🇰🇷 KRW">🇨🇳 CNY → 🇰🇷 KRW</button>
+            <button class="quick-btn" onclick="CurrencyConverter.quickSet('GBP', 'USD')" aria-label="🇬🇧 GBP → 🇺🇸 USD">🇬🇧 GBP → 🇺🇸 USD</button>
+          </div>
+        </div>
+
+        <!-- 주요 통화 환율표 -->
+        <div class="rates-table-section">
+          <div class="section-title">주요 통화 환율 (USD 기준)</div>
+          <div class="rates-table-wrapper">
+            <table class="rates-table" id="ratesTable">
+              <thead>
+                <tr>
+                  <th>통화</th>
+                  <th>코드</th>
+                  <th>1 USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 동적으로 추가됨 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">안내</div>
+          <div class="help-content">
+            <p>• 환율은 실시간 API를 통해 제공됩니다</p>
+            <p>• 참고용이며 실제 거래 환율과 다를 수 있습니다</p>
+            <p>• 은행/환전소는 별도의 수수료를 부과합니다</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="/tools/common/tool-base.js?v=20260124"></script>
+  <script src="currency-converter.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+        <section id="content-model-sync-logs" class="content-section admin-only">
+          <h2 class="section-title" data-i18n="modelSyncLogsTitle"><span data-icon="refresh-cw" data-icon-size="16"></span> 배치실행로그</h2>
+          <p class="section-description" data-i18n="modelSyncLogsDesc">AI 모델 동기화 배치 실행 결과를 확인합니다. (7일이 경과한 로그는 자동으로 삭제됩니다)</p>
+
+          <div id="modelSyncLogsPanel" class="admin-logs-container" style="display: block;">
+            <!-- 배치 수동 실행 버튼 영역 -->
+            <div class="batch-buttons-section" style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div style="margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 13px;" data-i18n="batchManualRunTitle">배치 수동 실행</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="exchange-rate" data-i18n="batchExchangeRate" data-i18n-title="batchExchangeRateTooltip"><span data-icon="dollar-sign" data-icon-size="14"></span> 환율 업데이트</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="subscription" data-i18n="batchSubscription" data-i18n-title="batchSubscriptionTooltip"><span data-icon="package" data-icon-size="16"></span> 구독 처리</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="credit-rate" data-i18n="batchCreditRate" data-i18n-title="batchCreditRateTooltip"><span data-icon="coins" data-icon-size="14"></span> 크레딧 레이트</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="backup" data-i18n="batchBackup" data-i18n-title="batchBackupTooltip"><span data-icon="save" data-icon-size="14"></span> DB백업</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="daily-credit" data-i18n="batchDailyCredit" data-i18n-title="batchDailyCreditTooltip"><span data-icon="calendar" data-icon-size="14"></span> 일일 크레딧 리셋</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="model-sync" data-i18n="batchModelSync" data-i18n-title="batchModelSyncTooltip"><span data-icon="robot" data-icon-size="14"></span> AI 모델 동기화</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="qa-auto-reply" data-i18n="batchQaAutoReply" data-i18n-title="batchQaAutoReplyTooltip"><span data-icon="message-circle" data-icon-size="14"></span> Q&A 자동 답변</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="log-backup" data-i18n="batchLogBackup" data-i18n-title="batchLogBackupTooltip"><span data-icon="package" data-icon-size="14"></span> 로그 백업</button>
+                <button type="button" class="batch-run-btn has-tooltip" data-batch="cloud-scheduler-warmup" data-i18n="batchCloudWarmup" data-i18n-title="batchCloudWarmupTooltip"><span data-icon="cloud" data-icon-size="14"></span> Cloud Run Warmup</button>
+              </div>
+            </div>
+
+            <!-- 필터 영역 -->
+            <div class="admin-logs-filters">
+              <div class="admin-logs-filters-row">
+                <div class="admin-filter-group">
+                  <label data-i18n="batchTypeLabel">배치 종류</label>
+                  <select id="batchTypeFilter">
+                    <option value="" data-i18n="filterAll">전체</option>
+                    <option value="model_sync">AI 모델 동기화</option>
+                    <option value="exchange_rate">환율 업데이트</option>
+                    <option value="subscription">구독 처리</option>
+                    <option value="credit_rate">크레딧 레이트</option>
+                    <option value="backup">DB백업</option>
+                    <option value="daily_credit">일일 크레딧 리셋</option>
+                    <option value="qa_auto_reply">Q&A 자동 답변</option>
+                    <option value="log_backup">로그 백업</option>
+                    <option value="cloud-scheduler-warmup">Cloud Run Warmup</option>
+                  </select>
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="modelSyncServiceLabel">AI 서비스</label>
+                  <select id="modelSyncService">
+                    <option value="" data-i18n="filterAll">전체</option>
+                    <option value="gpt">GPT</option>
+                    <option value="claude">Claude</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="grok">Grok</option>
+                  </select>
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="modelSyncStatusLabel">상태</label>
+                  <select id="modelSyncStatus">
+                    <option value="" data-i18n="filterAll">전체</option>
+                    <option value="success" data-i18n="syncStatusSuccess">성공</option>
+                    <option value="failed" data-i18n="syncStatusFailed">실패</option>
+                  </select>
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logDateFromLabel">시작 날짜</label>
+                  <input type="date" id="modelSyncDateFrom">
+                </div>
+                <div class="admin-filter-group">
+                  <label data-i18n="logDateToLabel">종료 날짜</label>
+                  <input type="date" id="modelSyncDateTo">
+                </div>
+                <div class="admin-filter-buttons">
+                  <button type="button" id="modelSyncSearchBtn" class="admin-filter-btn search" data-i18n="logSearchBtn">검색</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 통계 요약 -->
+            <div class="admin-logs-stats" id="modelSyncStats">
+              <div class="admin-stat-item">
+                <span class="stat-badge" style="background: #10b981;"></span>
+                <span class="stat-label" data-i18n="syncStatusSuccess">성공</span>
+                <span class="stat-count" id="syncStatSuccess">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge" style="background: #ef4444;"></span>
+                <span class="stat-label" data-i18n="syncStatusFailed">실패</span>
+                <span class="stat-count" id="syncStatFailed">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge" style="background: #3b82f6;"></span>
+                <span class="stat-label" data-i18n="syncStatAdded">추가</span>
+                <span class="stat-count" id="syncStatAdded">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-badge" style="background: #f59e0b;"></span>
+                <span class="stat-label" data-i18n="syncStatDeprecated">Deprecated</span>
+                <span class="stat-count" id="syncStatDeprecated">0</span>
+              </div>
+              <div class="admin-stat-item">
+                <span class="stat-label" data-i18n="syncStatLastSync">마지막 동기화</span>
+                <span class="stat-count" id="syncStatLastSync">-</span>
+              </div>
+            </div>
+
+            <!-- 로그 테이블 -->
+            <div class="admin-logs-table-container">
+              <table class="admin-logs-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="syncTableBatchType" style="min-width: 100px;">배치 종류</th>
+                    <th data-i18n="syncTableDate">날짜</th>
+                    <th data-i18n="syncTableService">AI 서비스</th>
+                    <th data-i18n="syncTableStatus">상태</th>
+                    <th data-i18n="syncTableFound">발견</th>
+                    <th data-i18n="syncTableAdded">추가</th>
+                    <th data-i18n="syncTableModified">수정</th>
+                    <th data-i18n="syncTableDeprecated">Deprecated</th>
+                    <th data-i18n="syncTableResponseTime">응답시간</th>
+                    <th data-i18n="syncTableMessage">메시지</th>
+                    <th><button class="sync-log-delete-btn" onclick="deleteAllSyncLogs()" data-i18n-title="syncDeleteAllTooltip" data-i18n="syncDeleteBtn">삭제</button></th>
+                  </tr>
+                </thead>
+                <tbody id="modelSyncLogsTableBody">
+                  <!-- 동적으로 로그 항목 추가 -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="admin-logs-pagination" id="modelSyncPagination">
+              <button type="button" class="admin-page-btn" id="modelSyncPrevBtn" data-i18n="logPrevBtn">이전</button>
+              <span class="admin-page-info" id="modelSyncPageInfo" data-i18n="syncPageInfo">페이지 1/1</span>
+              <button type="button" class="admin-page-btn" id="modelSyncNextBtn" data-i18n="logNextBtn">다음 </button>
+            </div>
+          </div>
+        </section>

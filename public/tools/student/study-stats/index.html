@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학습 통계 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+    .summary-card { background: linear-gradient(135deg, var(--primary), #6366f1); border-radius: 16px; padding: 1.5rem; color: white; text-align: center; }
+    .summary-card.secondary { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .summary-card.tertiary { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .summary-card.quaternary { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .summary-value { font-size: 2.5rem; font-weight: 700; }
+    .summary-label { font-size: 0.85rem; opacity: 0.9; }
+    .chart-container { height: 200px; display: flex; align-items: flex-end; gap: 8px; padding: 1rem 0; }
+    .chart-bar { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; position: relative; }
+    .chart-bar:hover { opacity: 0.8; }
+    .chart-bar-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: var(--text-secondary); }
+    .chart-bar-value { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 600; }
+    .subject-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .subject-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; }
+    .subject-progress { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .subject-progress-bar { height: 100%; background: var(--primary); border-radius: 4px; }
+    .subject-name { width: 80px; font-weight: 600; font-size: 0.9rem; }
+    .subject-time { width: 60px; text-align: right; font-size: 0.85rem; color: var(--text-secondary); }
+    .goal-section { margin-top: 1rem; }
+    .goal-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .goal-progress { background: var(--bg-primary); padding: 1rem; border-radius: 8px; }
+    .goal-bar { height: 12px; background: var(--bg-secondary); border-radius: 6px; overflow: hidden; margin: 0.5rem 0; }
+    .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: 6px; transition: width 0.3s; }
+    .streak-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">학습 통계</h1>
+          <p class="tool-description">학습 데이터 분석 및 목표 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <div class="streak-badge" id="streakBadge">연속 0일</div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-value" id="todayTime">0</div>
+          <div class="summary-label">오늘 학습 (분)</div>
+        </div>
+        <div class="summary-card secondary">
+          <div class="summary-value" id="weekTime">0</div>
+          <div class="summary-label">이번 주 (시간)</div>
+        </div>
+        <div class="summary-card tertiary">
+          <div class="summary-value" id="avgTime">0</div>
+          <div class="summary-label">일 평균 (분)</div>
+        </div>
+        <div class="summary-card quaternary">
+          <div class="summary-value" id="totalSessions">0</div>
+          <div class="summary-label">총 세션</div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">주간 학습량</h3>
+        <div class="chart-container" id="weeklyChart"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">과목별 학습</h3>
+        <div class="subject-list" id="subjectList"></div>
+      </div>
+
+      <div class="util-panel goal-section">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">일일 목표</h3>
+        <div class="goal-input-row">
+          <input type="number" id="dailyGoal" class="tool-input" placeholder="목표 시간 (분)" style="flex: 1;" aria-label="목표 시간 (분)">
+          <button class="tool-btn tool-btn-primary" onclick="StudyStats.setGoal()" aria-label="설정">설정</button>
+        </div>
+        <div class="goal-progress">
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+            <span>오늘 진행률</span>
+            <span id="goalPercent">0%</span>
+          </div>
+          <div class="goal-bar">
+            <div class="goal-bar-fill" id="goalBar" style="width: 0%;"></div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);" id="goalStatus">목표를 설정해주세요</div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">학습 기록 추가</h3>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <input type="text" id="recordSubject" class="tool-input" placeholder="과목" style="flex: 1; min-width: 100px;" aria-label="과목">
+          <input type="number" id="recordMinutes" class="tool-input" placeholder="시간(분)" style="width: 100px;" aria-label="시간(분)">
+          <button class="tool-btn tool-btn-primary" onclick="StudyStats.addRecord()" aria-label="추가">추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="study-stats.js"></script>
+</body>
+</html>

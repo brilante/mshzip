@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>플라스틱 추적기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .result-card { background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: 16px; padding: 2rem; color: white; text-align: center; margin-bottom: 1rem; }
+    .result-value { font-size: 3.5rem; font-weight: 700; }
+    .result-unit { font-size: 1rem; }
+    .result-label { font-size: 0.9rem; opacity: 0.9; }
+    .stats-row { display: flex; justify-content: space-around; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 600; }
+    .stat-label { font-size: 0.7rem; opacity: 0.8; }
+    .quick-add { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .quick-btn { padding: 0.75rem 0.5rem; background: var(--bg-primary); border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .quick-btn:hover { background: var(--primary); color: white; }
+    .log-list { max-height: 300px; overflow-y: auto; }
+    .log-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .log-info { display: flex; align-items: center; gap: 0.75rem; }
+    .log-icon { font-size: 1.25rem; }
+    .log-name { font-weight: 500; }
+    .log-time { font-size: 0.75rem; color: var(--text-secondary); }
+    .log-count { font-weight: 600; color: var(--primary); }
+    .btn-undo { background: #ef4444; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+    .chart-container { height: 150px; display: flex; align-items: flex-end; gap: 4px; }
+    .chart-bar { flex: 1; background: #06b6d4; border-radius: 4px 4px 0 0; min-height: 4px; position: relative; }
+    .chart-bar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: var(--text-secondary); }
+    .goal-section { margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; }
+    .goal-input { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .goal-progress { height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .goal-progress-fill { height: 100%; background: #22c55e; border-radius: 4px; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">플라스틱 추적기</h1>
+          <p class="tool-description">일회용 플라스틱 사용량 추적</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="result-card">
+        <div class="result-label">오늘 사용한 일회용품</div>
+        <div><span class="result-value" id="todayCount">0</span><span class="result-unit"> 개</span></div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value" id="weekCount">0</div>
+            <div class="stat-label">이번 주</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="monthCount">0</div>
+            <div class="stat-label">이번 달</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="avgCount">0</div>
+            <div class="stat-label">일 평균</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">빠른 추가</h3>
+        <div class="quick-add">
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('cup', '컵')" aria-label="컵">컵</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('bottle', '페트병')" aria-label="페트병">페트병</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('bag', '비닐봉지')" aria-label="비닐">비닐</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('straw', '빨대')" aria-label="빨대">빨대</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('utensil', '수저')" aria-label="수저">수저</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('container', '용기')" aria-label="용기">용기</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('wrap', '랩/포장')" aria-label="포장">포장</button>
+          <button class="quick-btn" onclick="PlasticTracker.quickAdd('other', '기타')" aria-label="기타">기타</button>
+        </div>
+
+        <div class="goal-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-weight: 600; font-size: 0.9rem;">일일 목표</span>
+            <span id="goalStatus" style="font-size: 0.85rem;">설정 안됨</span>
+          </div>
+          <div class="goal-input">
+            <input type="number" id="dailyGoal" class="tool-input" placeholder="목표 개수" style="flex: 1;" aria-label="목표 개수">
+            <button class="tool-btn tool-btn-primary" onclick="PlasticTracker.setGoal()" aria-label="설정">설정</button>
+          </div>
+          <div class="goal-progress">
+            <div class="goal-progress-fill" id="goalProgress" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">주간 추이</h3>
+        <div class="chart-container" id="weeklyChart"></div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">오늘 기록</h3>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="plastic-tracker.js"></script>
+</body>
+</html>

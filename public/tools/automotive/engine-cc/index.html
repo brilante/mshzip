@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>배기량 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .input-row { display: flex; gap: 0.5rem; align-items: center; }
+    .input-row input, .input-row select { flex: 1; }
+    .input-unit { color: var(--text-secondary); font-size: 0.9rem; min-width: 40px; }
+    .result-display { text-align: center; padding: 2rem; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 16px; color: white; margin: 1rem 0; }
+    .result-value { font-size: 3rem; font-weight: 700; }
+    .result-unit { font-size: 1.25rem; opacity: 0.9; }
+    .result-sub { font-size: 1rem; margin-top: 0.5rem; opacity: 0.9; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1rem 0; }
+    .stat-card { background: var(--bg-primary); padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .mode-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .mode-tab { flex: 1; padding: 0.75rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; text-align: center; }
+    .mode-tab.active { background: var(--primary); color: white; }
+    .info-section { margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; }
+    .info-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .info-row:last-child { border-bottom: none; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">배기량 계산기</h1>
+          <p class="tool-description">엔진 배기량 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="mode-tabs">
+          <div class="mode-tab active" data-mode="calc" onclick="EngineCC.setMode('calc')">배기량 계산</div>
+          <div class="mode-tab" data-mode="convert" onclick="EngineCC.setMode('convert')">단위 변환</div>
+        </div>
+
+        <div id="calcMode">
+          <div class="input-group">
+            <label class="input-label">실린더 수</label>
+            <select id="cylinders" class="tool-input" onchange="EngineCC.calculate()">
+              <option value="1">1기통</option>
+              <option value="2">2기통</option>
+              <option value="3">3기통</option>
+              <option value="4" selected>4기통</option>
+              <option value="5">5기통</option>
+              <option value="6">6기통</option>
+              <option value="8">8기통</option>
+              <option value="10">10기통</option>
+              <option value="12">12기통</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">보어 (실린더 직경)</label>
+            <div class="input-row">
+              <input type="number" id="bore" class="tool-input" value="86" step="0.1" oninput="EngineCC.calculate()">
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">스트로크 (피스톤 행정)</label>
+            <div class="input-row">
+              <input type="number" id="stroke" class="tool-input" value="86" step="0.1" oninput="EngineCC.calculate()">
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="convertMode" style="display: none;">
+          <div class="input-group">
+            <label class="input-label">배기량 (cc)</label>
+            <div class="input-row">
+              <input type="number" id="ccInput" class="tool-input" value="1998" oninput="EngineCC.convertUnits()">
+              <span class="input-unit">cc</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-display">
+        <div class="result-value" id="resultCC">1,998</div>
+        <div class="result-unit">cc</div>
+        <div class="result-sub" id="resultLiter">≈ 2.0L</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="perCylinder">500cc</div>
+          <div class="stat-label">기통당 배기량</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="cubicInch">122ci</div>
+          <div class="stat-label">큐빅 인치</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">배기량 분류</h3>
+        <div class="info-row">
+          <span>경차</span>
+          <span>~1,000cc</span>
+        </div>
+        <div class="info-row">
+          <span>소형차</span>
+          <span>1,000~1,600cc</span>
+        </div>
+        <div class="info-row">
+          <span>준중형</span>
+          <span>1,600~2,000cc</span>
+        </div>
+        <div class="info-row">
+          <span>중형</span>
+          <span>2,000~2,500cc</span>
+        </div>
+        <div class="info-row">
+          <span>대형</span>
+          <span>2,500cc 이상</span>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">배기량 공식</h3>
+        <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.8;">
+          <p style="text-align: center; font-weight: 600; margin-bottom: 0.5rem;">
+            V = π × (B/2)² × S × N
+          </p>
+          <div>• V: 총 배기량 (cc)</div>
+          <div>• B: 보어/실린더 직경 (mm)</div>
+          <div>• S: 스트로크/행정 (mm)</div>
+          <div>• N: 실린더 수</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="engine-cc.js"></script>
+</body>
+</html>

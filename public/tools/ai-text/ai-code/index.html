@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 코드 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .ai-container { max-width: 1100px; margin: 0 auto; }
+    .ai-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .model-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .model-btn { padding: 0.6rem 1rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .model-btn:hover { border-color: var(--primary); }
+    .model-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .model-icon { font-size: 1.2rem; }
+    .model-info { display: flex; flex-direction: column; }
+    .model-name { font-weight: 600; }
+    .model-desc { font-size: 0.7rem; color: var(--text-secondary); }
+    .options-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    .option-group { flex: 1; }
+    .option-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .lang-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .lang-chip { padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-primary); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.3rem; }
+    .lang-chip:hover { border-color: var(--primary); }
+    .lang-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .code-panel { display: flex; flex-direction: column; }
+    .prompt-textarea { min-height: 150px; resize: vertical; }
+    .code-output { flex: 1; min-height: 350px; background: #1e1e1e; border-radius: 10px; overflow: hidden; font-family: 'Consolas', 'Monaco', monospace; }
+    .code-header { padding: 0.75rem 1rem; background: #2d2d2d; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3d3d3d; }
+    .code-lang { color: #9ca3af; font-size: 0.8rem; }
+    .code-copy { padding: 0.3rem 0.6rem; background: #3d3d3d; color: #e5e7eb; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+    .code-copy:hover { background: #4d4d4d; }
+    .code-content { padding: 1rem; color: #d4d4d4; font-size: 0.9rem; line-height: 1.6; overflow-y: auto; max-height: 300px; white-space: pre-wrap; }
+    .code-placeholder { color: #6b7280; text-align: center; padding-top: 100px; }
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .premium-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 10px; font-size: 0.65rem; font-weight: 600; }
+    .loading-indicator { display: none; align-items: center; justify-content: center; gap: 0.5rem; padding: 2rem; color: #9ca3af; }
+    .loading-indicator.active { display: flex; }
+    .typing-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+    .example-prompts { margin-top: 1rem; }
+    .example-title { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .example-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .example-item { padding: 0.4rem 0.75rem; background: var(--bg-primary); border-radius: 15px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+    .example-item:hover { background: var(--primary); color: white; }
+    /* 코드 하이라이팅 */
+    .keyword { color: #c586c0; }
+    .string { color: #ce9178; }
+    .comment { color: #6a9955; }
+    .function { color: #dcdcaa; }
+    .number { color: #b5cea8; }
+    @media (max-width: 800px) { .code-grid { grid-template-columns: 1fr; } .options-row { flex-direction: column; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">AI 코드 생성</h1>
+          <p class="tool-description">자연어로 코드를 생성하고 설명받기</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <span class="premium-badge">Premium</span>
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="ai-container">
+      <div class="ai-panel">
+        <div class="section-title">AI 모델 선택</div>
+        <div class="model-selector">
+          <div class="model-btn active" data-model="gpt-4o-mini" onclick="AICode.selectModel('gpt-4o-mini')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">GPT-4o Mini</span>
+              <span class="model-desc">빠른 코드 생성</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="claude-3-haiku" onclick="AICode.selectModel('claude-3-haiku')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Claude 3 Haiku</span>
+              <span class="model-desc">정확한 코드</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="gemini-2-flash" onclick="AICode.selectModel('gemini-2-flash')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Gemini 2.0 Flash</span>
+              <span class="model-desc">다양한 언어</span>
+            </div>
+          </div>
+          <div class="model-btn" data-model="codestral" onclick="AICode.selectModel('codestral')">
+            <span class="model-icon"></span>
+            <div class="model-info">
+              <span class="model-name">Codestral</span>
+              <span class="model-desc">코드 전문</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">프로그래밍 언어</div>
+        <div class="lang-chips">
+          <div class="lang-chip active" data-lang="javascript" onclick="AICode.selectLang('javascript')"> JavaScript</div>
+          <div class="lang-chip" data-lang="python" onclick="AICode.selectLang('python')">Python</div>
+          <div class="lang-chip" data-lang="typescript" onclick="AICode.selectLang('typescript')">TypeScript</div>
+          <div class="lang-chip" data-lang="java" onclick="AICode.selectLang('java')">Java</div>
+          <div class="lang-chip" data-lang="csharp" onclick="AICode.selectLang('csharp')"> C#</div>
+          <div class="lang-chip" data-lang="go" onclick="AICode.selectLang('go')">Go</div>
+          <div class="lang-chip" data-lang="rust" onclick="AICode.selectLang('rust')">Rust</div>
+          <div class="lang-chip" data-lang="sql" onclick="AICode.selectLang('sql')">SQL</div>
+        </div>
+
+        <div class="code-grid" style="margin-top: 1.5rem;">
+          <div class="code-panel">
+            <div class="section-title">무엇을 만들까요?</div>
+            <textarea id="promptInput" class="tool-input prompt-textarea" placeholder="원하는 코드를 자연어로 설명하세요...
+
+예시:
+- 배열에서 중복 제거하는 함수
+- API에서 데이터 가져오기
+- 버블 정렬 알고리즘"></textarea>
+            <div class="example-prompts">
+              <div class="example-title">예시 프롬프트</div>
+              <div class="example-list">
+                <div class="example-item" onclick="AICode.setPrompt('배열에서 중복을 제거하는 함수')">중복 제거</div>
+                <div class="example-item" onclick="AICode.setPrompt('피보나치 수열 계산')">피보나치</div>
+                <div class="example-item" onclick="AICode.setPrompt('REST API 호출 함수')">API 호출</div>
+                <div class="example-item" onclick="AICode.setPrompt('날짜 포맷 변환 함수')">날짜 포맷</div>
+                <div class="example-item" onclick="AICode.setPrompt('이메일 유효성 검사')">이메일 검증</div>
+              </div>
+            </div>
+          </div>
+          <div class="code-panel">
+            <div class="section-title">생성된 코드</div>
+            <div class="code-output" id="codeOutput">
+              <div class="code-header">
+                <span class="code-lang" id="codeLang">JavaScript</span>
+                <button class="code-copy" onclick="AICode.copyCode()" aria-label="복사">복사</button>
+              </div>
+              <div class="code-content" id="codeContent">
+                <div class="code-placeholder">코드가 여기에 표시됩니다.</div>
+                <div class="loading-indicator" id="loadingIndicator">
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span style="margin-left: 0.5rem;">코드 생성 중...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="tool-btn tool-btn-primary" style="flex: 1;" onclick="AICode.generate()" aria-label="코드 생성">
+            코드 생성
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="AICode.explain()" aria-label="코드 설명">
+            코드 설명
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="AICode.optimize()" aria-label="최적화">
+            최적화
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="ai-code.js"></script>
+</body>
+</html>

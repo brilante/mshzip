@@ -1,0 +1,147 @@
+/**
+ * Text-to-Speech 도구 스타일
+ * @created 2026-01-12
+ */
+
+/* 레이아웃 */
+.tts-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+
+/* 카드 공통 */
+.input-card, .settings-card, .player-card, .info-card {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px; padding: 20px; margin-bottom: 20px;
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 16px; }
+.card-header .card-title { margin-bottom: 0; }
+.char-info { font-size: 13px; color: var(--text-secondary, #666); }
+
+/* 텍스트 입력 */
+.text-input {
+  width: 100%; min-height: 150px; padding: 16px;
+  font-size: 15px; line-height: 1.6;
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 10px;
+  background: var(--bg-secondary, #f8f9fa); color: var(--text-primary, #333);
+  resize: vertical; font-family: inherit;
+}
+.text-input:focus { outline: none; border-color: var(--primary-color, #667eea); }
+
+/* 빠른 텍스트 버튼 */
+.quick-texts { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.quick-btn {
+  padding: 8px 14px; font-size: 13px;
+  background: var(--bg-secondary, #f8f9fa); color: var(--text-primary, #333);
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 6px;
+  cursor: pointer; transition: all 0.2s;
+}
+.quick-btn:hover { border-color: var(--primary-color, #667eea); color: var(--primary-color, #667eea); }
+
+/* 폼 요소 */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-secondary, #666); margin-bottom: 8px; }
+.form-select {
+  width: 100%; padding: 10px 12px; font-size: 14px;
+  border: 1px solid var(--border-color, #e9ecef); border-radius: 8px;
+  background: var(--bg-secondary, #f8f9fa); color: var(--text-primary, #333);
+}
+.form-select:focus { outline: none; border-color: var(--primary-color, #667eea); }
+
+/* 슬라이더 */
+.slider-group { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+.slider-item { display: flex; flex-direction: column; gap: 8px; }
+.slider-value { color: var(--primary-color, #667eea); font-weight: 600; }
+.slider {
+  width: 100%; height: 6px; -webkit-appearance: none;
+  background: var(--border-color, #e9ecef); border-radius: 3px; outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  background: var(--primary-color, #667eea); border-radius: 50%;
+  cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 플레이어 카드 */
+.player-card { text-align: center; }
+.player-visual { padding: 30px 0; }
+.player-status { font-size: 16px; font-weight: 600; color: var(--text-primary, #333); margin-top: 16px; }
+
+/* 파형 애니메이션 */
+.waveform { display: flex; justify-content: center; gap: 6px; height: 60px; align-items: center; }
+.wave-bar {
+  width: 8px; height: 20px; background: var(--primary-color, #667eea);
+  border-radius: 4px; opacity: 0.3;
+}
+.waveform.active .wave-bar { animation: wave 0.8s ease-in-out infinite; opacity: 1; }
+.waveform.active .wave-bar:nth-child(1) { animation-delay: 0s; }
+.waveform.active .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.waveform.active .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.waveform.active .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.waveform.active .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.waveform.active .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+.waveform.active .wave-bar:nth-child(7) { animation-delay: 0.6s; }
+@keyframes wave {
+  0%, 100% { height: 20px; }
+  50% { height: 50px; }
+}
+
+/* 컨트롤 버튼 */
+.player-controls { display: flex; justify-content: center; gap: 16px; margin: 24px 0; }
+.control-btn {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--bg-secondary, #f8f9fa);
+  border: 2px solid var(--border-color, #e9ecef);
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.control-btn:hover { border-color: var(--primary-color, #667eea); }
+.control-btn.play-btn {
+  width: 72px; height: 72px;
+  background: var(--primary-color, #667eea);
+  border-color: var(--primary-color, #667eea);
+}
+.control-btn.play-btn:hover { background: #5a6fd6; }
+.btn-icon { font-size: 24px; }
+.play-btn .btn-icon { filter: grayscale(1) brightness(10); }
+
+/* 프로그레스 바 */
+.progress-bar { padding: 0 20px; }
+.progress-track {
+  height: 6px; background: var(--border-color, #e9ecef);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: var(--primary-color, #667eea);
+  transition: width 0.3s;
+}
+
+/* 정보 카드 */
+.info-card { display: flex; gap: 20px; }
+.info-item { flex: 1; text-align: center; }
+.info-label { display: block; font-size: 12px; color: var(--text-secondary, #666); margin-bottom: 4px; }
+.info-value { font-size: 16px; font-weight: 600; color: var(--text-primary, #333); }
+
+/* 도움말 */
+.tool-help { padding: 18px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px; border-left: 4px solid var(--primary-color, #667eea); }
+.help-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 10px; }
+.help-content { font-size: 13px; color: var(--text-secondary, #666); line-height: 1.8; }
+.help-content p { margin: 4px 0; }
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .tts-layout { grid-template-columns: 1fr; }
+}
+
+/* 다크 모드 (data-theme 선택자로 통일) */
+[data-theme="dark"] .input-card, [data-theme="dark"] .settings-card, [data-theme="dark"] .player-card, [data-theme="dark"] .info-card { background: #1e1e1e; border-color: #404040; }
+[data-theme="dark"] .text-input { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .quick-btn { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .form-select { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .slider { background: #404040; }
+[data-theme="dark"] .control-btn { background: #252525; border-color: #404040; }
+[data-theme="dark"] .progress-track { background: #404040; }
+[data-theme="dark"] .tool-help { background: #252525; }
+[data-theme="dark"] .help-title, [data-theme="dark"] .card-title, [data-theme="dark"] .player-status, [data-theme="dark"] .info-value { color: #e0e0e0; }

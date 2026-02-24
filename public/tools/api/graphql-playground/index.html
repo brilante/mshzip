@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphQL 플레이그라운드 | GraphQL Playground</title>
+  <link rel="stylesheet" href="graphql-playground.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>GraphQL 플레이그라운드</h1>
+      <p>GraphQL 쿼리를 작성하고 테스트하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="endpoint-bar">
+        <input type="text" id="endpoint" placeholder="GraphQL Endpoint URL" value="https://countries.trevorblades.com/" aria-label="GraphQL Endpoint URL">
+        <button onclick="executeQuery()" aria-label="실행">실행</button>
+      </div>
+
+      <div class="playground-layout">
+        <div class="query-panel">
+          <div class="panel-header">
+            <span>Query</span>
+            <button onclick="prettifyQuery()" class="mini-btn" aria-label="Prettify">Prettify</button>
+          </div>
+          <textarea id="queryEditor" spellcheck="false">query {
+  countries {
+    code
+    name
+    emoji
+    currency
+    capital
+  }
+}</textarea>
+
+          <div class="variables-section">
+            <div class="panel-header">
+              <span>Variables</span>
+            </div>
+            <textarea id="variablesEditor" spellcheck="false">{}</textarea>
+          </div>
+        </div>
+
+        <div class="response-panel">
+          <div class="panel-header">
+            <span>Response</span>
+            <span class="response-time" id="responseTime"></span>
+          </div>
+          <pre id="responseOutput">// 쿼리를 실행하면 결과가 여기에 표시됩니다</pre>
+        </div>
+      </div>
+
+      <div class="docs-panel">
+        <h4>예제 쿼리</h4>
+        <div class="example-queries">
+          <button onclick="loadExample('countries')" aria-label="국가 목록">국가 목록</button>
+          <button onclick="loadExample('country')" aria-label="국가 상세">국가 상세</button>
+          <button onclick="loadExample('continents')" aria-label="대륙 목록">대륙 목록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="graphql-playground.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

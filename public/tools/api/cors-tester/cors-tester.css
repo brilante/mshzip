@@ -1,0 +1,32 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+.header { text-align: center; color: white; margin-bottom: 20px; }
+.header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.main-content { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.input-section { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 30px; flex-wrap: wrap; }
+.input-group { flex: 1; min-width: 200px; }
+.input-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #333; }
+.input-group input, .input-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; }
+.input-section button { padding: 12px 25px; background: #e74c3c; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.result-card { padding: 20px; border-radius: 15px; margin-bottom: 20px; background: #f8f8f8; }
+.result-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.result-icon { font-size: 32px; }
+.result-status { font-size: 18px; font-weight: 700; }
+.result-status.success { color: #27ae60; }
+.result-status.error { color: #e74c3c; }
+.result-details { font-size: 14px; color: #666; font-family: 'Fira Code', monospace; }
+.headers-card { padding: 20px; border-radius: 15px; background: #f0f0f0; margin-bottom: 20px; }
+.headers-card h4 { margin-bottom: 15px; }
+.headers-list { display: flex; flex-direction: column; gap: 10px; }
+.header-item { display: flex; padding: 10px; background: white; border-radius: 8px; }
+.header-item .header-name { width: 280px; font-weight: 600; color: #333; font-size: 13px; }
+.header-item .header-value { flex: 1; font-family: 'Fira Code', monospace; font-size: 13px; color: #666; word-break: break-all; }
+.header-item.present { border-left: 4px solid #27ae60; }
+.header-item.missing { border-left: 4px solid #e74c3c; opacity: 0.6; }
+.info-section { padding-top: 20px; border-top: 2px solid #f0f0f0; }
+.info-section h4 { margin-bottom: 15px; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.info-item { padding: 15px; background: #f8f8f8; border-radius: 10px; }
+.info-item strong { display: block; font-size: 13px; color: #333; margin-bottom: 5px; font-family: 'Fira Code', monospace; }
+.info-item p { font-size: 13px; color: #666; }

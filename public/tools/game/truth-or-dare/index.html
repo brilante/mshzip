@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>진실 혹은 대담 - JEOGI Tools</title>
+  <link rel="stylesheet" href="truth-or-dare.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>진실 혹은 대담</h1>
+      <p class="subtitle">친구들과 함께하는 파티 게임!</p>
+    </header>
+
+    <main class="main-content">
+      <section class="mode-section">
+        <div class="mode-buttons">
+          <button class="mode-btn truth active" data-mode="truth">
+            <span class="icon"></span>
+            <span class="label">진실</span>
+          </button>
+          <button class="mode-btn dare" data-mode="dare">
+            <span class="icon"></span>
+            <span class="label">대담</span>
+          </button>
+          <button class="mode-btn random" data-mode="random">
+            <span class="icon"></span>
+            <span class="label">랜덤</span>
+          </button>
+        </div>
+
+        <div class="difficulty-selector">
+          <label>난이도:</label>
+          <button class="diff-btn active" data-level="mild" aria-label="순함">순함</button>
+          <button class="diff-btn" data-level="medium" aria-label="보통">보통</button>
+          <button class="diff-btn" data-level="spicy" aria-label="매콤">매콤</button>
+        </div>
+      </section>
+
+      <section class="question-section">
+        <div class="question-card" id="questionCard">
+          <div class="question-type" id="questionType">진실</div>
+          <div class="question-text" id="questionText">버튼을 눌러 질문을 뽑아보세요!</div>
+        </div>
+
+        <button class="draw-btn" id="drawBtn">
+          <span></span> 질문 뽑기!
+        </button>
+      </section>
+
+      <section class="players-section">
+        <h3>플레이어 (선택사항)</h3>
+        <div class="add-player">
+          <input type="text" id="playerInput" placeholder="이름 입력" / aria-label="이름 입력">
+          <button id="addPlayerBtn" aria-label="추가">추가</button>
+        </div>
+        <div class="player-list" id="playerList"></div>
+        <div class="current-player" id="currentPlayer"></div>
+      </section>
+
+      <section class="custom-section">
+        <h3>커스텀 질문 추가</h3>
+        <div class="custom-add">
+          <select id="customType">
+            <option value="truth">진실</option>
+            <option value="dare">대담</option>
+          </select>
+          <select id="customLevel">
+            <option value="mild">순함</option>
+            <option value="medium">보통</option>
+            <option value="spicy">매콤</option>
+          </select>
+          <input type="text" id="customQuestion" placeholder="질문 입력..." / aria-label="질문 입력...">
+          <button id="addCustomBtn" aria-label="추가">추가</button>
+        </div>
+      </section>
+
+      <section class="history-section">
+        <h3>이번 게임 기록</h3>
+        <div class="history-list" id="historyList"></div>
+        <button class="clear-btn" id="clearBtn" aria-label="기록 삭제">기록 삭제</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="truth-or-dare.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

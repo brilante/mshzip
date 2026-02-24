@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파비콘 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .favicon-sizes {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .size-option {
+      padding: 12px 20px;
+      background: var(--tools-card-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .size-option:hover {
+      border-color: var(--tools-primary);
+    }
+    .size-option.selected {
+      background: var(--tools-primary);
+      color: white;
+      border-color: var(--tools-primary);
+    }
+    .size-option input {
+      display: none;
+    }
+    .size-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .size-desc {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .preview-item {
+      text-align: center;
+      padding: 16px;
+      background: var(--tools-card-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+    }
+    .preview-item img {
+      image-rendering: pixelated;
+      border: 1px solid var(--tools-border);
+      background: white;
+    }
+    .preview-item .size-text {
+      font-size: 12px;
+      color: var(--tools-text-secondary);
+      margin-top: 8px;
+    }
+    .upload-dropzone {
+      border: 2px dashed var(--tools-border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--tools-card-bg);
+    }
+    .upload-dropzone:hover,
+    .upload-dropzone.dragover {
+      border-color: var(--tools-primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .dropzone-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .dropzone-text {
+      font-size: 16px;
+      color: var(--tools-text);
+      margin-bottom: 8px;
+    }
+    .dropzone-hint {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .original-preview {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .original-preview img {
+      max-width: 200px;
+      max-height: 200px;
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+    }
+    .original-info {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+      margin-top: 8px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--tools-text);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">파비콘 생성</h1>
+          <p class="tool-description">이미지를 다양한 크기의 파비콘으로 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel">
+      <!-- 파일 업로드 -->
+      <div class="upload-section" id="uploadSection">
+        <div class="upload-dropzone" id="dropzone">
+          <div class="dropzone-icon"></div>
+          <div class="dropzone-text">이미지를 드래그하거나 클릭하여 선택</div>
+          <div class="dropzone-hint">PNG, JPG, WebP 지원 (정사각형 이미지 권장)</div>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <!-- 파비콘 생성 -->
+      <div id="controlSection" style="display: none;">
+        <!-- 원본 미리보기 -->
+        <div class="original-preview">
+          <img id="originalImage" src="" alt="원본">
+          <div class="original-info" id="originalInfo"></div>
+        </div>
+
+        <!-- 크기 선택 -->
+        <div class="section-title">생성할 크기 선택</div>
+        <div class="favicon-sizes" id="sizeOptions">
+          <label class="size-option selected">
+            <input type="checkbox" value="16" checked>
+            <div class="size-label">16×16</div>
+            <div class="size-desc">기본 파비콘</div>
+          </label>
+          <label class="size-option selected">
+            <input type="checkbox" value="32" checked>
+            <div class="size-label">32×32</div>
+            <div class="size-desc">Windows 작업표시줄</div>
+          </label>
+          <label class="size-option selected">
+            <input type="checkbox" value="48" checked>
+            <div class="size-label">48×48</div>
+            <div class="size-desc">Windows 사이트 아이콘</div>
+          </label>
+          <label class="size-option">
+            <input type="checkbox" value="64">
+            <div class="size-label">64×64</div>
+            <div class="size-desc">Windows 타일</div>
+          </label>
+          <label class="size-option selected">
+            <input type="checkbox" value="180" checked>
+            <div class="size-label">180×180</div>
+            <div class="size-desc">Apple Touch Icon</div>
+          </label>
+          <label class="size-option selected">
+            <input type="checkbox" value="192" checked>
+            <div class="size-label">192×192</div>
+            <div class="size-desc">Android Chrome</div>
+          </label>
+          <label class="size-option">
+            <input type="checkbox" value="512">
+            <div class="size-label">512×512</div>
+            <div class="size-desc">PWA 아이콘</div>
+          </label>
+        </div>
+
+        <!-- 생성된 파비콘 미리보기 -->
+        <div class="section-title" style="margin-top: 24px;">생성된 파비콘</div>
+        <div class="preview-grid" id="previewGrid"></div>
+
+        <!-- 액션 버튼 -->
+        <div class="action-buttons">
+          <button class="tool-btn tool-btn-primary" onclick="FaviconGenerator.generate()" aria-label="파비콘 생성">
+            파비콘 생성
+          </button>
+          <button class="tool-btn tool-btn-primary" onclick="FaviconGenerator.downloadAll()" aria-label="전체 다운로드 (ZIP)">
+            전체 다운로드 (ZIP)
+          </button>
+          <button class="tool-btn tool-btn-danger" onclick="FaviconGenerator.clear()" aria-label="새 이미지">
+            새 이미지
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="tool-help">
+      <div class="help-title">파비콘 생성 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>16×16</strong>: 브라우저 탭에 표시되는 기본 파비콘</li>
+          <li><strong>32×32</strong>: Windows 작업표시줄, 북마크</li>
+          <li><strong>180×180</strong>: Apple Touch Icon (iOS 홈 화면)</li>
+          <li><strong>192×192</strong>: Android Chrome 홈 화면 아이콘</li>
+          <li><strong>512×512</strong>: PWA (Progressive Web App) 아이콘</li>
+          <li>정사각형 이미지를 사용하면 최상의 결과를 얻을 수 있습니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="favicon-generator.js"></script>
+</body>
+</html>

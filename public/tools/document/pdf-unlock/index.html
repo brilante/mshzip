@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 잠금 해제 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="pdf-unlock.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">PDF 잠금 해제</h1>
+      <p class="tool-description">비밀번호로 보호된 PDF 파일의 잠금을 해제합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- PDF 업로드 영역 -->
+        <div class="upload-section">
+          <div class="upload-dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".pdf" hidden>
+            <div class="dropzone-icon"></div>
+            <div class="dropzone-text">암호화된 PDF 파일을 드래그하거나 클릭하여 선택</div>
+            <div class="dropzone-hint">최대 50MB까지 지원</div>
+          </div>
+        </div>
+
+        <!-- 파일 정보 및 비밀번호 입력 -->
+        <div class="unlock-section" id="unlockSection" style="display: none;">
+          <div class="file-card">
+            <span class="file-icon"></span>
+            <div class="file-details">
+              <div class="file-name" id="fileName"></div>
+              <div class="file-meta" id="fileMeta"></div>
+            </div>
+            <button class="file-remove" onclick="PdfUnlock.removeFile()" aria-label=""></button>
+          </div>
+
+          <div class="password-section">
+            <div class="section-title">비밀번호 입력</div>
+            <div class="password-input-wrapper">
+              <input type="password" id="password" class="password-input" placeholder="PDF 비밀번호를 입력하세요" aria-label="PDF 비밀번호를 입력하세요">
+              <button class="password-toggle" onclick="PdfUnlock.togglePassword()" aria-label=""></button>
+            </div>
+            <p class="password-hint">PDF를 열 때 필요한 비밀번호를 입력해주세요</p>
+          </div>
+
+          <button class="tool-btn tool-btn-primary tool-btn-lg unlock-btn" id="unlockBtn" onclick="PdfUnlock.unlock()" aria-label="잠금 해제">
+            잠금 해제
+          </button>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div class="error-section" id="errorSection" style="display: none;">
+          <div class="error-icon"></div>
+          <div class="error-message" id="errorMessage"></div>
+          <button class="tool-btn" onclick="PdfUnlock.retry()" aria-label="다시 시도">다시 시도</button>
+        </div>
+
+        <!-- 결과 -->
+        <div class="result-section" id="resultSection" style="display: none;">
+          <div class="section-header">
+            <span class="section-title">잠금 해제 완료</span>
+          </div>
+          <div class="result-info" id="resultInfo"></div>
+          <div class="result-actions">
+            <button class="tool-btn tool-btn-primary" onclick="PdfUnlock.download()" aria-label="다운로드">다운로드</button>
+            <button class="tool-btn" onclick="PdfUnlock.reset()" aria-label="새로 시작">새로 시작</button>
+          </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사용 안내</div>
+          <div class="help-content">
+            <ul>
+              <li><strong>비밀번호 필요</strong>: PDF 잠금 해제에는 원본 비밀번호가 필요합니다</li>
+              <li><strong>보안</strong>: 모든 처리는 브라우저에서 진행되며 파일이 서버로 전송되지 않습니다</li>
+              <li><strong>제한 사항</strong>: 일부 강력하게 암호화된 PDF는 해제되지 않을 수 있습니다</li>
+              <li><strong>법적 고지</strong>: 본인 소유의 PDF 또는 권한이 있는 파일만 잠금 해제하세요</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="pdf-unlock.js"></script>
+</body>
+</html>

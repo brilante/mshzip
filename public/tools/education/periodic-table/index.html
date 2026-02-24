@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주기율표 - 학습 도구</title>
+    <link rel="stylesheet" href="periodic-table.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>인터랙티브 주기율표</h1>
+            <p>원소를 클릭하여 상세 정보를 확인하세요</p>
+        </header>
+
+        <div class="legend">
+            <span class="legend-item alkali">알칼리 금속</span>
+            <span class="legend-item alkaline">알칼리 토금속</span>
+            <span class="legend-item transition">전이 금속</span>
+            <span class="legend-item post-transition">전이후 금속</span>
+            <span class="legend-item metalloid">준금속</span>
+            <span class="legend-item nonmetal">비금속</span>
+            <span class="legend-item halogen">할로겐</span>
+            <span class="legend-item noble">비활성 기체</span>
+        </div>
+
+        <div id="periodicTable" class="periodic-table"></div>
+
+        <div id="elementModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal()" aria-label="&times;">&times;</button>
+                <div class="element-detail">
+                    <div class="element-symbol" id="modalSymbol">H</div>
+                    <h2 id="modalName">수소</h2>
+                    <div class="element-info">
+                        <p><strong>원자번호:</strong> <span id="modalNumber">1</span></p>
+                        <p><strong>원자량:</strong> <span id="modalMass">1.008</span></p>
+                        <p><strong>전자배치:</strong> <span id="modalConfig">1s¹</span></p>
+                        <p><strong>분류:</strong> <span id="modalCategory">비금속</span></p>
+                        <p><strong>발견:</strong> <span id="modalDiscovery">1766년</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="periodic-table.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

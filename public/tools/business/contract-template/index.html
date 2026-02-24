@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>계약서 템플릿 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .contract-layout { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .preview-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; margin-top: 1.5rem; }
+    .section-title:first-child { margin-top: 0; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .template-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .template-btn { padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; text-align: center; font-size: 0.85rem; }
+    .template-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .contract-output { background: #fff; border-radius: 8px; padding: 2rem; color: #333; max-height: 70vh; overflow-y: auto; }
+    .contract-document { line-height: 1.8; }
+    .contract-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; }
+    .contract-preamble { margin: 1.5rem 0; }
+    .contract-document h2 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+    .contract-document p { margin: 0.5rem 0; }
+    .contract-signature { margin-top: 3rem; border-top: 1px solid #ddd; padding-top: 1.5rem; }
+    .contract-date { text-align: center; margin: 1.5rem 0; }
+    .signature-block { display: flex; justify-content: space-around; margin-top: 2rem; }
+    .party { width: 40%; }
+    .party p { margin: 0.5rem 0; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 1rem; font-size: 0.85rem; margin-top: 1rem; }
+    @media (max-width: 1000px) { .contract-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">계약서 템플릿</h1>
+          <p class="tool-description">기본 계약서 템플릿 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="contract-layout">
+      <div class="form-panel">
+        <div class="section-title">계약서 종류</div>
+        <div class="template-selector">
+          <button class="template-btn active" data-type="service" onclick="ContractTemplate.setTemplate('service')" aria-label="용역 계약서">용역 계약서</button>
+          <button class="template-btn" data-type="employment" onclick="ContractTemplate.setTemplate('employment')" aria-label="근로계약서">근로계약서</button>
+          <button class="template-btn" data-type="nda" onclick="ContractTemplate.setTemplate('nda')" aria-label="비밀유지계약서">비밀유지계약서</button>
+          <button class="template-btn" data-type="lease" onclick="ContractTemplate.setTemplate('lease')" aria-label="임대차계약서">임대차계약서</button>
+        </div>
+
+        <div class="section-title">당사자 정보</div>
+        <div class="control-group">
+          <label>갑 (발주자/임대인/사업주)</label>
+          <input type="text" id="partyA" class="tool-input" placeholder="상호 또는 성명" oninput="ContractTemplate.generate()" aria-label="상호 또는 성명">
+        </div>
+        <div class="control-group">
+          <label>을 (수주자/임차인/근로자)</label>
+          <input type="text" id="partyB" class="tool-input" placeholder="상호 또는 성명" oninput="ContractTemplate.generate()" aria-label="상호 또는 성명">
+        </div>
+
+        <div class="section-title">계약 내용</div>
+        <div class="control-group">
+          <label>계약 목적/대상</label>
+          <input type="text" id="contractSubject" class="tool-input" placeholder="예: 웹사이트 개발" oninput="ContractTemplate.generate()" aria-label="예: 웹사이트 개발">
+        </div>
+        <div class="row-2">
+          <div class="control-group">
+            <label>계약 시작일</label>
+            <input type="date" id="startDate" class="tool-input" oninput="ContractTemplate.generate()">
+          </div>
+          <div class="control-group">
+            <label>계약 종료일</label>
+            <input type="date" id="endDate" class="tool-input" oninput="ContractTemplate.generate()">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>계약 금액</label>
+          <input type="number" id="contractAmount" class="tool-input" placeholder="0" oninput="ContractTemplate.generate()" aria-label="0">
+        </div>
+        <div class="control-group">
+          <label>관할 지역</label>
+          <input type="text" id="contractLocation" class="tool-input" value="서울특별시" oninput="ContractTemplate.generate()">
+        </div>
+
+        <div class="warning-box">
+          이 템플릿은 참고용이며, 실제 계약 시에는 법률 전문가의 검토를 권장합니다.
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-title">미리보기</div>
+        <div class="contract-output" id="contractOutput"></div>
+        <div class="btn-row">
+          <button class="tool-btn tool-btn-primary" onclick="ContractTemplate.printContract()" aria-label="인쇄">인쇄</button>
+          <button class="tool-btn tool-btn-secondary" onclick="ContractTemplate.copyContract()" aria-label="복사">복사</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="contract-template.js"></script>
+</body>
+</html>

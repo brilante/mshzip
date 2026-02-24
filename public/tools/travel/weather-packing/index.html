@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>날씨별 짐 추천 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .travel-container { max-width: 700px; margin: 0 auto; }
+    .travel-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .weather-select { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .weather-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; color: white; margin-bottom: 1.5rem; text-align: center; }
+    .weather-icon { font-size: 4rem; margin-bottom: 0.5rem; }
+    .weather-temp { font-size: 2.5rem; font-weight: 700; }
+    .weather-desc { opacity: 0.9; margin-top: 0.5rem; }
+    .packing-section { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .packing-title { font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .packing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; }
+    .packing-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 6px; font-size: 0.9rem; }
+    .packing-item.essential { border-left: 3px solid #ef4444; }
+    .packing-item.recommended { border-left: 3px solid #f59e0b; }
+    .packing-item.optional { border-left: 3px solid #22c55e; }
+    .legend { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .legend-item { display: flex; align-items: center; gap: 0.25rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">날씨별 짐 추천</h1>
+          <p class="tool-description">날씨에 맞는 여행 준비물 추천</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="travel-container">
+      <div class="travel-panel">
+        <div class="weather-select">
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">예상 기온</label>
+            <select id="temperature" class="tool-input" onchange="WeatherPacking.recommend()">
+              <option value="hot">더움 (30°C 이상)</option>
+              <option value="warm" selected>따뜻함 (20-30°C)</option>
+              <option value="mild">선선함 (10-20°C)</option>
+              <option value="cool">쌀쌀함 (0-10°C)</option>
+              <option value="cold">추움 (0°C 이하)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">날씨 상태</label>
+            <select id="condition" class="tool-input" onchange="WeatherPacking.recommend()">
+              <option value="sunny" selected>맑음</option>
+              <option value="cloudy">흐림</option>
+              <option value="rainy">비</option>
+              <option value="snowy">눈</option>
+              <option value="humid">습함</option>
+              <option value="windy">바람</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="weather-card" id="weatherCard">
+          <div class="weather-icon" id="weatherIcon"></div>
+          <div class="weather-temp" id="weatherTemp">20-30°C</div>
+          <div class="weather-desc" id="weatherDesc">따뜻하고 맑은 날씨</div>
+        </div>
+
+        <div id="packingList"></div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #ef4444;"></div>
+            <span>필수</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #f59e0b;"></div>
+            <span>권장</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #22c55e;"></div>
+            <span>선택</span>
+          </div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" onclick="WeatherPacking.exportList()" style="width: 100%; margin-top: 1.5rem;" aria-label="준비물 목록 복사">준비물 목록 복사</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="weather-packing.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A/B 테스트 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .marketing-container { max-width: 700px; margin: 0 auto; }
+    .marketing-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .input-group { margin-bottom: 1.5rem; }
+    .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .variant-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .variant-card { background: var(--bg-primary); border-radius: 8px; padding: 1.25rem; }
+    .variant-header { font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .variant-a .variant-header { color: #3b82f6; }
+    .variant-b .variant-header { color: #8b5cf6; }
+    .result-card { border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; text-align: center; }
+    .result-winner { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+    .result-nodata { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+    .result-inconclusive { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+    .stat-item { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; }
+    .stat-label { font-size: 0.75rem; opacity: 0.9; }
+    .comparison { margin-top: 1.5rem; background: var(--bg-primary); border-radius: 8px; padding: 1rem; }
+    .bar-container { height: 30px; background: var(--bg-secondary); border-radius: 15px; overflow: hidden; display: flex; margin-top: 0.5rem; }
+    .bar-a { background: #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+    .bar-b { background: #8b5cf6; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">A/B 테스트 계산기</h1>
+          <p class="tool-description">통계적 유의성 검증</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="marketing-container">
+      <div class="marketing-panel">
+        <div class="variant-grid">
+          <div class="variant-card variant-a">
+            <div class="variant-header">🅰변형 A (컨트롤)</div>
+            <div class="input-group">
+              <label>방문자 수</label>
+              <input type="number" id="visitorsA" class="tool-input" placeholder="1000" value="1000" aria-label="1000">
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+              <label>전환 수</label>
+              <input type="number" id="conversionsA" class="tool-input" placeholder="50" value="50" aria-label="50">
+            </div>
+          </div>
+
+          <div class="variant-card variant-b">
+            <div class="variant-header">🅱변형 B (테스트)</div>
+            <div class="input-group">
+              <label>방문자 수</label>
+              <input type="number" id="visitorsB" class="tool-input" placeholder="1000" value="1000" aria-label="1000">
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+              <label>전환 수</label>
+              <input type="number" id="conversionsB" class="tool-input" placeholder="65" value="65" aria-label="65">
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 1.5rem;">
+          <label>신뢰 수준</label>
+          <select id="confidence" class="tool-input">
+            <option value="0.90">90%</option>
+            <option value="0.95" selected>95%</option>
+            <option value="0.99">99%</option>
+          </select>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" style="width: 100%;" onclick="ABTestCalc.calculate()" aria-label="통계 분석">통계 분석</button>
+
+        <div id="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="ab-test-calc.js"></script>
+</body>
+</html>

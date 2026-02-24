@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>예방접종 추적기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .pet-container { max-width: 700px; margin: 0 auto; }
+    .pet-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .vaccine-list { margin-top: 1.5rem; }
+    .vaccine-item { background: var(--bg-primary); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
+    .vaccine-header { display: flex; justify-content: space-between; align-items: center; }
+    .vaccine-name { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .vaccine-status { font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 12px; }
+    .status-done { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .status-due { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-upcoming { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+    .vaccine-dates { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.85rem; }
+    .vaccine-date { flex: 1; }
+    .vaccine-date-label { color: var(--text-secondary); font-size: 0.75rem; }
+    .add-record { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+    .add-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.5rem; align-items: end; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">예방접종 추적기</h1>
+          <p class="tool-description">반려동물 예방접종 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="pet-container">
+      <div class="pet-panel">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label style="font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">반려동물 이름</label>
+            <input type="text" id="petName" class="tool-input" placeholder="예: 초코" oninput="VaccineTracker.save()" aria-label="예: 초코">
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">종류</label>
+            <select id="petType" class="tool-input" onchange="VaccineTracker.loadDefaults()">
+              <option value="dog">강아지</option>
+              <option value="cat">고양이</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="tool-btn tool-btn-secondary" onclick="VaccineTracker.loadDefaults()" aria-label="기본 접종 목록 불러오기">기본 접종 목록 불러오기</button>
+
+        <div class="vaccine-list" id="vaccineList"></div>
+
+        <div class="add-record">
+          <h3 style="font-weight: 600; margin-bottom: 1rem;">접종 기록 추가</h3>
+          <div class="add-row">
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-secondary);">백신명</label>
+              <input type="text" id="newVaccine" class="tool-input" placeholder="백신명" aria-label="백신명">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-secondary);">접종일</label>
+              <input type="date" id="newDate" class="tool-input">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--text-secondary);">다음 접종</label>
+              <input type="date" id="newNextDate" class="tool-input">
+            </div>
+            <button class="tool-btn tool-btn-primary" onclick="VaccineTracker.addRecord()" aria-label="추가">추가</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="tool-btn tool-btn-secondary" onclick="VaccineTracker.exportRecords()" style="flex: 1;" aria-label="내보내기">내보내기</button>
+          <button class="tool-btn tool-btn-secondary" onclick="VaccineTracker.clearAll()" style="flex: 1;" aria-label="초기화">초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="vaccination-tracker.js"></script>
+</body>
+</html>

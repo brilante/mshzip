@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이콘 라이브러리 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="icon-library.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">아이콘 라이브러리</h1>
+          <p class="tool-description">다양한 아이콘을 검색하고 복사</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 검색 및 필터 -->
+    <div class="search-section">
+      <input type="text" id="searchInput" class="search-input" placeholder="아이콘 검색..." oninput="IconLibrary.search()" aria-label="아이콘 검색...">
+      <div class="category-filter">
+        <button class="filter-btn active" data-category="all" onclick="IconLibrary.filterCategory('all')" aria-label="전체">전체</button>
+        <button class="filter-btn" data-category="arrows" onclick="IconLibrary.filterCategory('arrows')" aria-label="화살표">화살표</button>
+        <button class="filter-btn" data-category="ui" onclick="IconLibrary.filterCategory('ui')" aria-label="UI">UI</button>
+        <button class="filter-btn" data-category="social" onclick="IconLibrary.filterCategory('social')" aria-label="소셜">소셜</button>
+        <button class="filter-btn" data-category="media" onclick="IconLibrary.filterCategory('media')" aria-label="미디어">미디어</button>
+        <button class="filter-btn" data-category="files" onclick="IconLibrary.filterCategory('files')" aria-label="파일">파일</button>
+        <button class="filter-btn" data-category="emoji" onclick="IconLibrary.filterCategory('emoji')" aria-label="이모지">이모지</button>
+      </div>
+    </div>
+
+    <!-- 아이콘 그리드 -->
+    <div class="icons-grid" id="iconsGrid"></div>
+
+    <!-- 선택된 아이콘 -->
+    <div class="selected-icon-panel" id="selectedPanel" style="display: none;">
+      <div class="selected-preview" id="selectedPreview"></div>
+      <div class="selected-info">
+        <div class="selected-name" id="selectedName"></div>
+        <div class="copy-options">
+          <button class="tool-btn tool-btn-primary" onclick="IconLibrary.copyIcon('svg')" aria-label="SVG 복사">SVG 복사</button>
+          <button class="tool-btn tool-btn-secondary" onclick="IconLibrary.copyIcon('unicode')" aria-label="유니코드 복사">유니코드 복사</button>
+          <button class="tool-btn tool-btn-secondary" onclick="IconLibrary.downloadIcon()" aria-label="다운로드">다운로드</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="icon-library.js"></script>
+</body>
+</html>

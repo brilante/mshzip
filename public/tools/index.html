@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도구 - MyMind3</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
+
+    .tools-hub {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tools-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--tools-bg);
+      border-bottom: 1px solid var(--tools-border);
+      flex-shrink: 0;
+    }
+
+    .tools-title { font-size: 18px; font-weight: 600; color: var(--tools-text); }
+
+    .back-btn {
+      padding: 8px 16px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 6px;
+      color: var(--tools-text);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: var(--tools-primary); color: white; border-color: var(--tools-primary); }
+
+    .tools-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      color: var(--tools-text-secondary);
+      gap: 16px;
+    }
+    .tools-placeholder-icon { font-size: 64px; opacity: 0.5; }
+    .tools-placeholder-text { font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="tools-hub">
+    <header class="tools-header">
+      <span class="tools-title">도구</span>
+      <button class="back-btn" onclick="goBack()">← 메인으로</button>
+    </header>
+    <div class="tools-placeholder">
+      <div class="tools-placeholder-icon"></div>
+      <div class="tools-placeholder-text">도구를 선택해주세요</div>
+    </div>
+  </div>
+
+  <script>
+    // ?load= 파라미터 하위 호환: 직접 도구 페이지로 리다이렉트
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const loadPath = params.get('load');
+      if (loadPath) {
+        window.location.replace('/tools/' + loadPath + '/');
+        return;
+      }
+    })();
+
+    function goBack() {
+      if (window.opener) {
+        window.close();
+      } else {
+        window.location.href = '/';
+      }
+    }
+  </script>
+</body>
+</html>

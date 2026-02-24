@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사이트맵 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="sitemap-generator.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">사이트맵 생성기</h1>
+      <p class="tool-description">검색 엔진 최적화를 위한 XML 사이트맵을 생성합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <div class="sitemap-layout">
+          <!-- 입력 섹션 -->
+          <div class="input-section">
+            <!-- URL 입력 -->
+            <div class="input-card">
+              <div class="card-title">URL 목록</div>
+              <div class="form-group">
+                <label class="form-label">URL 입력 (한 줄에 하나씩)</label>
+                <textarea id="urlList" class="form-textarea large" placeholder="https://example.com/
+https://example.com/about
+https://example.com/contact
+https://example.com/blog/post-1" oninput="SitemapGenerator.generate()"></textarea>
+                <div class="url-count"><span id="urlCount">0</span>개 URL</div>
+              </div>
+              <div class="quick-actions">
+                <button class="action-btn" onclick="SitemapGenerator.addSampleUrls()" aria-label="샘플 추가">샘플 추가</button>
+                <button class="action-btn" onclick="SitemapGenerator.clearUrls()" aria-label="전체 삭제">전체 삭제</button>
+              </div>
+            </div>
+
+            <!-- 기본 설정 -->
+            <div class="input-card">
+              <div class="card-title">기본 설정</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">기본 변경 빈도</label>
+                  <select id="defaultFreq" class="form-select" onchange="SitemapGenerator.generate()">
+                    <option value="always">항상 (always)</option>
+                    <option value="hourly">매시간 (hourly)</option>
+                    <option value="daily">매일 (daily)</option>
+                    <option value="weekly" selected>매주 (weekly)</option>
+                    <option value="monthly">매월 (monthly)</option>
+                    <option value="yearly">매년 (yearly)</option>
+                    <option value="never">안 함 (never)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">기본 우선순위</label>
+                  <select id="defaultPriority" class="form-select" onchange="SitemapGenerator.generate()">
+                    <option value="1.0">1.0 (최고)</option>
+                    <option value="0.9">0.9</option>
+                    <option value="0.8" selected>0.8</option>
+                    <option value="0.7">0.7</option>
+                    <option value="0.6">0.6</option>
+                    <option value="0.5">0.5 (기본)</option>
+                    <option value="0.4">0.4</option>
+                    <option value="0.3">0.3</option>
+                    <option value="0.2">0.2</option>
+                    <option value="0.1">0.1 (최저)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="checkbox-group">
+                <label class="checkbox-option">
+                  <input type="checkbox" id="includeLastmod" checked onchange="SitemapGenerator.generate()">
+                  <span>최종 수정일 포함 (오늘 날짜)</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" id="includeFreq" checked onchange="SitemapGenerator.generate()">
+                  <span>변경 빈도 포함</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" id="includePriority" checked onchange="SitemapGenerator.generate()">
+                  <span>우선순위 포함</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- robots.txt 생성 -->
+            <div class="input-card">
+              <div class="card-title">robots.txt (선택)</div>
+              <div class="form-group">
+                <label class="form-label">사이트맵 URL</label>
+                <input type="url" id="sitemapUrl" class="form-input" placeholder="https://example.com/sitemap.xml" oninput="SitemapGenerator.generateRobots()" aria-label="https://example.com/sitemap.xml">
+              </div>
+              <div class="checkbox-group">
+                <label class="checkbox-option">
+                  <input type="checkbox" id="allowAll" checked onchange="SitemapGenerator.generateRobots()">
+                  <span>모든 크롤러 허용</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 결과 섹션 -->
+          <div class="result-section">
+            <!-- 사이트맵 결과 -->
+            <div class="output-card">
+              <div class="card-header">
+                <div class="card-title">sitemap.xml</div>
+                <div class="card-actions">
+                  <button class="copy-btn" onclick="SitemapGenerator.copy('sitemap')" aria-label="복사">복사</button>
+                  <button class="download-btn" onclick="SitemapGenerator.download('sitemap')" aria-label="다운로드">다운로드</button>
+                </div>
+              </div>
+              <pre id="sitemapOutput" class="code-output"><code>&lt;!-- URL을 입력하면 사이트맵이 생성됩니다 --&gt;</code></pre>
+            </div>
+
+            <!-- robots.txt 결과 -->
+            <div class="output-card">
+              <div class="card-header">
+                <div class="card-title">robots.txt</div>
+                <div class="card-actions">
+                  <button class="copy-btn" onclick="SitemapGenerator.copy('robots')" aria-label="복사">복사</button>
+                  <button class="download-btn" onclick="SitemapGenerator.download('robots')" aria-label="다운로드">다운로드</button>
+                </div>
+              </div>
+              <pre id="robotsOutput" class="code-output"><code># robots.txt 미리보기</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사이트맵 가이드</div>
+          <div class="help-content">
+            <p>• <strong>사이트맵</strong>: 검색 엔진이 사이트 구조를 이해하도록 돕는 XML 파일</p>
+            <p>• <strong>변경 빈도</strong>: 페이지가 얼마나 자주 변경되는지 알려줍니다 (힌트일 뿐, 강제 아님)</p>
+            <p>• <strong>우선순위</strong>: 사이트 내 다른 페이지 대비 상대적 중요도 (0.0~1.0)</p>
+            <p>• 사이트맵은 루트 디렉토리에 sitemap.xml로 저장하세요</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="sitemap-generator.js"></script>
+</body>
+</html>

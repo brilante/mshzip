@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사이즈 변환기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .size-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .size-tab { padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 0.9rem; }
+    .size-tab.active { background: var(--primary); color: white; }
+    .result-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .result-table th, .result-table td { padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border); }
+    .result-table th { background: var(--bg-secondary); font-weight: 600; font-size: 0.85rem; }
+    .result-table tr.highlight { background: rgba(124, 58, 237, 0.1); }
+    .result-table tr.highlight td { font-weight: 600; color: var(--primary); }
+    .measurement-guide { margin-top: 1.5rem; }
+    .guide-item { display: flex; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .guide-icon { font-size: 1.5rem; }
+    .guide-content { flex: 1; }
+    .guide-title { font-weight: 600; font-size: 0.9rem; }
+    .guide-desc { font-size: 0.8rem; color: var(--text-secondary); }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">사이즈 변환기</h1>
+          <p class="tool-description">국가별 의류/신발 사이즈 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="size-tabs">
+        <div class="size-tab active" data-type="clothes" onclick="SizeConvert.setType('clothes')">의류</div>
+        <div class="size-tab" data-type="shoes" onclick="SizeConvert.setType('shoes')">신발</div>
+        <div class="size-tab" data-type="ring" onclick="SizeConvert.setType('ring')">반지</div>
+      </div>
+
+      <div class="util-panel">
+        <div class="input-group">
+          <label class="input-label">성별</label>
+          <select id="gender" class="tool-input" onchange="SizeConvert.convert()">
+            <option value="women">여성</option>
+            <option value="men">남성</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">기준 국가</label>
+          <select id="fromCountry" class="tool-input" onchange="SizeConvert.convert()">
+            <option value="kr">한국 (KR)</option>
+            <option value="us">미국 (US)</option>
+            <option value="uk">영국 (UK)</option>
+            <option value="eu">유럽 (EU)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">사이즈</label>
+          <select id="sizeValue" class="tool-input" onchange="SizeConvert.convert()">
+          </select>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">변환 결과</h3>
+        <table class="result-table" id="resultTable">
+          <thead>
+            <tr>
+              <th>국가</th>
+              <th>사이즈</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="measurement-guide">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">측정 가이드</h3>
+        <div class="guide-item">
+          <div class="guide-icon"></div>
+          <div class="guide-content">
+            <div class="guide-title">가슴둘레</div>
+            <div class="guide-desc">가슴의 가장 넓은 부분을 줄자로 측정</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon"></div>
+          <div class="guide-content">
+            <div class="guide-title">허리둘레</div>
+            <div class="guide-desc">배꼽 위 가장 가는 부분을 측정</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon"></div>
+          <div class="guide-content">
+            <div class="guide-title">엉덩이둘레</div>
+            <div class="guide-desc">엉덩이의 가장 넓은 부분을 측정</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon"></div>
+          <div class="guide-content">
+            <div class="guide-title">발 길이</div>
+            <div class="guide-desc">뒤꿈치부터 가장 긴 발가락까지 측정</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="size-convert.js"></script>
+</body>
+</html>

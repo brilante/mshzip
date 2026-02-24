@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 테마 플래시 방지: 최우선 실행 스크립트 -->
+    <script>
+    (function() {
+      var theme = localStorage.getItem('mymind3-theme');
+      if (!theme) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      document.documentElement.classList.add('theme-loaded');
+    })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMind3 Debug</title>
+    <!-- 공통 CSS 변수 및 테마 -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme-base.css">
+    <link rel="stylesheet" href="/css/themes/light.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .debug-info {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid #007bff;
+        }
+        .debug-info h3 {
+            color: var(--text-primary);
+        }
+        .error { border-left-color: #dc3545; }
+        .success { border-left-color: #28a745; }
+        .loading { border-left-color: #ffc107; }
+        #resource-status li {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <h1>MyMind3 Debug Information</h1>
+
+    <div class="debug-info loading">
+        <h3>Loading Status</h3>
+        <div id="loading-status">Checking resources...</div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Resource Status</h3>
+        <ul id="resource-status">
+            <li>Loading resources...</li>
+        </ul>
+    </div>
+
+    <div class="debug-info">
+        <h3>JavaScript Errors</h3>
+        <div id="js-errors">No errors detected yet.</div>
+    </div>
+
+    <div class="debug-info">
+        <h3>External Resources</h3>
+        <div id="external-resources">Checking external dependencies...</div>
+    </div>
+
+    <script>
+        console.log('Debug page started');
+
+        const statusEl = document.getElementById('loading-status');
+        const resourceEl = document.getElementById('resource-status');
+        const errorsEl = document.getElementById('js-errors');
+        const externalEl = document.getElementById('external-resources');
+
+        // Capture JavaScript errors
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e);
+            errorsEl.innerHTML += `<p style="color: var(--accent-error, red);">Error: ${e.message} at ${e.filename}:${e.lineno}</p>`;
+        });
+
+        // Test core JavaScript files
+        const coreFiles = [
+            '/js/core/constants.js',
+            '/js/core/utils.js',
+            '/js/core/events.js',
+            '/js/core/storage.js',
+            '/js/core/ai.js'
+        ];
+
+        const uiFiles = [
+            '/js/ui/panels.js',
+            '/js/ui/toolbar.js',
+            '/js/ui/editor.js',
+            '/js/ui/modals.js'
+        ];
+
+        const mindmapFiles = [
+            '/js/mindmap/renderer.js',
+            '/js/mindmap/nodes.js',
+            '/js/mindmap/connections.js',
+            '/js/mindmap/layout.js'
+        ];
+
+        async function checkResources() {
+            resourceEl.innerHTML = '';
+
+            const allFiles = [...coreFiles, ...uiFiles, ...mindmapFiles];
+
+            for (const file of allFiles) {
+                try {
+                    const response = await fetch(file);
+                    const status = response.ok ? '' : '';
+                    const li = document.createElement('li');
+                    li.textContent = `${status} ${file} (${response.status})`;
+                    li.style.color = response.ok ? 'var(--accent-success, green)' : 'var(--accent-error, red)';
+                    resourceEl.appendChild(li);
+                } catch (error) {
+                    const li = document.createElement('li');
+                    li.textContent = `${file} (Failed: ${error.message})`;
+                    li.style.color = 'var(--accent-error, red)';
+                    resourceEl.appendChild(li);
+                }
+            }
+        }
+
+        async function checkExternalResources() {
+            const externals = [
+                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
+                'https://cdn.jsdelivr.net/npm/@toast-ui/editor@latest/dist/toastui-editor.min.css',
+                'https://cdn.jsdelivr.net/npm/@toast-ui/editor@latest/dist/toastui-editor-all.min.js'
+            ];
+
+            externalEl.innerHTML = 'Testing external resources...<br>';
+
+            for (const url of externals) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(url, {
+                        signal: controller.signal,
+                        mode: 'no-cors'
+                    });
+
+                    clearTimeout(timeoutId);
+                    externalEl.innerHTML += `${url.split('/').pop()}<br>`;
+                } catch (error) {
+                    externalEl.innerHTML += `${url.split('/').pop()} - ${error.message}<br>`;
+                }
+            }
+        }
+
+        // Start checks
+        checkResources();
+        checkExternalResources();
+
+        statusEl.textContent = 'Debug page loaded successfully';
+        statusEl.parentElement.className = 'debug-info success';
+
+        console.log('Debug checks completed');
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>환불 정책 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .legal-container { max-width: 800px; margin: 0 auto; }
+    .legal-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .business-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .business-type { padding: 0.75rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; transition: all 0.2s; border: 2px solid transparent; text-align: center; font-size: 0.85rem; }
+    .business-type:hover { border-color: var(--primary); }
+    .business-type.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .checkbox-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .policy-preview { background: white; color: #333; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem; font-family: 'Malgun Gothic', sans-serif; line-height: 1.8; max-height: 500px; overflow-y: auto; }
+    .policy-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    .policy-section { margin-bottom: 1.25rem; }
+    .policy-section h4 { font-weight: 600; margin-bottom: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 4px; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">환불 정책 생성기</h1>
+          <p class="tool-description">전자상거래 환불 정책 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="legal-container">
+      <div class="legal-panel">
+        <div class="form-row">
+          <div class="form-group">
+            <label>회사/쇼핑몰명</label>
+            <input type="text" id="companyName" class="tool-input" placeholder="마이쇼핑몰" aria-label="마이쇼핑몰">
+          </div>
+          <div class="form-group">
+            <label>고객센터 연락처</label>
+            <input type="text" id="contactInfo" class="tool-input" placeholder="1588-0000" aria-label="1588-0000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>이메일</label>
+          <input type="email" id="emailAddress" class="tool-input" placeholder="cs@example.com" aria-label="cs@example.com">
+        </div>
+
+        <div class="form-group">
+          <label>사업 유형</label>
+          <div class="business-types">
+            <div class="business-type selected" data-type="physical" onclick="RefundPolicy.selectType('physical')">실물 상품</div>
+            <div class="business-type" data-type="digital" onclick="RefundPolicy.selectType('digital')">디지털 상품</div>
+            <div class="business-type" data-type="service" onclick="RefundPolicy.selectType('service')">서비스</div>
+            <div class="business-type" data-type="subscription" onclick="RefundPolicy.selectType('subscription')">구독 서비스</div>
+            <div class="business-type" data-type="course" onclick="RefundPolicy.selectType('course')">온라인 강의</div>
+            <div class="business-type" data-type="saas" onclick="RefundPolicy.selectType('saas')">SaaS</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>환불 가능 기간 (일)</label>
+            <input type="number" id="refundPeriod" class="tool-input" value="7" min="1">
+          </div>
+          <div class="form-group">
+            <label>교환 가능 기간 (일)</label>
+            <input type="number" id="exchangePeriod" class="tool-input" value="14" min="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>추가 포함 항목</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="incPartialRefund" checked> 부분 환불
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="incShipping" checked> 배송비 안내
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="incExceptions" checked> 환불 예외 조항
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="incProcess" checked> 환불 절차
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="tool-btn tool-btn-primary" onclick="RefundPolicy.generate()" aria-label="정책 생성">정책 생성</button>
+          <button class="tool-btn tool-btn-secondary" onclick="RefundPolicy.copy()" aria-label="복사">복사</button>
+          <button class="tool-btn tool-btn-secondary" onclick="RefundPolicy.download()" aria-label="다운로드">다운로드</button>
+        </div>
+
+        <div id="previewContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="refund-policy.js"></script>
+</body>
+</html>

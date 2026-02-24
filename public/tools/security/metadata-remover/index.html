@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메타데이터 제거기 - ALLINONE</title>
+  <link rel="stylesheet" href="metadata-remover.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>메타데이터 제거기</h1>
+      <p>이미지의 EXIF 데이터를 안전하게 제거하여 프라이버시를 보호하세요</p>
+    </header>
+
+    <main>
+      <div class="upload-card">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon"></div>
+          <div class="upload-text">이미지를 드래그하거나 클릭하여 선택</div>
+          <div class="upload-hint">JPG, PNG, WebP 지원 (최대 10MB)</div>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <div class="result-card hidden" id="resultCard">
+        <div class="image-preview">
+          <img id="previewImage" alt="Preview">
+        </div>
+
+        <div class="metadata-section">
+          <h3>감지된 메타데이터</h3>
+          <div id="metadataList" class="metadata-list"></div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="removeMetadata" class="remove-btn" aria-label="메타데이터 제거">메타데이터 제거</button>
+          <button id="downloadClean" class="download-btn hidden" aria-label="정리된 이미지 다운로드">정리된 이미지 다운로드</button>
+        </div>
+
+        <div class="status-message hidden" id="statusMessage">
+          <span class="status-icon"></span>
+          <span class="status-text">메타데이터가 제거되었습니다!</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>제거되는 메타데이터</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>GPS 위치 정보</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>촬영 날짜/시간</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>카메라/기기 정보</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>카메라 설정값</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>작성자/저작권</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <span>소프트웨어 정보</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="metadata-remover.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>템포 변환기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .result-display { text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: 12px; margin: 1rem 0; }
+    .result-bpm { font-size: 3rem; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .result-label { font-size: 0.9rem; color: var(--text-secondary); }
+    .tempo-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 1rem; }
+    .tempo-item { padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; display: flex; justify-content: space-between; cursor: pointer; }
+    .tempo-item:hover { background: var(--primary); color: white; }
+    .tempo-item.active { background: var(--primary); color: white; }
+    .tempo-name { font-weight: 500; }
+    .tempo-range { font-size: 0.85rem; opacity: 0.8; }
+    .conversion-section { margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px; }
+    .conversion-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .conversion-row:last-child { border-bottom: none; }
+    .conversion-label { color: var(--text-secondary); }
+    .conversion-value { font-weight: 600; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">템포 변환기</h1>
+          <p class="tool-description">BPM과 음악 용어 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <div class="input-group">
+          <label class="input-label">BPM (Beats Per Minute)</label>
+          <input type="number" id="bpmInput" class="tool-input" value="120" min="20" max="300" oninput="TempoConvert.update()">
+        </div>
+      </div>
+
+      <div class="result-display">
+        <div class="result-bpm" id="currentBpm">120</div>
+        <div class="result-label">BPM</div>
+        <div id="tempoTerm" style="font-size: 1.25rem; font-weight: 600; margin-top: 0.5rem;">Allegro moderato</div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">템포 용어</h3>
+        <div class="tempo-list" id="tempoList"></div>
+      </div>
+
+      <div class="conversion-section">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">시간 변환</h3>
+        <div class="conversion-row">
+          <span class="conversion-label">1박 길이</span>
+          <span class="conversion-value" id="beatLength">500ms</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">1마디 (4/4)</span>
+          <span class="conversion-value" id="measureLength">2.0초</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">1분당 마디 수</span>
+          <span class="conversion-value" id="measuresPerMin">30마디</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">Hz (주파수)</span>
+          <span class="conversion-value" id="hertz">2.00Hz</span>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">음표별 길이</h3>
+        <div class="conversion-row">
+          <span class="conversion-label">온음표</span>
+          <span class="conversion-value" id="wholeNote">2000ms</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">2분음표</span>
+          <span class="conversion-value" id="halfNote">1000ms</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">4분음표</span>
+          <span class="conversion-value" id="quarterNote">500ms</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">8분음표</span>
+          <span class="conversion-value" id="eighthNote">250ms</span>
+        </div>
+        <div class="conversion-row">
+          <span class="conversion-label">16분음표</span>
+          <span class="conversion-value" id="sixteenthNote">125ms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="tempo-convert.js"></script>
+</body>
+</html>

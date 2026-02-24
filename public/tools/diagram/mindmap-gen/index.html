@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마인드맵 생성기 | Mindmap Generator</title>
+  <link rel="stylesheet" href="mindmap-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>마인드맵 생성기</h1>
+      <p>아이디어를 시각적으로 정리하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="quick-add">
+        <h4>마인드맵 형식 가이드</h4>
+        <div class="guide-text">
+          <code>mindmap</code>으로 시작, 들여쓰기로 계층 표현<br>
+          <code>root((중심))</code> - 중심 주제 | 탭/공백으로 하위 노드 추가
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="editor-panel">
+          <textarea id="codeEditor" spellcheck="false">mindmap
+  root((프로젝트 계획))
+    기획
+      요구사항 분석
+      타겟 시장 조사
+      경쟁사 분석
+    디자인
+      UI/UX 설계
+      프로토타입
+      디자인 시스템
+    개발
+      프론트엔드
+        React
+        TypeScript
+      백엔드
+        Node.js
+        PostgreSQL
+      인프라
+        AWS
+        Docker
+    테스트
+      단위 테스트
+      통합 테스트
+      E2E 테스트
+    배포
+      CI/CD 구축
+      모니터링
+      문서화</textarea>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-header">
+            <button onclick="downloadSVG()" aria-label="SVG 다운로드">SVG 다운로드</button>
+          </div>
+          <div class="preview-area" id="previewArea">
+            <div class="mermaid" id="mermaidOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="mindmap-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

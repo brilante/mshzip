@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기술 스택 탐지기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="tech-stack-detector.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">기술 스택 탐지기</h1>
+      <p class="tool-description">웹사이트에서 사용하는 기술, 프레임워크, 라이브러리를 탐지합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 입력 영역 -->
+      <div class="input-section">
+        <div class="input-tabs">
+          <button class="tab-btn active" data-tab="html" onclick="TechStackDetector.switchTab('html')" aria-label="HTML 소스">HTML 소스</button>
+          <button class="tab-btn" data-tab="headers" onclick="TechStackDetector.switchTab('headers')" aria-label="HTTP 헤더 포함">HTTP 헤더 포함</button>
+        </div>
+
+        <div class="tab-content active" id="htmlTab">
+          <textarea id="htmlInput" class="form-textarea" placeholder="웹사이트의 HTML 소스 코드를 붙여넣으세요...
+
+(브라우저에서 Ctrl+U 또는 우클릭 > 페이지 소스 보기)" rows="12"></textarea>
+        </div>
+
+        <div class="tab-content" id="headersTab">
+          <textarea id="htmlHeadersInput" class="form-textarea" placeholder="HTML 소스 코드를 입력하세요..." rows="8"></textarea>
+          <textarea id="headersInput" class="form-textarea" placeholder="HTTP 응답 헤더를 입력하세요 (선택사항)...
+
+Server: nginx/1.18.0
+X-Powered-By: PHP/8.0" rows="4"></textarea>
+        </div>
+
+        <button class="analyze-btn full-width" onclick="TechStackDetector.analyze()" aria-label="기술 스택 탐지">기술 스택 탐지</button>
+      </div>
+
+      <!-- 결과 영역 -->
+      <div class="result-section" id="resultSection" style="display: none;">
+        <!-- 요약 -->
+        <div class="result-summary">
+          <div class="summary-stat">
+            <span class="stat-icon"></span>
+            <span class="stat-value" id="totalCount">0</span>
+            <span class="stat-label">기술 발견</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-icon"></span>
+            <span class="stat-value" id="frameworkCount">0</span>
+            <span class="stat-label">프레임워크</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-icon"></span>
+            <span class="stat-value" id="libraryCount">0</span>
+            <span class="stat-label">라이브러리</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-icon"></span>
+            <span class="stat-value" id="toolCount">0</span>
+            <span class="stat-label">도구/서비스</span>
+          </div>
+        </div>
+
+        <!-- 카테고리별 결과 -->
+        <div class="categories-grid" id="categoriesGrid">
+          <!-- 동적 생성 -->
+        </div>
+
+        <!-- 상세 목록 -->
+        <div class="detail-section">
+          <h3 class="section-title">탐지된 기술 상세</h3>
+          <div class="tech-list" id="techList">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 방법</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>HTML 소스 가져오기</strong>: 분석할 웹페이지에서 Ctrl+U 또는 우클릭 > 페이지 소스 보기</li>
+            <li><strong>HTTP 헤더</strong>: 개발자 도구(F12) > 네트워크 탭에서 응답 헤더 복사</li>
+            <li><strong>탐지 범위</strong>: 프레임워크, CMS, 라이브러리, 분석 도구, CDN 등</li>
+            <li><strong>제한</strong>: 클라이언트 측 코드만 탐지 가능 (서버 측 언어는 헤더로 추정)</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="tech-stack-detector.js"></script>
+</body>
+</html>

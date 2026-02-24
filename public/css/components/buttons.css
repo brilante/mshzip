@@ -1,0 +1,328 @@
+/**
+ * MyMind3 Button Styles
+ * 통합 버튼 스타일 정의
+ * Created: 2026-01-18
+ */
+
+/* ===== 기본 버튼 리셋 ===== */
+button,
+.btn,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* ===== 전역 버튼 스타일 ===== */
+button,
+.btn,
+[type="button"],
+[type="submit"],
+[type="reset"],
+.level-btn,
+.nav-item,
+.tab-btn {
+  border: 1px solid var(--border-default, #333);
+  border-radius: 6px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--text-primary, #1d1d1f);
+  transition: all var(--transition-normal, 0.2s ease);
+}
+
+/* ===== 버튼 호버 상태 ===== */
+button:hover:not(:disabled),
+.btn:hover:not(:disabled),
+[type="button"]:hover:not(:disabled),
+[type="submit"]:hover:not(:disabled),
+.level-btn:hover:not(:disabled),
+.nav-item:hover:not(:disabled),
+.tab-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary, #000);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+/* ===== 버튼 활성화 상태 ===== */
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+[type="button"]:active:not(:disabled),
+[type="submit"]:active:not(:disabled),
+.level-btn:active:not(:disabled),
+.tab-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ===== 버튼 선택/포커스 상태 ===== */
+button.active,
+button.selected,
+button:focus-visible,
+.btn.active,
+.btn.selected,
+.btn:focus-visible,
+.level-btn.active,
+.nav-item.active,
+.tab-btn.active {
+  border-width: 2px;
+  border-color: var(--accent-primary, #000);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 비활성화 버튼 ===== */
+button:disabled,
+.btn:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled {
+  border-color: var(--border-subtle, #999);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Primary 버튼 ===== */
+.btn-primary {
+  background-color: var(--accent-blue, #3b82f6);
+  border-color: var(--accent-blue, #3b82f6);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-blue-hover, #2563eb);
+  border-color: var(--accent-blue-hover, #2563eb);
+  color: #ffffff;
+}
+
+/* ===== Secondary 버튼 ===== */
+.btn-secondary {
+  background-color: var(--bg-secondary, #f5f5f7);
+  border-color: var(--border-default, #d2d2d7);
+  color: var(--text-primary, #1d1d1f);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-hover, #e8e8e8);
+  border-color: var(--border-strong, #c0c0c0);
+}
+
+/* ===== Success 버튼 ===== */
+.btn-success {
+  background-color: var(--accent-success, #22c55e);
+  border-color: var(--accent-success, #22c55e);
+  color: #ffffff;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+/* ===== Warning 버튼 ===== */
+.btn-warning {
+  background-color: var(--accent-warning, #f59e0b);
+  border-color: var(--accent-warning, #f59e0b);
+  color: #ffffff;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #d97706;
+  border-color: #d97706;
+}
+
+/* ===== Error/Danger 버튼 ===== */
+.btn-danger,
+.btn-error {
+  background-color: var(--accent-error, #ef4444);
+  border-color: var(--accent-error, #ef4444);
+  color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-error:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* ===== Ghost 버튼 (투명 배경) ===== */
+.btn-ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--text-primary, #1d1d1f);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.05));
+  border-color: transparent;
+}
+
+/* ===== Outline 버튼 ===== */
+.btn-outline {
+  background-color: transparent;
+  border-color: var(--border-default, #d2d2d7);
+  color: var(--text-primary, #1d1d1f);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.05));
+  border-color: var(--accent-primary, #000);
+}
+
+/* ===== 버튼 크기 ===== */
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 1.125rem;
+  border-radius: 8px;
+}
+
+.btn-xl {
+  padding: 16px 32px;
+  font-size: 1.25rem;
+  border-radius: 10px;
+}
+
+/* ===== 전체 너비 버튼 ===== */
+.btn-full,
+.btn-block {
+  width: 100%;
+  display: block;
+}
+
+/* ===== 아이콘 버튼 ===== */
+.btn-icon {
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-sm {
+  padding: 4px;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.btn-icon-lg {
+  padding: 12px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+/* ===== 버튼 그룹 ===== */
+.btn-group {
+  display: inline-flex;
+  gap: 0;
+}
+
+.btn-group > button,
+.btn-group > .btn {
+  border-radius: 0;
+}
+
+.btn-group > button:first-child,
+.btn-group > .btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.btn-group > button:last-child,
+.btn-group > .btn:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.btn-group > button:not(:last-child),
+.btn-group > .btn:not(:last-child) {
+  border-right: none;
+}
+
+/* ===== 로딩 스피너 버튼 ===== */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+}
+
+/* ===== 다크 모드 버튼 스타일 ===== */
+[data-theme="dark"] button,
+[data-theme="dark"] .btn,
+[data-theme="dark"] [type="button"],
+[data-theme="dark"] [type="submit"],
+[data-theme="dark"] .level-btn,
+[data-theme="dark"] .nav-item,
+[data-theme="dark"] .tab-btn {
+  border-color: var(--border-default, #3a3a3a);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] button:hover:not(:disabled),
+[data-theme="dark"] .btn:hover:not(:disabled),
+[data-theme="dark"] [type="button"]:hover:not(:disabled),
+[data-theme="dark"] .level-btn:hover:not(:disabled),
+[data-theme="dark"] .nav-item:hover:not(:disabled),
+[data-theme="dark"] .tab-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary, #ffffff);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(255, 255, 255, 0.1));
+}
+
+[data-theme="dark"] button.active,
+[data-theme="dark"] button.selected,
+[data-theme="dark"] .btn.active,
+[data-theme="dark"] .btn.selected,
+[data-theme="dark"] .level-btn.active,
+[data-theme="dark"] .nav-item.active,
+[data-theme="dark"] .tab-btn.active {
+  border-color: var(--accent-primary, #ffffff);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] button:disabled,
+[data-theme="dark"] .btn:disabled {
+  border-color: var(--border-subtle, #555555);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background-color: var(--bg-elevated, #252525);
+  border-color: var(--border-default, #404040);
+  color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="dark"] .btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-hover, #333333);
+}
+
+[data-theme="dark"] .btn-ghost:hover:not(:disabled) {
+  background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+[data-theme="dark"] .btn-outline {
+  border-color: var(--border-default, #404040);
+  color: var(--text-primary, #ffffff);
+}
+
+[data-theme="dark"] .btn-outline:hover:not(:disabled) {
+  background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--accent-primary, #ffffff);
+}

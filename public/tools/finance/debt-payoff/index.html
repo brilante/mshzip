@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>부채 상환 계산기 - JEOGI Tools</title>
+  <link rel="stylesheet" href="debt-payoff.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>부채 상환 계산기</h1>
+      <p class="subtitle">눈덩이/눈사태 방식으로 최적의 상환 계획을 세우세요</p>
+    </header>
+
+    <main class="main-content">
+      <section class="debt-input-section">
+        <h3>부채 목록</h3>
+        <div class="debt-form" id="debtForm">
+          <input type="text" id="debtName" placeholder="부채명 (예: 신용카드)" / aria-label="부채명 (예: 신용카드)">
+          <input type="number" id="debtBalance" placeholder="잔액" / aria-label="잔액">
+          <input type="number" id="debtRate" placeholder="이자율(%)" step="0.1" / aria-label="이자율(%)">
+          <input type="number" id="debtMinPayment" placeholder="최소 상환액" / aria-label="최소 상환액">
+          <button id="addDebtBtn" aria-label="추가">추가</button>
+        </div>
+
+        <div class="debt-list" id="debtList"></div>
+
+        <div class="extra-payment">
+          <label>추가 상환 가능 금액 (월):</label>
+          <div class="input-with-unit">
+            <input type="number" id="extraPayment" value="100000" />
+            <span>원</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="strategy-section">
+        <h3>상환 전략 비교</h3>
+        <div class="strategy-cards">
+          <div class="strategy-card" id="snowballCard">
+            <div class="strategy-header">
+              <span class="icon"></span>
+              <span class="name">눈덩이 방식</span>
+            </div>
+            <p class="description">잔액이 적은 부채부터 상환</p>
+            <div class="result">
+              <div class="item">
+                <span class="label">총 상환기간</span>
+                <span class="value" id="snowballTime">-</span>
+              </div>
+              <div class="item">
+                <span class="label">총 이자</span>
+                <span class="value" id="snowballInterest">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="strategy-card" id="avalancheCard">
+            <div class="strategy-header">
+              <span class="icon"></span>
+              <span class="name">눈사태 방식</span>
+            </div>
+            <p class="description">이자율이 높은 부채부터 상환</p>
+            <div class="result">
+              <div class="item">
+                <span class="label">총 상환기간</span>
+                <span class="value" id="avalancheTime">-</span>
+              </div>
+              <div class="item">
+                <span class="label">총 이자</span>
+                <span class="value" id="avalancheInterest">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recommendation" id="recommendation"></div>
+      </section>
+
+      <section class="timeline-section">
+        <h3>상환 일정</h3>
+        <div class="strategy-toggle">
+          <button class="toggle-btn active" data-strategy="avalanche" aria-label="눈사태 방식">눈사태 방식</button>
+          <button class="toggle-btn" data-strategy="snowball" aria-label="눈덩이 방식">눈덩이 방식</button>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="summary-section">
+        <h3>총 상환 요약</h3>
+        <div class="summary-cards">
+          <div class="summary-card">
+            <span class="label">총 부채</span>
+            <span class="value" id="totalDebt">0원</span>
+          </div>
+          <div class="summary-card">
+            <span class="label">월 최소 상환</span>
+            <span class="value" id="minMonthly">0원</span>
+          </div>
+          <div class="summary-card">
+            <span class="label">월 총 상환</span>
+            <span class="value" id="totalMonthly">0원</span>
+          </div>
+          <div class="summary-card highlight">
+            <span class="label">예상 절약 이자</span>
+            <span class="value" id="savedInterest">0원</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="debt-payoff.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

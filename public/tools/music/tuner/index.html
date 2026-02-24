@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>악기 튜너 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 500px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .tuner-display { text-align: center; padding: 2rem; }
+    .note-display { font-size: 5rem; font-weight: 700; line-height: 1; }
+    .freq-display { font-size: 1.25rem; color: var(--text-secondary); margin-top: 0.5rem; }
+    .cents-display { font-size: 1rem; margin-top: 0.25rem; }
+    .cents-display.sharp { color: #ef4444; }
+    .cents-display.flat { color: #3b82f6; }
+    .cents-display.in-tune { color: #22c55e; }
+    .meter-container { margin: 2rem 0; }
+    .meter-bar { height: 12px; background: var(--bg-primary); border-radius: 6px; position: relative; overflow: hidden; }
+    .meter-center { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #22c55e; transform: translateX(-50%); }
+    .meter-needle { position: absolute; top: 0; bottom: 0; width: 8px; background: var(--primary); border-radius: 4px; transition: left 0.1s; }
+    .meter-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; }
+    .ref-pitch { display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+    .status-indicator { width: 16px; height: 16px; border-radius: 50%; margin: 0 auto 1rem; }
+    .status-indicator.listening { background: #22c55e; animation: pulse 1s infinite; }
+    .status-indicator.idle { background: var(--text-secondary); }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .instrument-select { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+    .instrument-btn { padding: 0.5rem 1rem; border-radius: 20px; background: var(--bg-primary); cursor: pointer; font-size: 0.85rem; }
+    .instrument-btn.active { background: var(--primary); color: white; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">악기 튜너</h1>
+          <p class="tool-description">마이크로 음정 측정</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel tuner-display">
+        <div class="status-indicator idle" id="statusIndicator"></div>
+        <div class="instrument-select">
+          <div class="instrument-btn active" data-inst="chromatic" onclick="Tuner.setInstrument('chromatic')">크로매틱</div>
+          <div class="instrument-btn" data-inst="guitar" onclick="Tuner.setInstrument('guitar')">기타</div>
+          <div class="instrument-btn" data-inst="bass" onclick="Tuner.setInstrument('bass')">베이스</div>
+          <div class="instrument-btn" data-inst="ukulele" onclick="Tuner.setInstrument('ukulele')">우쿨렐레</div>
+        </div>
+        <div class="note-display" id="noteDisplay">-</div>
+        <div class="freq-display" id="freqDisplay">--- Hz</div>
+        <div class="cents-display" id="centsDisplay">마이크를 활성화하세요</div>
+        <div class="meter-container">
+          <div class="meter-bar">
+            <div class="meter-center"></div>
+            <div class="meter-needle" id="meterNeedle" style="left: 50%;"></div>
+          </div>
+          <div class="meter-labels">
+            <span>-50</span>
+            <span>0</span>
+            <span>+50</span>
+          </div>
+        </div>
+        <button class="tool-btn tool-btn-primary" id="startBtn" onclick="Tuner.toggle()" style="width: 100%;" aria-label="마이크 시작">
+          마이크 시작
+        </button>
+        <div class="ref-pitch">
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">기준 피치:</span>
+          <input type="number" id="refPitch" class="tool-input" style="width: 80px; text-align: center;" value="440" min="420" max="460">
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">Hz</span>
+        </div>
+      </div>
+
+      <div class="util-panel" style="margin-top: 1rem;" id="stringGuide">
+        <h3 style="font-weight: 600; margin-bottom: 0.5rem;">기타 표준 튜닝</h3>
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; text-align: center;">
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">6번</div>
+            <div style="color: var(--primary);">E2</div>
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">5번</div>
+            <div style="color: var(--primary);">A2</div>
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">4번</div>
+            <div style="color: var(--primary);">D3</div>
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">3번</div>
+            <div style="color: var(--primary);">G3</div>
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">2번</div>
+            <div style="color: var(--primary);">B3</div>
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-primary); border-radius: 8px;">
+            <div style="font-weight: 600;">1번</div>
+            <div style="color: var(--primary);">E4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="tuner.js"></script>
+</body>
+</html>

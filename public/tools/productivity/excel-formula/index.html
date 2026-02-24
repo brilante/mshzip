@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>엑셀 함수 도우미 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="excel-formula.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">엑셀 함수 도우미</h1>
+      <p class="tool-description">엑셀 함수를 검색하고 사용법을 확인하세요</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 검색 영역 -->
+      <div class="search-section">
+        <div class="search-box">
+          <input type="text" id="searchInput" class="search-input" placeholder="함수명 또는 키워드로 검색 (예: SUM, 합계, 조건)" aria-label="함수명 또는 키워드로 검색 (예: SUM, 합계, 조건)">
+          <button class="search-btn" onclick="ExcelFormula.search()" aria-label="검색">검색</button>
+        </div>
+        <div class="category-filter">
+          <button class="filter-btn active" data-category="all" onclick="ExcelFormula.filterCategory('all')" aria-label="전체">전체</button>
+          <button class="filter-btn" data-category="math" onclick="ExcelFormula.filterCategory('math')" aria-label="수학/통계">수학/통계</button>
+          <button class="filter-btn" data-category="text" onclick="ExcelFormula.filterCategory('text')" aria-label="텍스트">텍스트</button>
+          <button class="filter-btn" data-category="date" onclick="ExcelFormula.filterCategory('date')" aria-label="날짜/시간">날짜/시간</button>
+          <button class="filter-btn" data-category="lookup" onclick="ExcelFormula.filterCategory('lookup')" aria-label="찾기/참조">찾기/참조</button>
+          <button class="filter-btn" data-category="logical" onclick="ExcelFormula.filterCategory('logical')" aria-label="논리">논리</button>
+          <button class="filter-btn" data-category="info" onclick="ExcelFormula.filterCategory('info')" aria-label="정보">정보</button>
+        </div>
+      </div>
+
+      <!-- 인기 함수 -->
+      <div class="popular-section">
+        <h3 class="section-title">자주 사용하는 함수</h3>
+        <div class="popular-functions" id="popularFunctions"></div>
+      </div>
+
+      <!-- 검색 결과 -->
+      <div class="results-section" id="resultsSection" style="display: none;">
+        <h3 class="section-title">검색 결과 (<span id="resultCount">0</span>개)</h3>
+        <div class="function-list" id="functionList"></div>
+      </div>
+
+      <!-- 함수 상세 모달 -->
+      <div class="modal-overlay" id="formulaModal" style="display: none;">
+        <div class="modal-content modal-large">
+          <div class="modal-header">
+            <h3 id="modalTitle">함수명</h3>
+            <button class="modal-close" onclick="ExcelFormula.closeModal()" aria-label=""></button>
+          </div>
+          <div class="modal-body" id="modalBody">
+            <!-- 함수 상세 정보 -->
+          </div>
+          <div class="modal-footer">
+            <button class="tool-btn" onclick="ExcelFormula.copyFormula()" aria-label="구문 복사">구문 복사</button>
+            <button class="tool-btn" onclick="ExcelFormula.closeModal()" aria-label="닫기">닫기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 팁</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>검색</strong>: 함수명(예: VLOOKUP) 또는 기능(예: 합계, 조건)으로 검색</li>
+            <li><strong>카테고리</strong>: 원하는 카테고리 버튼을 클릭하여 필터링</li>
+            <li><strong>상세 보기</strong>: 함수를 클릭하면 구문, 인수, 예제를 확인</li>
+            <li><strong>복사</strong>: 구문 복사 버튼으로 함수 형식을 클립보드에 복사</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="excel-formula.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클래스 다이어그램 | Class Diagram</title>
+  <link rel="stylesheet" href="class-diagram.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>클래스 다이어그램</h1>
+      <p>UML 클래스 다이어그램을 생성하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="quick-add">
+        <h4>빠른 추가</h4>
+        <div class="quick-buttons">
+          <button onclick="addClass()" aria-label="클래스">클래스</button>
+          <button onclick="addRelation('<|--')" aria-label="상속">상속</button>
+          <button onclick="addRelation('*--')" aria-label="◆ 컴포지션">◆ 컴포지션</button>
+          <button onclick="addRelation('o--')" aria-label="◇ 집합">◇ 집합</button>
+          <button onclick="addRelation('-- aria-label="')">→ 연관">')">→ 연관</button>
+          <button onclick="addRelation('..| aria-label="')">⇢ 구현">')">⇢ 구현</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="editor-panel">
+          <textarea id="codeEditor" spellcheck="false">classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()* void
+        +move() void
+    }
+    class Dog {
+        +String breed
+        +bark() void
+        +fetch() void
+    }
+    class Cat {
+        +String color
+        +meow() void
+        +climb() void
+    }
+    class Pet {
+        &lt;&lt;interface&gt;&gt;
+        +play() void
+        +feed() void
+    }
+
+    Animal &lt;|-- Dog : extends
+    Animal &lt;|-- Cat : extends
+    Pet &lt;|.. Dog : implements
+    Pet &lt;|.. Cat : implements</textarea>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-header">
+            <button onclick="downloadSVG()" aria-label="SVG 다운로드">SVG 다운로드</button>
+          </div>
+          <div class="preview-area" id="previewArea">
+            <div class="mermaid" id="mermaidOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="class-diagram.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

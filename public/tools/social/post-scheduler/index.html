@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시물 스케줄러 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .scheduler-container { max-width: 1000px; margin: 0 auto; }
+    .scheduler-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .scheduler-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .platform-select { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .platform-chip { padding: 0.5rem 1rem; border-radius: 20px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .platform-chip:hover { border-color: var(--primary); }
+    .platform-chip.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .best-time-badge { display: inline-block; padding: 0.25rem 0.5rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 6px; font-size: 0.75rem; margin-left: 0.5rem; }
+    .scheduled-list { max-height: 400px; overflow-y: auto; }
+    .scheduled-item { background: var(--bg-primary); border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; border-left: 4px solid var(--primary); }
+    .scheduled-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .scheduled-platform { font-size: 0.8rem; padding: 0.25rem 0.5rem; background: var(--bg-secondary); border-radius: 6px; }
+    .scheduled-time { font-size: 0.85rem; color: var(--text-secondary); }
+    .scheduled-content { font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .scheduled-actions { display: flex; gap: 0.5rem; }
+    .action-btn { padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .action-btn.edit { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+    .action-btn.delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .action-btn:hover { opacity: 0.8; }
+    .calendar-section { margin-top: 1.5rem; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .calendar-nav { display: flex; gap: 0.5rem; }
+    .calendar-nav button { padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
+    .calendar-day-header { text-align: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem; }
+    .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-primary); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .calendar-day:hover { background: rgba(59, 130, 246, 0.1); }
+    .calendar-day.other-month { opacity: 0.3; }
+    .calendar-day.today { border: 2px solid var(--primary); }
+    .calendar-day.has-posts::after { content: ''; position: absolute; bottom: 4px; width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--bg-primary); border-radius: 10px; padding: 1rem; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .demo-notice { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; padding: 1rem; border-radius: 10px; margin-top: 1rem; font-size: 0.85rem; }
+    @media (max-width: 800px) { .scheduler-grid { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">게시물 스케줄러</h1>
+          <p class="tool-description">SNS 게시물 예약 및 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="scheduler-container">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="scheduledCount">0</div>
+          <div class="stat-label">예약된 게시물</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="todayCount">0</div>
+          <div class="stat-label">오늘 게시 예정</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="weekCount">0</div>
+          <div class="stat-label">이번 주 게시</div>
+        </div>
+      </div>
+
+      <div class="scheduler-grid">
+        <div class="scheduler-panel">
+          <div class="section-title">새 게시물 예약</div>
+
+          <div class="platform-select">
+            <span class="platform-chip active" data-platform="instagram" onclick="PostScheduler.selectPlatform('instagram')">Instagram</span>
+            <span class="platform-chip" data-platform="twitter" onclick="PostScheduler.selectPlatform('twitter')">Twitter</span>
+            <span class="platform-chip" data-platform="facebook" onclick="PostScheduler.selectPlatform('facebook')">Facebook</span>
+          </div>
+
+          <textarea id="postContent" class="tool-input" rows="4" placeholder="게시물 내용을 입력하세요..." style="margin-bottom: 1rem;"></textarea>
+
+          <div class="datetime-row">
+            <div>
+              <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                날짜 <span class="best-time-badge">최적: 화~목</span>
+              </label>
+              <input type="date" id="postDate" class="tool-input">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                시간 <span class="best-time-badge">최적: 오전 9-11시</span>
+              </label>
+              <input type="time" id="postTime" class="tool-input" value="09:00">
+            </div>
+          </div>
+
+          <button class="tool-btn tool-btn-primary" style="width: 100%;" onclick="PostScheduler.schedule()" aria-label="게시물 예약">
+            게시물 예약
+          </button>
+
+          <div class="demo-notice">
+            <strong>데모 모드</strong><br>
+            실제 SNS 연동은 OAuth 인증이 필요합니다. 현재 로컬 시뮬레이션 모드로 작동합니다.
+          </div>
+        </div>
+
+        <div class="scheduler-panel">
+          <div class="section-title">예약된 게시물</div>
+          <div class="scheduled-list" id="scheduledList">
+            <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+              예약된 게시물이 없습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scheduler-panel calendar-section">
+        <div class="calendar-header">
+          <div class="section-title" id="calendarTitle">2026년 1월</div>
+          <div class="calendar-nav">
+            <button onclick="PostScheduler.prevMonth()" aria-label=""></button>
+            <button onclick="PostScheduler.nextMonth()" aria-label=""></button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="post-scheduler.js"></script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .upload-dropzone {
+      border: 2px dashed var(--tools-border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--tools-card-bg);
+    }
+    .upload-dropzone:hover,
+    .upload-dropzone.dragover {
+      border-color: var(--tools-primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .dropzone-icon { font-size: 48px; margin-bottom: 12px; }
+    .dropzone-text { font-size: 16px; color: var(--tools-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 13px; color: var(--tools-text-secondary); }
+    .image-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 16px 0;
+      padding: 16px;
+      background: var(--tools-card-bg);
+      border-radius: 8px;
+      min-height: 100px;
+    }
+    .image-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: move;
+    }
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-item .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .image-item .order {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .setting-item label {
+      display: block;
+      font-size: 14px;
+      color: var(--tools-text);
+      margin-bottom: 6px;
+    }
+    .setting-item input, .setting-item select {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--tools-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 6px;
+      color: var(--tools-text);
+    }
+    .preview-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .preview-label {
+      font-size: 14px;
+      color: var(--tools-text-secondary);
+      margin-bottom: 8px;
+    }
+    .preview-box {
+      display: inline-block;
+      padding: 16px;
+      background: var(--tools-card-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+    }
+    .preview-box img {
+      max-width: 400px;
+      max-height: 400px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--tools-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 16px 0;
+      display: none;
+    }
+    .progress-bar .progress {
+      height: 100%;
+      background: var(--tools-primary);
+      transition: width 0.3s;
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">GIF 생성</h1>
+          <p class="tool-description">여러 이미지로 애니메이션 GIF 만들기</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel">
+      <!-- 파일 업로드 -->
+      <div class="upload-dropzone" id="dropzone">
+        <div class="dropzone-icon"></div>
+        <div class="dropzone-text">이미지들을 드래그하거나 클릭하여 선택</div>
+        <div class="dropzone-hint">PNG, JPG, WebP 지원 (여러 파일 선택 가능)</div>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+      </div>
+
+      <!-- 이미지 목록 -->
+      <div class="image-list" id="imageList">
+        <div style="width: 100%; text-align: center; color: var(--tools-text-secondary);">
+          이미지를 추가하면 여기에 표시됩니다
+        </div>
+      </div>
+
+      <!-- 설정 -->
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label>프레임 속도 (ms)</label>
+          <input type="number" id="frameDelay" value="500" min="50" max="5000" step="50">
+        </div>
+        <div class="setting-item">
+          <label>반복 횟수</label>
+          <select id="loopCount">
+            <option value="0">무한 반복</option>
+            <option value="1">1회</option>
+            <option value="2">2회</option>
+            <option value="3">3회</option>
+            <option value="5">5회</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>출력 크기</label>
+          <select id="outputSize">
+            <option value="original">원본 크기</option>
+            <option value="320">320px</option>
+            <option value="480">480px</option>
+            <option value="640">640px</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 진행 바 -->
+      <div class="progress-bar" id="progressBar">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <!-- 미리보기 -->
+      <div class="preview-container" id="previewContainer" style="display: none;">
+        <div class="preview-label">생성된 GIF</div>
+        <div class="preview-box">
+          <img id="previewImage" src="" alt="GIF 미리보기">
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="action-buttons">
+        <button class="tool-btn tool-btn-primary" onclick="GifMaker.generate()" aria-label="GIF 생성">
+          GIF 생성
+        </button>
+        <button class="tool-btn tool-btn-primary" id="downloadBtn" onclick="GifMaker.download()" style="display: none;" aria-label="다운로드">
+          다운로드
+        </button>
+        <button class="tool-btn tool-btn-danger" onclick="GifMaker.clear()" aria-label="초기화">
+          초기화
+        </button>
+      </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="tool-help">
+      <div class="help-title">GIF 생성 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>프레임 속도</strong>: 각 이미지가 표시되는 시간 (밀리초)</li>
+          <li><strong>반복 횟수</strong>: GIF가 몇 번 반복될지 설정</li>
+          <li>이미지 순서는 드래그로 변경 가능합니다</li>
+          <li>더 많은 이미지 = 더 부드러운 애니메이션</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="gif-maker.js"></script>
+</body>
+</html>

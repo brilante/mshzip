@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개인정보처리방침 생성기 - ALLINONE</title>
+  <link rel="stylesheet" href="privacy-policy-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>개인정보처리방침 생성기</h1>
+      <p>웹사이트에 필요한 개인정보처리방침을 쉽게 생성하세요</p>
+    </header>
+
+    <main>
+      <div class="form-card">
+        <h3>기본 정보</h3>
+        <div class="form-group">
+          <label for="companyName">회사/서비스명 *</label>
+          <input type="text" id="companyName" placeholder="예: MyCompany" aria-label="예: MyCompany">
+        </div>
+        <div class="form-group">
+          <label for="websiteUrl">웹사이트 URL *</label>
+          <input type="url" id="websiteUrl" placeholder="https://example.com" aria-label="https://example.com">
+        </div>
+        <div class="form-group">
+          <label for="contactEmail">개인정보 문의 이메일 *</label>
+          <input type="email" id="contactEmail" placeholder="privacy@example.com" aria-label="privacy@example.com">
+        </div>
+        <div class="form-group">
+          <label for="managerName">개인정보관리책임자</label>
+          <input type="text" id="managerName" placeholder="홍길동" aria-label="홍길동">
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>수집하는 개인정보</h3>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="name" checked>
+            <span>이름</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="email" checked>
+            <span>이메일</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="phone">
+            <span>전화번호</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="address">
+            <span>주소</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="birth">
+            <span>생년월일</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="payment">
+            <span>결제정보</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="cookies" checked>
+            <span>쿠키/접속로그</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="collectData" value="device">
+            <span>기기정보</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>수집 목적</h3>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="service" checked>
+            <span>서비스 제공</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="account" checked>
+            <span>회원 관리</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="marketing">
+            <span>마케팅/광고</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="analytics">
+            <span>통계/분석</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="support">
+            <span>고객 지원</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="purpose" value="legal">
+            <span>법적 의무 이행</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>보유 기간</h3>
+        <div class="form-group">
+          <select id="retentionPeriod">
+            <option value="until_withdrawal">회원 탈퇴 시까지</option>
+            <option value="1year">1년</option>
+            <option value="3years">3년</option>
+            <option value="5years">5년</option>
+            <option value="legal">법적 보유기간 준수</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>제3자 제공/위탁</h3>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="thirdParty">
+            <span>제3자에게 개인정보 제공</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="outsourcing">
+            <span>개인정보 처리 위탁</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="overseas">
+            <span>국외 이전</span>
+          </label>
+        </div>
+      </div>
+
+      <button id="generateBtn" class="generate-btn" aria-label="개인정보처리방침 생성">개인정보처리방침 생성</button>
+
+      <div class="result-card hidden" id="resultCard">
+        <div class="result-header">
+          <h3>생성된 개인정보처리방침</h3>
+          <div class="result-actions">
+            <button id="copyBtn" class="action-btn" aria-label="복사">복사</button>
+            <button id="downloadBtn" class="action-btn" aria-label="다운로드">다운로드</button>
+          </div>
+        </div>
+        <div id="policyOutput" class="policy-output"></div>
+      </div>
+    </main>
+  </div>
+  <script src="privacy-policy-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+/**
+ * HTTP 헤더 분석기 스타일
+ */
+
+.input-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  resize: vertical;
+  font-family: 'Consolas', monospace;
+  box-sizing: border-box;
+  min-height: 200px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.analyze-btn {
+  padding: 12px 24px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analyze-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.analyze-btn.full-width {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.input-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--tools-text-secondary);
+}
+
+/* 점수 요약 */
+.score-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.score-card {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  text-align: center;
+}
+
+.score-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.score-value {
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.score-card.security .score-value { color: #3b82f6; }
+.score-card.performance .score-value { color: #f59e0b; }
+.score-card.overall .score-value { color: #10b981; }
+
+.score-label {
+  font-size: 14px;
+  color: var(--tools-text-secondary);
+  margin-top: 4px;
+}
+
+/* 체크리스트 */
+.checklist-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+}
+
+.check-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.check-status.pass {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.check-status.fail {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.check-status.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.check-content {
+  flex: 1;
+}
+
+.check-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--tools-text);
+  margin-bottom: 2px;
+}
+
+.check-description {
+  font-size: 12px;
+  color: var(--tools-text-secondary);
+  margin-bottom: 4px;
+}
+
+.check-value {
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--tools-bg-secondary);
+  border-radius: 4px;
+  color: var(--tools-text-secondary);
+  word-break: break-all;
+}
+
+/* 헤더 목록 */
+.headers-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  overflow: hidden;
+}
+
+.headers-section .section-title {
+  padding: 16px 20px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--tools-border);
+}
+
+.headers-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.header-item {
+  display: flex;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--tools-border);
+}
+
+.header-item:last-child {
+  border-bottom: none;
+}
+
+.header-name {
+  width: 250px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tools-primary);
+  flex-shrink: 0;
+}
+
+.header-value {
+  flex: 1;
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+  color: var(--tools-text);
+  word-break: break-all;
+}
+
+/* 도움말 */
+.tool-help {
+  margin-top: 24px;
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .score-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .header-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .header-name {
+    width: 100%;
+  }
+}

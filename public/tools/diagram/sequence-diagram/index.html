@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시퀀스 다이어그램 | Sequence Diagram</title>
+  <link rel="stylesheet" href="sequence-diagram.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>시퀀스 다이어그램</h1>
+      <p>API 및 시스템 흐름을 시각화하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="quick-add">
+        <h4>빠른 추가</h4>
+        <div class="quick-buttons">
+          <button onclick="addParticipant()" aria-label="참여자">참여자</button>
+          <button onclick="addMessage('- aria-label=">')">요청">>')">요청</button>
+          <button onclick="addMessage('-- aria-label="')">응답">')">응답</button>
+          <button onclick="addNote()" aria-label="노트">노트</button>
+          <button onclick="addLoop()" aria-label="반복">반복</button>
+          <button onclick="addAlt()" aria-label="조건">조건</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="editor-panel">
+          <textarea id="codeEditor" spellcheck="false">sequenceDiagram
+    participant Client as 클라이언트
+    participant API as API 서버
+    participant DB as 데이터베이스
+
+    Client->>API: 로그인 요청
+    API->>DB: 사용자 조회
+    DB-->>API: 사용자 정보
+    API-->>Client: JWT 토큰
+
+    Note over Client,API: 인증 완료
+
+    Client->>API: 데이터 요청 (JWT)
+    API->>API: 토큰 검증
+    API->>DB: 데이터 쿼리
+    DB-->>API: 결과
+    API-->>Client: JSON 응답</textarea>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-header">
+            <button onclick="downloadSVG()" aria-label="SVG 다운로드">SVG 다운로드</button>
+          </div>
+          <div class="preview-area" id="previewArea">
+            <div class="mermaid" id="mermaidOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sequence-diagram.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

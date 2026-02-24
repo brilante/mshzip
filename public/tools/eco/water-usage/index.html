@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>물 사용량 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .result-card { background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 16px; padding: 2rem; color: white; text-align: center; margin-bottom: 1rem; }
+    .result-value { font-size: 3.5rem; font-weight: 700; }
+    .result-unit { font-size: 1rem; }
+    .result-label { font-size: 0.9rem; opacity: 0.9; }
+    .comparison-row { display: flex; justify-content: space-around; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2); }
+    .comparison-item { text-align: center; }
+    .comparison-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .comparison-value { font-size: 1.25rem; font-weight: 600; }
+    .comparison-label { font-size: 0.75rem; opacity: 0.8; }
+    .usage-category { margin-bottom: 1.5rem; }
+    .category-title { font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .usage-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .usage-label { flex: 1; font-size: 0.9rem; }
+    .usage-input { width: 80px; text-align: center; }
+    .usage-unit { font-size: 0.8rem; color: var(--text-secondary); width: 50px; }
+    .tip-box { background: var(--bg-primary); padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+    .tip-title { font-weight: 600; margin-bottom: 0.5rem; }
+    .tip-item { display: flex; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.25rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">물 사용량 계산기</h1>
+          <p class="tool-description">일일 물 사용량 측정</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="result-card">
+        <div class="result-label">일일 예상 물 사용량</div>
+        <div><span class="result-value" id="totalUsage">0</span><span class="result-unit"> L</span></div>
+        <div class="result-label" id="levelText">데이터를 입력해주세요</div>
+        <div class="comparison-row">
+          <div class="comparison-item">
+            <div class="comparison-icon"></div>
+            <div class="comparison-value" id="monthlyUsage">0</div>
+            <div class="comparison-label">월 사용량 (m³)</div>
+          </div>
+          <div class="comparison-item">
+            <div class="comparison-icon"></div>
+            <div class="comparison-value" id="monthlyCost">0</div>
+            <div class="comparison-label">예상 요금 (원)</div>
+          </div>
+          <div class="comparison-item">
+            <div class="comparison-icon"></div>
+            <div class="comparison-value" id="co2Impact">0</div>
+            <div class="comparison-label">CO₂ (kg/월)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <div class="usage-category">
+          <div class="category-title">욕실</div>
+          <div class="usage-item">
+            <span class="usage-label">샤워 횟수</span>
+            <input type="number" id="showerCount" class="tool-input usage-input" value="1" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">샤워 시간</span>
+            <input type="number" id="showerTime" class="tool-input usage-input" value="10" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">분</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">변기 사용</span>
+            <input type="number" id="toiletCount" class="tool-input usage-input" value="5" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">세면 횟수</span>
+            <input type="number" id="washCount" class="tool-input usage-input" value="3" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+        </div>
+
+        <div class="usage-category">
+          <div class="category-title">주방</div>
+          <div class="usage-item">
+            <span class="usage-label">설거지 (손)</span>
+            <input type="number" id="dishwashHand" class="tool-input usage-input" value="2" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">식기세척기</span>
+            <input type="number" id="dishwasher" class="tool-input usage-input" value="0" min="0" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+        </div>
+
+        <div class="usage-category">
+          <div class="category-title">세탁</div>
+          <div class="usage-item">
+            <span class="usage-label">세탁기 사용</span>
+            <input type="number" id="laundry" class="tool-input usage-input" value="0.5" min="0" step="0.1" oninput="WaterUsage.calculate()">
+            <span class="usage-unit">회/일</span>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <div class="tip-title">절수 팁</div>
+          <div class="tip-item">• 샤워 시간 1분 줄이면 하루 12L 절약</div>
+          <div class="tip-item">• 절수형 샤워헤드로 40% 절수</div>
+          <div class="tip-item">• 설거지 물 받아서 하면 50% 절약</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="water-usage.js"></script>
+</body>
+</html>

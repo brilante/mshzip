@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인용 생성기 - 학습 도구</title>
+    <link rel="stylesheet" href="citation-generator.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>인용 생성기</h1>
+            <p>논문 및 보고서용 참고문헌을 쉽게 생성하세요</p>
+        </header>
+
+        <div class="main-card">
+            <div class="source-type">
+                <label>자료 유형</label>
+                <select id="sourceType">
+                    <option value="book">도서</option>
+                    <option value="journal">학술지 논문</option>
+                    <option value="website">웹사이트</option>
+                    <option value="newspaper">신문 기사</option>
+                </select>
+            </div>
+
+            <div class="citation-style">
+                <label>인용 형식</label>
+                <div class="style-btns">
+                    <button class="style-btn active" data-style="apa" aria-label="APA 7th">APA 7th</button>
+                    <button class="style-btn" data-style="mla" aria-label="MLA 9th">MLA 9th</button>
+                    <button class="style-btn" data-style="chicago" aria-label="Chicago">Chicago</button>
+                </div>
+            </div>
+
+            <div id="formFields" class="form-fields"></div>
+
+            <button id="generateCitation" class="btn-generate" aria-label="인용문 생성">인용문 생성</button>
+
+            <div class="result-section">
+                <h3>생성된 인용문</h3>
+                <div id="citationResult" class="citation-result">
+                    인용문이 여기에 표시됩니다
+                </div>
+                <button id="copyCitation" class="btn-copy" aria-label="복사">복사</button>
+            </div>
+        </div>
+
+        <div class="saved-citations">
+            <h3>저장된 인용문</h3>
+            <div id="savedList"></div>
+        </div>
+    </div>
+    <script src="citation-generator.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+/**
+ * 회의 안건 작성기 스타일
+ */
+
+.meeting-info-section,
+.attendees-section,
+.agenda-section,
+.rules-section,
+.preview-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tools-text);
+}
+
+.form-input, .form-select {
+  padding: 10px 14px;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+/* 참석자 */
+.attendee-input {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.attendee-input .form-input {
+  flex: 1;
+}
+
+.add-btn {
+  padding: 10px 20px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.attendees-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attendee-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--tools-bg);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--tools-text);
+}
+
+.attendee-tag .remove {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.attendee-tag .remove:hover {
+  opacity: 1;
+}
+
+/* 안건 입력 */
+.agenda-input {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.agenda-input .form-input {
+  flex: 1;
+}
+
+.agenda-input .time-input {
+  width: 80px;
+  flex: none;
+}
+
+.agenda-input .form-select {
+  width: 120px;
+  flex: none;
+}
+
+/* 안건 목록 */
+.agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--tools-text-secondary);
+}
+
+.agenda-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+  border-left: 4px solid var(--tools-primary);
+}
+
+.agenda-item.discussion { border-left-color: #3b82f6; }
+.agenda-item.decision { border-left-color: #ef4444; }
+.agenda-item.info { border-left-color: #10b981; }
+.agenda-item.brainstorm { border-left-color: #f59e0b; }
+
+.agenda-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--tools-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.agenda-info {
+  flex: 1;
+}
+
+.agenda-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--tools-text);
+}
+
+.agenda-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--tools-text-secondary);
+}
+
+.agenda-time {
+  padding: 4px 10px;
+  background: var(--tools-bg-secondary);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--tools-text);
+}
+
+.agenda-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.agenda-btn {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--tools-border);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--tools-text);
+}
+
+.agenda-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+.agenda-btn.delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.total-time {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--tools-text);
+}
+
+.total-time span {
+  color: var(--tools-primary);
+  font-size: 18px;
+}
+
+/* 규칙 */
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.rule-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--tools-text);
+}
+
+.rule-checkbox input {
+  width: 16px;
+  height: 16px;
+}
+
+/* 액션 버튼 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  padding: 12px 24px;
+  background: var(--tools-bg-secondary);
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--tools-text);
+}
+
+.action-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+.action-btn.primary {
+  background: var(--tools-primary);
+  border-color: var(--tools-primary);
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: var(--tools-primary-dark);
+}
+
+.action-btn.secondary {
+  background: transparent;
+}
+
+/* 미리보기 */
+.preview-content {
+  background: var(--tools-bg);
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  color: var(--tools-text);
+  min-height: 200px;
+}
+
+/* 도움말 */
+.tool-help {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .info-grid,
+  .rules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agenda-input {
+    flex-wrap: wrap;
+  }
+
+  .agenda-input .form-input {
+    width: 100%;
+  }
+
+  .agenda-input .time-input,
+  .agenda-input .form-select {
+    width: calc(50% - 6px);
+    flex: 1;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}

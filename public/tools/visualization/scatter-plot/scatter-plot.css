@@ -1,0 +1,174 @@
+/**
+ * 산점도 생성기 스타일
+ */
+
+.chart-preview {
+  background: white;
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  min-height: 400px;
+}
+
+.data-section, .settings-section, .export-section, .preset-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.data-input-area {
+  background: var(--tools-bg);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 12px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.header-row {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tools-text-secondary);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--tools-border);
+  margin-bottom: 12px;
+}
+
+.row-input {
+  padding: 10px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--tools-bg-secondary);
+  color: var(--tools-text);
+}
+
+.row-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.delete-row-btn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+  font-size: 16px;
+}
+
+.delete-row-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.add-row-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px dashed var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+  margin-top: 12px;
+}
+
+.add-row-btn:hover {
+  border-color: var(--tools-primary);
+  color: var(--tools-primary);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-item label {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+.form-input.color {
+  height: 42px;
+  padding: 4px;
+}
+
+.export-buttons, .preset-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 12px 24px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.export-btn.secondary {
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  border: 1px solid var(--tools-border);
+}
+
+.preset-btn {
+  padding: 12px 20px;
+  background: var(--tools-bg);
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--tools-text);
+}
+
+.preset-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+@media (max-width: 768px) {
+  .chart-preview { min-height: 300px; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .export-buttons, .preset-buttons { flex-direction: column; }
+  .export-btn, .preset-btn { width: 100%; }
+}

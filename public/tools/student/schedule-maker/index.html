@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시간표 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 800px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, 1fr); gap: 2px; background: var(--border-color); border-radius: 8px; overflow: hidden; }
+    .schedule-header { background: var(--primary); color: white; padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; font-size: 0.85rem; }
+    .time-slot { background: var(--bg-primary); padding: 0.5rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary); min-height: 50px; display: flex; align-items: center; justify-content: center; }
+    .schedule-cell { background: var(--bg-primary); min-height: 50px; position: relative; cursor: pointer; transition: background 0.2s; }
+    .schedule-cell:hover { background: var(--bg-secondary); }
+    .schedule-cell.has-class { cursor: default; }
+    .class-block { position: absolute; inset: 2px; border-radius: 6px; padding: 0.25rem; font-size: 0.7rem; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; overflow: hidden; }
+    .class-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .class-room { font-size: 0.65rem; opacity: 0.9; }
+    .add-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; }
+    .input-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .input-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .color-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .color-option { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
+    .color-option:hover { transform: scale(1.1); }
+    .color-option.selected { border-color: var(--text-primary); }
+    .class-list { margin-top: 1rem; }
+    .class-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .class-info { display: flex; align-items: center; gap: 0.75rem; }
+    .class-color { width: 12px; height: 12px; border-radius: 50%; }
+    .btn-delete { background: #ef4444; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">시간표 생성기</h1>
+          <p class="tool-description">주간 수업 시간표 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">수업 추가</h3>
+        <div class="add-form">
+          <div class="input-group">
+            <label class="input-label">과목명</label>
+            <input type="text" id="className" class="tool-input" placeholder="예: 미적분학" aria-label="예: 미적분학">
+          </div>
+          <div class="input-group">
+            <label class="input-label">강의실</label>
+            <input type="text" id="classRoom" class="tool-input" placeholder="예: 공학관 301" aria-label="예: 공학관 301">
+          </div>
+          <div class="input-group">
+            <label class="input-label">요일</label>
+            <select id="classDay" class="tool-input">
+              <option value="0">월요일</option>
+              <option value="1">화요일</option>
+              <option value="2">수요일</option>
+              <option value="3">목요일</option>
+              <option value="4">금요일</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">시작 교시</label>
+            <select id="classStart" class="tool-input">
+              <option value="1">1교시 (09:00)</option>
+              <option value="2">2교시 (10:00)</option>
+              <option value="3">3교시 (11:00)</option>
+              <option value="4">4교시 (12:00)</option>
+              <option value="5">5교시 (13:00)</option>
+              <option value="6">6교시 (14:00)</option>
+              <option value="7">7교시 (15:00)</option>
+              <option value="8">8교시 (16:00)</option>
+              <option value="9">9교시 (17:00)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">수업 시간</label>
+            <select id="classDuration" class="tool-input">
+              <option value="1">1시간</option>
+              <option value="2">2시간</option>
+              <option value="3">3시간</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group" style="margin-top: 0.75rem;">
+          <label class="input-label">색상</label>
+          <div class="color-options" id="colorOptions"></div>
+        </div>
+        <button class="tool-btn tool-btn-primary" onclick="ScheduleMaker.addClass()" style="width: 100%; margin-top: 1rem;" aria-label="수업 추가">수업 추가</button>
+      </div>
+
+      <div class="schedule-grid" id="scheduleGrid"></div>
+
+      <div class="util-panel class-list">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">등록된 수업</h3>
+        <div id="classList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="schedule-maker.js"></script>
+</body>
+</html>

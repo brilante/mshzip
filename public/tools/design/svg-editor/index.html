@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG 편집기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="svg-editor.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">SVG 편집기</h1>
+          <p class="tool-description">SVG 코드를 편집하고 미리보기</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 툴바 -->
+    <div class="editor-toolbar">
+      <button class="toolbar-btn" onclick="SvgEditor.loadTemplate('circle')" aria-label="원">원</button>
+      <button class="toolbar-btn" onclick="SvgEditor.loadTemplate('rect')" aria-label="사각형">사각형</button>
+      <button class="toolbar-btn" onclick="SvgEditor.loadTemplate('star')" aria-label="별">별</button>
+      <button class="toolbar-btn" onclick="SvgEditor.loadTemplate('heart')" aria-label="하트">하트</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="SvgEditor.formatCode()" aria-label="코드 정리">코드 정리</button>
+      <button class="toolbar-btn" onclick="SvgEditor.minifyCode()" aria-label="압축">압축</button>
+      <div class="toolbar-divider"></div>
+      <label class="toolbar-btn" style="cursor: pointer;">
+        파일 열기
+        <input type="file" accept=".svg" style="display: none;" onchange="SvgEditor.loadFile(this)">
+      </label>
+      <button class="toolbar-btn primary" onclick="SvgEditor.downloadSvg()" aria-label="다운로드">다운로드</button>
+    </div>
+
+    <div class="editor-layout">
+      <!-- 코드 에디터 -->
+      <div class="editor-panel">
+        <div class="panel-header">
+          <span>SVG 코드</span>
+          <button class="copy-btn" onclick="SvgEditor.copyCode()" aria-label="복사">복사</button>
+        </div>
+        <textarea id="svgCode" class="code-editor" spellcheck="false" oninput="SvgEditor.updatePreview()"></textarea>
+      </div>
+
+      <!-- 프리뷰 -->
+      <div class="preview-panel">
+        <div class="panel-header">
+          <span>미리보기</span>
+          <div class="preview-controls">
+            <label>배경:</label>
+            <select id="bgType" onchange="SvgEditor.updateBg()">
+              <option value="transparent">투명</option>
+              <option value="white">흰색</option>
+              <option value="black">검정</option>
+              <option value="checker">체커보드</option>
+            </select>
+          </div>
+        </div>
+        <div class="preview-area" id="previewArea">
+          <div id="svgPreview"></div>
+        </div>
+        <div class="svg-info" id="svgInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="svg-editor.js"></script>
+</body>
+</html>

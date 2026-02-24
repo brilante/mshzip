@@ -1,0 +1,299 @@
+        <section id="content-subscription" class="content-section">
+          <h2 class="section-title" data-i18n="subscriptionTitle"><span data-icon="package" data-icon-size="16"></span> 구독</h2>
+          <p class="section-description" data-i18n="subscriptionDescription">구독 패키지 선택 및 크레딧을 구매합니다.</p>
+
+          <!-- 결제 통화 설정 (최상단) -->
+          <div class="setting-group currency-group">
+            <h3 class="group-title" data-i18n="currencySettingsTitle"><span data-icon="dollar-sign" data-icon-size="16"></span> 결제 통화 설정</h3>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="paymentCurrency" data-i18n="paymentCurrencyLabel">결제 통화</label>
+                <p class="setting-description" data-i18n="paymentCurrencyDesc">모든 가격이 선택한 통화로 환산되어 표시됩니다</p>
+              </div>
+              <div class="setting-control">
+                <select id="paymentCurrency">
+                  <option value="USD" selected data-i18n="currencyUSD">$ USD (미국 달러)</option>
+                  <option value="KRW" data-i18n="currencyKRW">₩ KRW (대한민국 원)</option>
+                  <option value="JPY" data-i18n="currencyJPY">¥ JPY (일본 엔)</option>
+                  <option value="EUR" data-i18n="currencyEUR">€ EUR (유로)</option>
+                  <option value="GBP" data-i18n="currencyGBP">£ GBP (영국 파운드)</option>
+                  <option value="CNY" data-i18n="currencyCNY">¥ CNY (중국 위안)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="currency-info">
+              <p data-i18n="currencyInfo"><span data-icon="lightbulb" data-icon-size="14"></span> 환율은 서버에서 실시간으로 관리됩니다. 기준 통화: USD</p>
+            </div>
+          </div>
+
+          <!-- 구독 패키지 선택 -->
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="subscriptionPackagesTitle"><span data-icon="package" data-icon-size="16"></span> 구독 패키지 선택</h3>
+
+            <div class="subscription-packages">
+              <!-- 구독 Only - 2025-12-10: 삭제됨 (숨김 처리) -->
+              <div class="package-card" style="display: none;">
+                <input type="radio" name="subscription" id="sub-only" value="0" data-package-type="only">
+                <label for="sub-only" class="package-content">
+                  <div class="package-header">
+                    <span class="package-name" data-i18n="subscriptionOnly">구독 Only</span>
+                    <span class="package-price">--<small data-i18n="perMonth">/월</small></span>
+                  </div>
+                  <div class="package-credits-breakdown">
+                    <div class="credit-line free">
+                      <span data-i18n="freeCreditsShort">무료 크레딧</span>
+                      <span class="credit-value-free">--</span>
+                    </div>
+                    <div class="credit-line base">
+                      <span data-i18n="paidCreditsShort">유료 크레딧</span>
+                      <span class="credit-value-base">--</span>
+                    </div>
+                    <!-- 2025-12-10: 보너스 크레딧 완전 제거 -->
+                    <div class="credit-line bonus" style="display: none;">
+                      <span data-i18n="serviceCreditsShort0">유료서비스</span>
+                      <span class="credit-value-bonus">--</span>
+                    </div>
+                    <div class="credit-divider"></div>
+                    <div class="credit-line total">
+                      <span data-i18n="totalCreditsShort">합계</span>
+                      <span class="credit-value-total">--</span>
+                    </div>
+                  </div>
+                  <div class="package-desc" data-i18n="lightUser">체험/라이트 유저</div>
+                </label>
+              </div>
+
+              <!-- 라이트 - v5.0 (2025-12-11) -->
+              <div class="package-card popular">
+                <div class="package-badge" data-i18n="popularBadge"><span data-icon="star" data-icon-size="14"></span> 인기</div>
+                <input type="radio" name="subscription" id="sub-lite" value="0" checked data-package-type="lite">
+                <label for="sub-lite" class="package-content">
+                  <div class="package-header">
+                    <span class="package-name" data-i18n="subscriptionLite">라이트</span>
+                    <span class="package-price">--<small data-i18n="perMonth">/월</small></span>
+                  </div>
+                  <div class="package-credits-breakdown">
+                    <!-- v5.0: 기본 사용량 -->
+                    <div class="credit-line base">
+                      <span data-i18n="baseUsageLabel">기본 사용량</span>
+                      <span class="credit-value-base">--</span>
+                    </div>
+                    <!-- v6.4: 보너스 9% (저가 패키지 우대) -->
+                    <div class="credit-line bonus">
+                      <span class="bonus-label"><span data-i18n="bonusLabelText">보너스</span> (<span class="bonus-rate">9</span>%)</span>
+                      <span class="credit-value-bonus">--</span>
+                    </div>
+                    <!-- 자동결제 보너스 9% -->
+                    <div class="credit-line autopay-bonus" style="display: none;">
+                      <span class="autopay-bonus-label"><span data-i18n="bonusLabelText">보너스</span> (9%)</span>
+                      <span class="credit-value-autopay-bonus">--</span>
+                    </div>
+                    <div class="credit-divider"></div>
+                    <div class="credit-line total">
+                      <span data-i18n="totalCreditsShort">합계</span>
+                      <span class="credit-value-total">--</span>
+                    </div>
+                  </div>
+                  <div class="package-desc" data-i18n="targetPersonalHobby">개인/취미</div>
+                </label>
+              </div>
+
+              <!-- 스탠다드 - v5.0 (2025-12-11) -->
+              <div class="package-card">
+                <input type="radio" name="subscription" id="sub-standard" value="0" data-package-type="standard">
+                <label for="sub-standard" class="package-content">
+                  <div class="package-header">
+                    <span class="package-name" data-i18n="subscriptionStandard">스탠다드</span>
+                    <span class="package-price">--<small data-i18n="perMonth">/월</small></span>
+                  </div>
+                  <div class="package-credits-breakdown">
+                    <!-- v5.0: 기본 사용량 -->
+                    <div class="credit-line base">
+                      <span data-i18n="baseUsageLabel">기본 사용량</span>
+                      <span class="credit-value-base">--</span>
+                    </div>
+                    <!-- v6.4: 보너스 7% -->
+                    <div class="credit-line bonus">
+                      <span class="bonus-label"><span data-i18n="bonusLabelText">보너스</span> (<span class="bonus-rate">7</span>%)</span>
+                      <span class="credit-value-bonus">--</span>
+                    </div>
+                    <!-- 자동결제 보너스 9% -->
+                    <div class="credit-line autopay-bonus" style="display: none;">
+                      <span class="autopay-bonus-label"><span data-i18n="bonusLabelText">보너스</span> (9%)</span>
+                      <span class="credit-value-autopay-bonus">--</span>
+                    </div>
+                    <div class="credit-divider"></div>
+                    <div class="credit-line total">
+                      <span data-i18n="totalCreditsShort">합계</span>
+                      <span class="credit-value-total">--</span>
+                    </div>
+                  </div>
+                  <div class="package-desc" data-i18n="targetRegularUser">일반 사용자</div>
+                </label>
+              </div>
+
+              <!-- 프로 - v5.0 (2025-12-11) -->
+              <div class="package-card pro">
+                <input type="radio" name="subscription" id="sub-pro" value="0" data-package-type="pro">
+                <label for="sub-pro" class="package-content">
+                  <div class="package-header">
+                    <span class="package-name" data-i18n="subscriptionPro">프로</span>
+                    <span class="package-price">--<small data-i18n="perMonth">/월</small></span>
+                  </div>
+                  <div class="package-credits-breakdown">
+                    <!-- v5.0: 기본 사용량 -->
+                    <div class="credit-line base">
+                      <span data-i18n="baseUsageLabel">기본 사용량</span>
+                      <span class="credit-value-base">--</span>
+                    </div>
+                    <!-- v6.4: 보너스 5% -->
+                    <div class="credit-line bonus">
+                      <span class="bonus-label"><span data-i18n="bonusLabelText">보너스</span> (<span class="bonus-rate">5</span>%)</span>
+                      <span class="credit-value-bonus">--</span>
+                    </div>
+                    <!-- 자동결제 보너스 9% -->
+                    <div class="credit-line autopay-bonus" style="display: none;">
+                      <span class="autopay-bonus-label"><span data-i18n="bonusLabelText">보너스</span> (9%)</span>
+                      <span class="credit-value-autopay-bonus">--</span>
+                    </div>
+                    <div class="credit-divider"></div>
+                    <div class="credit-line total">
+                      <span data-i18n="totalCreditsShort">합계</span>
+                      <span class="credit-value-total">--</span>
+                    </div>
+                  </div>
+                  <div class="package-desc" data-i18n="targetHeavyUser">헤비 유저</div>
+                </label>
+              </div>
+
+              <!-- 멕스 - v7.0 (2026-01-05) -->
+              <div class="package-card max">
+                <input type="radio" name="subscription" id="sub-max" value="0" data-package-type="max">
+                <label for="sub-max" class="package-content">
+                  <div class="package-header">
+                    <span class="package-name" data-i18n="subscriptionMax">멕스</span>
+                    <span class="package-price">--<small data-i18n="perMonth">/월</small></span>
+                  </div>
+                  <div class="package-credits-breakdown">
+                    <!-- v7.0: 기본 사용량 -->
+                    <div class="credit-line base">
+                      <span data-i18n="baseUsageLabel">기본 사용량</span>
+                      <span class="credit-value-base">--</span>
+                    </div>
+                    <!-- v7.0: 보너스 3% -->
+                    <div class="credit-line bonus">
+                      <span class="bonus-label"><span data-i18n="bonusLabelText">보너스</span> (<span class="bonus-rate">3</span>%)</span>
+                      <span class="credit-value-bonus">--</span>
+                    </div>
+                    <!-- 자동결제 보너스 9% -->
+                    <div class="credit-line autopay-bonus" style="display: none;">
+                      <span class="autopay-bonus-label"><span data-i18n="bonusLabelText">보너스</span> (9%)</span>
+                      <span class="credit-value-autopay-bonus">--</span>
+                    </div>
+                    <div class="credit-divider"></div>
+                    <div class="credit-line total">
+                      <span data-i18n="totalCreditsShort">합계</span>
+                      <span class="credit-value-total">--</span>
+                    </div>
+                  </div>
+                  <div class="package-desc" data-i18n="targetEnterprise">헤비 유저/기업</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="subscription-actions">
+              <label class="autopay-checkbox-wrapper" title="9% 추가 크레딧 지원" data-i18n-title="autopayTooltip">
+                <input type="checkbox" id="autopayCheckbox">
+                <span class="autopay-label" data-i18n="autopayLabel">자동결제</span>
+                <span class="autopay-bonus-badge">+9%</span>
+              </label>
+              <button class="btn-primary" id="subscribeBtn" data-i18n="changeSubscriptionBtn">구독하기</button>
+              <button class="btn-danger" id="cancelSubscriptionBtn" data-i18n="cancelSubscriptionBtn">구독취소</button>
+            </div>
+          </div>
+
+          <!-- 일반 크레딧 구매 - 10단계 시스템 (Phase 3 v5.0) -->
+          <div class="setting-group" id="creditPurchaseSection">
+            <h3 class="group-title" data-i18n="creditPurchaseTitle"><span data-icon="diamond" data-icon-size="16"></span> 일반 크레딧 구매 <span class="subscriber-only" data-i18n="loginRequired">(로그인 필요)</span></h3>
+
+            <!-- 비로그인 안내 -->
+            <div class="subscriber-notice" id="subscriberNotice">
+              <div class="notice-icon" data-icon="lock" data-icon-size="24"></div>
+              <div class="notice-content">
+                <p class="notice-title" data-i18n="loginRequiredTitle">로그인이 필요합니다</p>
+                <p class="notice-desc" data-i18n="loginRequiredDesc">크레딧 구매는 로그인 후 이용 가능합니다.</p>
+              </div>
+            </div>
+
+            <div class="credit-purchase" id="creditPurchaseForm">
+              <!-- 슬라이더 기반 크레딧 구매 -->
+              <div class="credit-slider-section">
+                <div class="slider-header">
+                  <span class="slider-benefit" data-i18n="bulkPurchaseBenefit">마진 15% 고정</span>
+                </div>
+
+                <!-- 금액 입력 (직접 입력 + 슬라이더) -->
+                <div class="amount-input-container">
+                  <div class="amount-input-row">
+                    <!-- 직접 입력 (왼쪽) -->
+                    <div class="manual-input-field">
+                      <span class="input-prefix" id="amountInputPrefix">$</span>
+                      <input type="text" id="manualAmountInput" inputmode="numeric" data-i18n-placeholder="amountPlaceholder" placeholder="금액">
+                    </div>
+                    <!-- 슬라이더 (오른쪽) - v7.2: 20단계 전체 라벨, 기본 $20 -->
+                    <div class="tier-slider-container tier-slider-20steps">
+                      <input type="range" id="tierSlider" class="tier-slider" min="1" max="20" value="6" step="1">
+                      <div class="tier-slider-labels tier-slider-labels-full" id="tierSliderLabels">
+                        <!-- JS에서 통화에 맞게 동적 생성 (initSliderLabels) -->
+                      </div>
+                    </div>
+                  </div>
+                  <p class="input-hint" id="amountInputHint" data-i18n="amountHintText">최소 $3 이상, $100 초과 시 마진 10% 고정</p>
+                </div>
+
+                <!-- 선택된 단계 정보 -->
+                <div class="tier-info-display">
+                  <div class="tier-info-main">
+                    <div class="tier-info-amount">
+                      <span class="tier-label" data-i18n="purchaseAmountLabel">구매 금액</span>
+                      <span class="tier-value" id="sliderAmount">$30</span>
+                    </div>
+                    <div class="tier-info-arrow">→</div>
+                    <div class="tier-info-credits">
+                      <span class="tier-label" data-i18n="creditsToReceiveLabel">받을 크레딧</span>
+                      <span class="tier-value highlight" id="sliderCredits">3,136,364</span>
+                    </div>
+                  </div>
+                  <div class="tier-info-details">
+                    <div class="detail-item">
+                      <span class="detail-label" data-i18n="paymentAmountLabel">결제 금액:</span>
+                      <span class="detail-value" id="sliderPayment">$33.00</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label" data-i18n="marginRateLabel">마진율:</span>
+                      <span class="detail-value" id="sliderMargin">15.6%</span>
+                    </div>
+                    <!-- v6.5: 일반 크레딧 구매는 보너스 없음 - 기본 숨김 -->
+                    <div class="detail-item bonus" id="sliderBonusContainer" style="display: none;">
+                      <span class="detail-label" data-i18n="bonusLabel">보너스:</span>
+                      <span class="detail-value" id="sliderBonus">-</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 구매/취소 버튼 영역 -->
+                <div class="credit-purchase-buttons">
+                  <button class="btn-primary btn-tier-purchase" id="purchaseTierBtn" data-i18n="purchaseCreditsBtn">크레딧 구매</button>
+                  <button class="btn-danger btn-tier-cancel" id="cancelPaidCreditsBtn" style="display: none;" data-i18n="cancelCreditsBtn">크레딧 취소</button>
+                </div>
+              </div>
+
+              <!-- 유효기간 안내 -->
+              <div class="tier-expire-info">
+                <p data-i18n="creditValidityNote"><span data-icon="calendar" data-icon-size="14"></span> 구매한 크레딧은 <strong>1년간</strong> 유효합니다.</p>
+              </div>
+            </div>
+          </div>
+        </section>

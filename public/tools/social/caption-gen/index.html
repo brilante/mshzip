@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>캡션 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .caption-container { max-width: 900px; margin: 0 auto; }
+    .caption-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .tone-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .tone-btn { padding: 0.75rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; text-align: center; transition: all 0.2s; font-size: 0.85rem; }
+    .tone-btn:hover { border-color: var(--primary); }
+    .tone-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .length-options { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .length-btn { flex: 1; padding: 0.75rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .length-btn:hover { border-color: var(--primary); }
+    .length-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .caption-output { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; display: none; }
+    .caption-card { background: var(--bg-secondary); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; border-left: 4px solid var(--primary); }
+    .caption-text { font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.75rem; white-space: pre-wrap; }
+    .caption-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-secondary); }
+    .caption-actions { display: flex; gap: 0.5rem; }
+    .caption-action { padding: 0.4rem 0.8rem; border-radius: 6px; background: var(--bg-primary); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+    .caption-action:hover { background: var(--primary); color: white; }
+    .emoji-picker { margin-top: 1rem; }
+    .emoji-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .emoji-item { font-size: 1.5rem; cursor: pointer; padding: 0.25rem; transition: transform 0.2s; }
+    .emoji-item:hover { transform: scale(1.2); }
+    .template-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    .template-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .template-chip { padding: 0.5rem 1rem; border-radius: 20px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .template-chip:hover { background: rgba(139, 92, 246, 0.2); }
+    @media (max-width: 600px) { .tone-grid { grid-template-columns: repeat(2, 1fr); } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">캡션 생성기</h1>
+          <p class="tool-description">SNS 게시물용 매력적인 캡션 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="caption-container">
+      <div class="caption-panel">
+        <div class="section-title">주제 입력</div>
+        <input type="text" id="topic" class="tool-input" placeholder="게시물 주제를 입력하세요 (예: 카페에서 브런치, 주말 여행)" style="margin-bottom: 1.5rem;" aria-label="게시물 주제를 입력하세요 (예: 카페에서 브런치, 주말 여행)">
+
+        <div class="section-title">톤 선택</div>
+        <div class="tone-grid">
+          <div class="tone-btn active" data-tone="casual" onclick="CaptionGen.selectTone('casual')">캐주얼</div>
+          <div class="tone-btn" data-tone="funny" onclick="CaptionGen.selectTone('funny')">유머</div>
+          <div class="tone-btn" data-tone="inspiring" onclick="CaptionGen.selectTone('inspiring')">영감</div>
+          <div class="tone-btn" data-tone="professional" onclick="CaptionGen.selectTone('professional')">전문적</div>
+          <div class="tone-btn" data-tone="romantic" onclick="CaptionGen.selectTone('romantic')">로맨틱</div>
+          <div class="tone-btn" data-tone="minimalist" onclick="CaptionGen.selectTone('minimalist')">미니멀</div>
+          <div class="tone-btn" data-tone="motivational" onclick="CaptionGen.selectTone('motivational')">동기부여</div>
+          <div class="tone-btn" data-tone="poetic" onclick="CaptionGen.selectTone('poetic')">시적</div>
+        </div>
+
+        <div class="section-title">길이 선택</div>
+        <div class="length-options">
+          <div class="length-btn active" data-length="short" onclick="CaptionGen.selectLength('short')">짧게 (1-2줄)</div>
+          <div class="length-btn" data-length="medium" onclick="CaptionGen.selectLength('medium')">보통 (3-4줄)</div>
+          <div class="length-btn" data-length="long" onclick="CaptionGen.selectLength('long')">길게 (5줄+)</div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" style="width: 100%;" onclick="CaptionGen.generate()" aria-label="캡션 생성">
+          캡션 생성
+        </button>
+
+        <div class="caption-output" id="captionOutput">
+          <div class="section-title">생성된 캡션</div>
+          <div id="captionList"></div>
+
+          <div class="emoji-picker">
+            <div class="section-title">추천 이모지</div>
+            <div class="emoji-list" id="emojiList"></div>
+          </div>
+        </div>
+
+        <div class="template-section">
+          <div class="section-title">인기 템플릿</div>
+          <div class="template-chips">
+            <span class="template-chip" onclick="CaptionGen.useTemplate('daily')">일상 공유</span>
+            <span class="template-chip" onclick="CaptionGen.useTemplate('food')">맛집 리뷰</span>
+            <span class="template-chip" onclick="CaptionGen.useTemplate('travel')">여행 기록</span>
+            <span class="template-chip" onclick="CaptionGen.useTemplate('selfie')">셀피</span>
+            <span class="template-chip" onclick="CaptionGen.useTemplate('quote')">명언/격언</span>
+            <span class="template-chip" onclick="CaptionGen.useTemplate('announcement')">공지/홍보</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="caption-gen.js"></script>
+</body>
+</html>

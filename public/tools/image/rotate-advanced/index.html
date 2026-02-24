@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이미지 회전 (고급) - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .rotate-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; }
+    .controls-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .upload-zone { border: 2px dashed var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
+    .upload-zone:hover { border-color: var(--primary); }
+    .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .preset-btn { padding: 0.75rem 0.5rem; font-size: 0.8rem; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .angle-input { display: flex; align-items: center; gap: 0.5rem; }
+    .preview-panel { display: flex; flex-direction: column; align-items: center; }
+    .canvas-container { background: #f0f0f0; border-radius: 12px; padding: 1rem; }
+    #previewCanvas { max-width: 100%; max-height: 400px; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    @media (max-width: 768px) { .rotate-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">이미지 회전 (고급)</h1>
+          <p class="tool-description">자유 각도 회전 및 프리셋</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="rotate-layout">
+      <div class="controls-panel">
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/*" hidden onchange="RotateAdv.loadImage(this)">
+          이미지 업로드
+        </div>
+
+        <div class="section-title">빠른 회전</div>
+        <div class="preset-grid">
+          <button class="tool-btn tool-btn-secondary preset-btn" onclick="RotateAdv.setAngle(90)" aria-label="90°">90°</button>
+          <button class="tool-btn tool-btn-secondary preset-btn" onclick="RotateAdv.setAngle(180)" aria-label="180°">180°</button>
+          <button class="tool-btn tool-btn-secondary preset-btn" onclick="RotateAdv.setAngle(270)" aria-label="270°">270°</button>
+          <button class="tool-btn tool-btn-secondary preset-btn" onclick="RotateAdv.setAngle(0)" aria-label="0°">0°</button>
+        </div>
+
+        <div class="section-title">자유 회전</div>
+        <div class="control-group">
+          <label>각도: <span id="angleValue">0</span>°</label>
+          <input type="range" id="angleSlider" min="-180" max="180" value="0" style="width:100%" oninput="RotateAdv.onSliderChange()">
+        </div>
+        <div class="angle-input">
+          <input type="number" id="angleInput" class="tool-input" value="0" min="-360" max="360" oninput="RotateAdv.onInputChange()">
+          <span>°</span>
+        </div>
+
+        <div class="control-group" style="margin-top: 1rem">
+          <label><input type="checkbox" id="expandCanvas" checked> 캔버스 확장 (잘림 방지)</label>
+        </div>
+
+        <div class="control-group">
+          <label>배경색</label>
+          <input type="color" id="bgColor" value="#ffffff" style="width:100%; height:40px; border:none; border-radius:8px" onchange="RotateAdv.rotate()">
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="canvas-container">
+          <canvas id="previewCanvas"></canvas>
+        </div>
+        <div class="btn-row">
+          <button class="tool-btn tool-btn-primary" onclick="RotateAdv.download()" aria-label="다운로드">다운로드</button>
+          <button class="tool-btn tool-btn-secondary" onclick="RotateAdv.reset()" aria-label="초기화">초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="rotate-advanced.js"></script>
+</body>
+</html>

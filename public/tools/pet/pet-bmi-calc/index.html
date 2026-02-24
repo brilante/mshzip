@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반려동물 비만도 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .pet-container { max-width: 600px; margin: 0 auto; }
+    .pet-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .input-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .input-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .result-section { text-align: center; padding: 2rem; background: var(--bg-primary); border-radius: 12px; margin-bottom: 1.5rem; }
+    .bcs-result { font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .bcs-label { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .bcs-desc { font-size: 0.9rem; color: var(--text-secondary); }
+    .bcs-scale { display: flex; justify-content: space-between; margin: 1.5rem 0; padding: 0 1rem; }
+    .bcs-point { display: flex; flex-direction: column; align-items: center; }
+    .bcs-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--bg-tertiary); }
+    .bcs-dot.active { border-color: var(--primary); background: var(--primary); }
+    .bcs-num { font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-secondary); }
+    .scale-bar { height: 8px; background: linear-gradient(to right, #ef4444, #22c55e 30%, #22c55e 60%, #ef4444); border-radius: 4px; margin: 1rem 0; }
+    .tip-section { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; }
+    .tip-title { font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .tip-list { font-size: 0.9rem; color: var(--text-secondary); }
+    .tip-list li { margin-bottom: 0.5rem; padding-left: 1rem; position: relative; }
+    .tip-list li::before { content: '•'; position: absolute; left: 0; color: var(--primary); }
+    .weight-section { margin-top: 1.5rem; }
+    .weight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    .weight-card { background: var(--bg-primary); border-radius: 8px; padding: 0.75rem; text-align: center; }
+    .weight-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .weight-value { font-weight: 600; font-size: 1.1rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">비만도 계산기</h1>
+          <p class="tool-description">반려동물 체형 상태 확인</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="pet-container">
+      <div class="pet-panel">
+        <div class="input-grid">
+          <div class="input-group">
+            <label>반려동물 종류</label>
+            <select id="petType" class="tool-input" onchange="BmiCalc.calculate()">
+              <option value="dog">강아지</option>
+              <option value="cat">고양이</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>품종 크기</label>
+            <select id="breedSize" class="tool-input" onchange="BmiCalc.calculate()">
+              <option value="small">소형 (5kg 이하)</option>
+              <option value="medium">중형 (5-25kg)</option>
+              <option value="large">대형 (25kg 이상)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>현재 체중 (kg)</label>
+            <input type="number" id="currentWeight" class="tool-input" placeholder="5" step="0.1" oninput="BmiCalc.calculate()" aria-label="5">
+          </div>
+          <div class="input-group">
+            <label>이상 체중 (kg)</label>
+            <input type="number" id="idealWeight" class="tool-input" placeholder="4.5" step="0.1" oninput="BmiCalc.calculate()" aria-label="4.5">
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="bcs-result" id="bcsScore">-</div>
+          <div class="bcs-label" id="bcsLabel">체중을 입력하세요</div>
+          <div class="bcs-desc" id="bcsDesc">현재 체중과 이상 체중을 입력하면 비만도를 계산합니다</div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem;">BCS (Body Condition Score) 척도</div>
+          <div class="scale-bar"></div>
+          <div class="bcs-scale" id="bcsScale">
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">1</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">2</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">3</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">4</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">5</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">6</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">7</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">8</div></div>
+            <div class="bcs-point"><div class="bcs-dot"></div><div class="bcs-num">9</div></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+            <span>저체중</span>
+            <span>정상</span>
+            <span>과체중</span>
+          </div>
+        </div>
+
+        <div class="weight-section">
+          <div style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem;">체중 분석</div>
+          <div class="weight-grid">
+            <div class="weight-card">
+              <div class="weight-label">체중 차이</div>
+              <div class="weight-value" id="weightDiff">-</div>
+            </div>
+            <div class="weight-card">
+              <div class="weight-label">비만도</div>
+              <div class="weight-value" id="obesityRate">-</div>
+            </div>
+            <div class="weight-card">
+              <div class="weight-label">목표 체중</div>
+              <div class="weight-value" id="targetWeight">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section" style="margin-top: 1.5rem;">
+          <div class="tip-title">관리 팁</div>
+          <ul class="tip-list" id="tipList">
+            <li>체중을 입력하면 맞춤 관리 팁이 표시됩니다</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="pet-bmi-calc.js"></script>
+</body>
+</html>

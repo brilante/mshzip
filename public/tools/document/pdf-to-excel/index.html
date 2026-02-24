@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF → Excel 변환 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .converter-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .upload-panel, .result-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; min-height: 400px; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .drop-zone { border: 2px dashed var(--border-color); border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+    .drop-zone-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .file-info { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-top: 1rem; }
+    .file-icon { font-size: 2rem; }
+    .file-details { flex: 1; }
+    .file-name { font-weight: 500; }
+    .file-size { font-size: 0.85rem; color: var(--text-secondary); }
+    .options-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    .option-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .progress-section { margin-top: 1.5rem; }
+    .progress-bar { height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+    .progress-text { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center; }
+    .result-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+    .result-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .result-message { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .result-detail { color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .server-notice { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; padding: 1rem; border-radius: 10px; margin-top: 1rem; font-size: 0.9rem; }
+    @media (max-width: 900px) { .converter-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">PDF → Excel 변환</h1>
+          <p class="tool-description">PDF 표를 Excel로 추출</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="converter-layout">
+      <div class="upload-panel">
+        <div class="section-title">PDF 파일 선택</div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-zone-icon"></div>
+          <div class="drop-zone-text">
+            <p>PDF 파일을 드래그하거나 클릭하여 선택</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">표가 포함된 PDF만 지원</p>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf" hidden onchange="PdfToExcel.handleFile(this.files[0])">
+        <div id="fileInfo" style="display: none;"></div>
+
+        <div class="options-section">
+          <div class="section-title">변환 옵션</div>
+          <div class="option-row">
+            <span class="option-label">출력 형식</span>
+            <select id="outputFormat" class="tool-input" style="width: 120px;">
+              <option value="xlsx">XLSX</option>
+              <option value="xls">XLS</option>
+              <option value="csv">CSV</option>
+            </select>
+          </div>
+          <div class="option-row">
+            <span class="option-label">표 감지 모드</span>
+            <select id="tableMode" class="tool-input" style="width: 120px;">
+              <option value="auto">자동 감지</option>
+              <option value="strict">엄격</option>
+              <option value="loose">유연</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" style="width: 100%; margin-top: 1.5rem;" id="convertBtn" disabled onclick="PdfToExcel.convert()" aria-label="변환 시작">
+          변환 시작
+        </button>
+
+        <div class="server-notice">
+          <strong>서버 기능 필요</strong><br>
+          PDF → Excel 변환은 서버 측 처리가 필요합니다. 현재 데모 모드로 작동합니다.
+        </div>
+      </div>
+
+      <div class="result-panel">
+        <div class="section-title">변환 결과</div>
+        <div class="result-preview" id="resultPreview">
+          <div class="result-icon"></div>
+          <div class="result-message">변환할 파일을 선택하세요</div>
+          <div class="result-detail">PDF의 표 데이터를 Excel로 추출합니다</div>
+        </div>
+        <div class="progress-section" id="progressSection" style="display: none;">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progressText">준비 중...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="pdf-to-excel.js"></script>
+</body>
+</html>

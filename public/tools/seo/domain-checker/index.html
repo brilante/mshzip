@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도메인 체커 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .search-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .search-row { display: flex; gap: 1rem; }
+    .search-row input { flex: 1; }
+    .results-section { display: none; }
+    .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .info-panel, .availability-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .checked-domain { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .info-item { background: var(--bg-primary); padding: 0.75rem; border-radius: 8px; }
+    .info-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .info-value { font-weight: 600; margin-top: 0.25rem; }
+    .score-section { margin-top: 1.5rem; }
+    .score-row { margin-bottom: 1rem; }
+    .score-label { font-size: 0.85rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+    .score-bar-bg { height: 24px; background: var(--bg-primary); border-radius: 12px; overflow: hidden; }
+    .score-bar { height: 100%; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600; transition: width 0.5s; }
+    .analysis-box { background: var(--bg-primary); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.9rem; line-height: 1.8; }
+    .availability-row { display: flex; align-items: center; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .availability-row.available { border-left: 3px solid var(--success); }
+    .availability-row.taken { border-left: 3px solid var(--error); opacity: 0.7; }
+    .domain-name { flex: 1; font-weight: 500; }
+    .domain-status { width: 100px; font-size: 0.85rem; }
+    .domain-price { width: 80px; text-align: right; font-weight: 600; color: var(--primary); }
+    .loading-indicator { display: none; justify-content: center; align-items: center; padding: 3rem; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 900px) { .results-grid { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">도메인 체커</h1>
+          <p class="tool-description">도메인 정보 확인 및 가용성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="search-panel">
+      <div class="search-row">
+        <input type="text" id="domainInput" class="tool-input" placeholder="도메인을 입력하세요 (예: example.com)" onkeypress="if(event.key==='Enter')DomainChecker.check()" aria-label="도메인을 입력하세요 (예: example.com)">
+        <button class="tool-btn tool-btn-primary" onclick="DomainChecker.check()" aria-label="확인">확인</button>
+      </div>
+    </div>
+
+    <div class="loading-indicator" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <div class="results-grid">
+        <div class="info-panel">
+          <div class="section-title">도메인 정보</div>
+          <div class="checked-domain" id="checkedDomain"></div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">길이</div>
+              <div class="info-value" id="domainLength">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">TLD</div>
+              <div class="info-value" id="domainTld">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">등록기관</div>
+              <div class="info-value" id="domainRegistrar">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">등록일</div>
+              <div class="info-value" id="domainCreated">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">만료일</div>
+              <div class="info-value" id="domainExpires">-</div>
+            </div>
+          </div>
+
+          <div class="score-section">
+            <div class="score-row">
+              <div class="score-label"><span>길이 점수</span></div>
+              <div class="score-bar-bg"><div class="score-bar" id="lengthScore"></div></div>
+            </div>
+            <div class="score-row">
+              <div class="score-label"><span>기억 용이성</span></div>
+              <div class="score-bar-bg"><div class="score-bar" id="memorabilityScore"></div></div>
+            </div>
+            <div class="score-row">
+              <div class="score-label"><span>SEO 점수</span></div>
+              <div class="score-bar-bg"><div class="score-bar" id="seoScore"></div></div>
+            </div>
+          </div>
+
+          <div class="analysis-box" id="domainAnalysis"></div>
+        </div>
+
+        <div class="availability-panel">
+          <div class="section-title">도메인 가용성</div>
+          <div id="availabilityList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="domain-checker.js"></script>
+</body>
+</html>

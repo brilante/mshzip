@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Schema 검증기 | JSON Schema Validator</title>
+  <link rel="stylesheet" href="json-schema-validator.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>JSON Schema 검증기</h1>
+      <p>JSON 데이터가 스키마를 준수하는지 검증하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="panel">
+        <h3>JSON Schema</h3>
+        <textarea id="schemaInput" spellcheck="false">{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "age": { "type": "integer", "minimum": 0 },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "email"]
+}</textarea>
+      </div>
+
+      <div class="panel">
+        <h3>JSON Data</h3>
+        <textarea id="dataInput" spellcheck="false">{
+  "name": "홍길동",
+  "age": 25,
+  "email": "hong@example.com"
+}</textarea>
+      </div>
+
+      <div class="actions">
+        <button onclick="validateJSON()" aria-label="검증하기">검증하기</button>
+        <button onclick="generateSchema()" class="secondary" aria-label="샘플 스키마 생성">샘플 스키마 생성</button>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-icon"></div>
+        <div class="result-text">검증 결과가 여기에 표시됩니다</div>
+      </div>
+    </div>
+  </div>
+  <script src="json-schema-validator.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

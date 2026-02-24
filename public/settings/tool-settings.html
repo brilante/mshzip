@@ -1,0 +1,102 @@
+        <section id="content-tool-settings" class="content-section admin-only">
+          <div class="section-header">
+            <div class="section-header-text">
+              <h2 class="section-title" data-i18n="toolSettingsTitle"><span data-icon="wrench" data-icon-size="16"></span> 도구설정</h2>
+              <p class="section-description" data-i18n="toolSettingsDesc">도구 카테고리 및 도구를 관리합니다.</p>
+            </div>
+            <div class="section-header-buttons">
+              <button id="refreshToolsBtn" class="btn-secondary" title="도구 목록 새로고침">
+                <span data-icon="refresh-cw" data-icon-size="14"></span>
+                <span data-i18n="toolBtnRefresh">새로고침</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="toolSettingsPanel" class="tool-settings-container">
+            <!-- 통계 요약 -->
+            <div class="tool-stats" id="toolStats">
+              <div class="tool-stat-item">
+                <span class="stat-value" id="totalCategoriesCount">0</span>
+                <span class="stat-label" data-i18n="toolStatCategories">카테고리</span>
+              </div>
+              <div class="tool-stat-item">
+                <span class="stat-value" id="totalToolsCount">0</span>
+                <span class="stat-label" data-i18n="toolStatTools">전체 도구</span>
+              </div>
+              <div class="tool-stat-item">
+                <span class="stat-value" id="activeToolsCount">0</span>
+                <span class="stat-label" data-i18n="toolStatActive">활성 도구</span>
+              </div>
+              <div class="tool-stat-item">
+                <span class="stat-value" id="inactiveToolsCount">0</span>
+                <span class="stat-label" data-i18n="toolStatInactive">비활성 도구</span>
+              </div>
+            </div>
+
+            <!-- 필터 영역 -->
+            <div class="tool-filters">
+              <div class="tool-filters-row">
+                <div class="tool-filter-group">
+                  <label data-i18n="toolFilterCategory">카테고리</label>
+                  <select id="toolCategoryFilter">
+                    <option value="" data-i18n="toolFilterAllCategories">전체 카테고리</option>
+                  </select>
+                </div>
+                <div class="tool-filter-group">
+                  <label data-i18n="toolFilterStatus">상태</label>
+                  <select id="toolStatusFilter">
+                    <option value="" data-i18n="toolFilterAllStatus">전체</option>
+                    <option value="active" data-i18n="toolFilterActive">활성</option>
+                    <option value="inactive" data-i18n="toolFilterInactive">비활성</option>
+                  </select>
+                </div>
+                <div class="tool-filter-group">
+                  <label data-i18n="toolFilterSearch">검색</label>
+                  <input type="text" id="toolSearchInput" data-i18n-placeholder="toolSearchPlaceholder" placeholder="도구명 검색...">
+                </div>
+                <div class="tool-filter-group tool-filter-buttons">
+                  <button type="button" id="toolSearchBtn" class="btn-primary" data-i18n="toolBtnSearch">검색</button>
+                  <button type="button" id="toolResetFilterBtn" class="btn-secondary" data-i18n="toolBtnReset">초기화</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 도구 테이블 -->
+            <div class="tool-table-container">
+              <table class="tool-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">
+                      <input type="checkbox" id="toolSelectAll" title="전체 선택">
+                    </th>
+                    <th data-i18n="toolTableCategory">카테고리</th>
+                    <th data-i18n="toolTableName">도구명</th>
+                    <th data-i18n="toolTablePath">경로</th>
+                    <th data-i18n="toolTableStatus">상태</th>
+                    <th data-i18n="toolTableOrder">순서</th>
+                    <th data-i18n="toolTableActions">작업</th>
+                  </tr>
+                </thead>
+                <tbody id="toolTableBody">
+                  <tr>
+                    <td colspan="7" class="loading-row" data-i18n="toolTableLoading">도구 목록을 불러오는 중...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 일괄 작업 버튼 -->
+            <div class="tool-bulk-actions" id="toolBulkActions" style="display: none;">
+              <span id="selectedToolsCount">0개 선택됨</span>
+              <button type="button" id="bulkActivateBtn" class="btn-success" data-i18n="toolBtnBulkActivate">일괄 활성화</button>
+              <button type="button" id="bulkDeactivateBtn" class="btn-warning" data-i18n="toolBtnBulkDeactivate">일괄 비활성화</button>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="tool-pagination" id="toolPagination">
+              <button type="button" class="tool-page-btn" id="toolPrevBtn" data-i18n="toolBtnPrev">이전</button>
+              <span class="tool-page-info" id="toolPageInfo">페이지 1/1</span>
+              <button type="button" class="tool-page-btn" id="toolNextBtn" data-i18n="toolBtnNext">다음 </button>
+            </div>
+          </div>
+        </section>

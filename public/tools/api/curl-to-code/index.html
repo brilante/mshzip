@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cURL → 코드 변환 | cURL to Code</title>
+  <link rel="stylesheet" href="curl-to-code.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>cURL → 코드 변환</h1>
+      <p>cURL 명령을 다양한 프로그래밍 언어 코드로 변환하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="input-section">
+        <h3>cURL 명령어</h3>
+        <textarea id="curlInput" placeholder="cURL 명령어를 붙여넣으세요...">curl -X POST "https://api.example.com/users" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-token" \
+  -d '{"name": "홍길동", "email": "hong@example.com"}'</textarea>
+        <button onclick="convertCurl()" aria-label="변환">변환</button>
+      </div>
+
+      <div class="output-section">
+        <div class="language-tabs">
+          <button class="lang-tab active" onclick="showLanguage('javascript')" aria-label="JavaScript">JavaScript</button>
+          <button class="lang-tab" onclick="showLanguage('python')" aria-label="Python">Python</button>
+          <button class="lang-tab" onclick="showLanguage('php')" aria-label="PHP">PHP</button>
+          <button class="lang-tab" onclick="showLanguage('go')" aria-label="Go">Go</button>
+          <button class="lang-tab" onclick="showLanguage('java')" aria-label="Java">Java</button>
+        </div>
+
+        <div class="code-output">
+          <div class="code-header">
+            <span id="languageLabel">JavaScript (fetch)</span>
+            <button onclick="copyCode()" aria-label="복사">복사</button>
+          </div>
+          <pre id="codeOutput">// cURL 명령어를 입력하고 변환 버튼을 클릭하세요</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="curl-to-code.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

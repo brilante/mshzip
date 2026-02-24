@@ -1,0 +1,2165 @@
+/**
+ * MyMind3 Dark Theme
+ * Reference: exactly.ai (minimal.gallery)
+ * Style: Monochromatic Minimal
+ * Created: 2025-12-18
+ */
+
+/* ===== Phase 1: CSS Variables ===== */
+[data-theme="dark"] {
+  /* 배경 계층 - 순수 검정 기반 */
+  --bg-base: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-hover: #1a1a1a;
+  --bg-active: #222222;
+
+  /* 테두리 - 미묘한 구분 */
+  --border-subtle: #1a1a1a;
+  --border-default: #2a2a2a;
+  --border-strong: #3a3a3a;
+
+  /* 텍스트 - 고대비 */
+  --text-primary: #ffffff;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  --text-inverse: #000000;
+
+  /* 액센트 - 절제된 사용 */
+  --accent-primary: #ffffff;
+  --accent-blue: #3b82f6;
+  --accent-success: #22c55e;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+
+  /* 마인드맵 노드 - 모노크롬 기반 */
+  --node-level-0: #1a1a1a;
+  --node-level-1: #1f1f1f;
+  --node-level-2: #242424;
+  --node-level-3: #292929;
+  --node-level-default: #2e2e2e;
+  --node-selected: #ffffff;
+
+  /* 전역 색상 스킴 */
+  color-scheme: dark;
+}
+
+/* HTML/Body 기본 스타일 */
+[data-theme="dark"] body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* ===== Phase 3: 레이아웃 다크 모드 ===== */
+
+/* 헤더 */
+[data-theme="dark"] .header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="dark"] .header-left,
+[data-theme="dark"] .header-middle,
+[data-theme="dark"] .header-right {
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .header select,
+[data-theme="dark"] .header input {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+/* 사이드바 */
+[data-theme="dark"] .sidebar {
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* 콘텐츠 영역 */
+[data-theme="dark"] .content {
+  background-color: var(--bg-base);
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* AI 응답 패널 */
+[data-theme="dark"] .llm-response {
+  background-color: var(--bg-surface);
+}
+
+/* 패널 헤더 */
+[data-theme="dark"] .panel-header {
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* 환경 배지 다크 모드 스타일 */
+[data-theme="dark"] .env-badge.env-local {
+  background-color: #198754;
+  color: white;
+}
+
+[data-theme="dark"] .env-badge.env-development {
+  background-color: #fd7e14;
+  color: white;
+}
+
+[data-theme="dark"] .env-badge.env-production {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* 디바이더 */
+[data-theme="dark"] .divider {
+  background: var(--border-subtle);
+}
+
+[data-theme="dark"] .divider:hover {
+  background-color: var(--text-secondary);
+}
+
+/* ===== Phase 4: 마인드맵 다크 모드 ===== */
+
+[data-theme="dark"] .mindmap-container {
+  background-color: var(--bg-base);
+}
+
+[data-theme="dark"] .mindmap-layout {
+  background-color: var(--bg-base);
+}
+
+/* 기본 노드 - 모노크롬 */
+[data-theme="dark"] .mindmap-node {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid #ffffff;  /* 다크모드: 흰색 외곽선 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .mindmap-node:hover {
+  background-color: var(--bg-hover);
+  border-color: #ffffff;  /* 다크모드 hover: 흰색 유지 */
+}
+
+/* 레벨별 노드 - 미묘한 회색 계층 (외곽선은 흰색 통일) */
+[data-theme="dark"] .node-level-0 {
+  background-color: #1a1a1a;
+  border-color: #ffffff;
+}
+
+[data-theme="dark"] .node-level-1 {
+  background-color: #1f1f1f;
+  border-color: #ffffff;
+}
+
+[data-theme="dark"] .node-level-2 {
+  background-color: #242424;
+  border-color: #ffffff;
+}
+
+[data-theme="dark"] .node-level-3 {
+  background-color: #292929;
+  border-color: #ffffff;
+}
+
+[data-theme="dark"] .node-level-4,
+[data-theme="dark"] .node-level-5,
+[data-theme="dark"] .node-level-6,
+[data-theme="dark"] .node-level-7 {
+  background-color: #2e2e2e;
+  border-color: #ffffff;
+}
+
+/* 선택된 노드 - 흰색 테두리 강조 */
+[data-theme="dark"] .mindmap-node.selected,
+[data-theme="dark"] .selected-node {
+  border: 2px solid var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* 노드 텍스트 - 흰색 */
+[data-theme="dark"] .node-content {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .node-content.root,
+[data-theme="dark"] .node-content.level-1,
+[data-theme="dark"] .node-content.level-2,
+[data-theme="dark"] .node-content.level-3 {
+  color: var(--text-primary);
+}
+
+/* 노드 버튼 */
+[data-theme="dark"] .mindmap-node .node-btn,
+[data-theme="dark"] .mindmap-node .btn-toggle,
+[data-theme="dark"] .mindmap-node .btn-add,
+[data-theme="dark"] .mindmap-node .btn-delete {
+  background-color: var(--bg-hover);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .mindmap-node .node-btn:hover,
+[data-theme="dark"] .mindmap-node .btn-toggle:hover,
+[data-theme="dark"] .mindmap-node .btn-add:hover,
+[data-theme="dark"] .mindmap-node .btn-delete:hover {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+}
+
+/* 연결선 (마인드맵 전용, 아이콘 SVG path 영향 방지) */
+[data-theme="dark"] .mindmap-connection {
+  stroke: var(--border-default);
+}
+
+/* ===== Phase 5: 버튼/컴포넌트 다크 모드 ===== */
+
+[data-theme="dark"] .button-toolbar {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* 버튼 - 모노크롬 스타일 */
+[data-theme="dark"] .button-toolbar button {
+  background-color: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);  /* 흐린 색상 */
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .button-toolbar button:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);    /* hover 시 밝은 색상 */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .button-toolbar button:active {
+  background-color: var(--bg-active);
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* 일반 버튼 */
+[data-theme="dark"] button,
+[data-theme="dark"] .btn {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);  /* 흐린 색상 */
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] button:hover,
+[data-theme="dark"] .btn:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);    /* hover 시 밝은 색상 */
+}
+
+/* 입력 필드 */
+[data-theme="dark"] #promptInput,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  color: #ffffff !important;  /* 명시적 흰색 - 다크모드 글씨 확실히 보이도록 */
+}
+
+[data-theme="dark"] #promptInput:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: var(--text-secondary);
+  outline: none;
+}
+
+[data-theme="dark"] #promptInput::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* AI 채팅 영역 */
+[data-theme="dark"] .llm-body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* QA 아이템 다크 모드 (인라인 스타일 오버라이드) */
+[data-theme="dark"] .qa-item {
+  background-color: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .qa-item .question {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-left-color: var(--accent-color) !important;
+}
+
+[data-theme="dark"] .qa-item .question span,
+[data-theme="dark"] .qa-item .question strong {
+  color: var(--text-primary) !important;
+}
+
+/* 사용자 질문 내용 다크 모드 (인라인 스타일 강제 오버라이드) */
+[data-theme="dark"] .qa-item .question div,
+[data-theme="dark"] .qa-item .question-content,
+[data-theme="dark"] .question .question-content,
+[data-theme="dark"] .question div,
+[data-theme="dark"] .user-question-content {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .qa-item .answer {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .qa-item .answer p,
+[data-theme="dark"] .qa-item .answer span,
+[data-theme="dark"] .qa-item .answer strong,
+[data-theme="dark"] .qa-item .answer li,
+[data-theme="dark"] .qa-item .answer h1,
+[data-theme="dark"] .qa-item .answer h2,
+[data-theme="dark"] .qa-item .answer h3,
+[data-theme="dark"] .qa-item .answer h4 {
+  color: var(--text-primary) !important;
+}
+
+/* QA 코드 블록 다크 모드 */
+[data-theme="dark"] .qa-item code {
+  background-color: #1e1e2e !important;
+  color: #cdd6f4 !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .qa-item pre {
+  background-color: #1e1e2e !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .qa-item pre code {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* LLM 응답 영역 표/코드 다크 모드 */
+[data-theme="dark"] .llm-body table {
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .llm-body thead th,
+[data-theme="dark"] .llm-body th {
+  background-color: #333 !important;
+  color: #ffffff !important;
+  border-bottom-color: #555;
+}
+
+[data-theme="dark"] .llm-body td {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #444;
+}
+
+[data-theme="dark"] .llm-body th,
+[data-theme="dark"] .llm-body td {
+  border-right-color: #444;
+  border-bottom-color: #444;
+}
+
+[data-theme="dark"] .llm-body tbody tr:hover td {
+  background: #2a2a2a !important;
+}
+
+[data-theme="dark"] .llm-body code {
+  background: #2a2a2a !important;
+  color: #a78bfa !important;
+  border-color: #444 !important;
+}
+
+[data-theme="dark"] .llm-body pre {
+  background: #1a1a1a !important;
+  border-color: #444 !important;
+}
+
+[data-theme="dark"] .llm-body pre code {
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .llm-body blockquote {
+  background: #1a2332 !important;
+  color: #99bbdd !important;
+  border-left-color: #3b82f6 !important;
+}
+
+[data-theme="dark"] .timestamp {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-muted) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .input-area {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* AI 응답 컨테이너 다크 모드 */
+[data-theme="dark"] .ai-response-container {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] #gptResponse,
+[data-theme="dark"] #claudeResponse,
+[data-theme="dark"] #geminiResponse,
+[data-theme="dark"] #grokResponse {
+  background-color: var(--bg-base) !important;
+}
+
+/* ===== Phase 6: 에디터 다크 모드 ===== */
+
+[data-theme="dark"] .toastui-editor-defaultUI {
+  background-color: var(--bg-surface);
+  border-color: var(--border-default);
+}
+
+[data-theme="dark"] .toastui-editor-contents {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toastui-editor-contents p,
+[data-theme="dark"] .toastui-editor-contents h1,
+[data-theme="dark"] .toastui-editor-contents h2,
+[data-theme="dark"] .toastui-editor-contents h3,
+[data-theme="dark"] .toastui-editor-contents h4,
+[data-theme="dark"] .toastui-editor-contents h5,
+[data-theme="dark"] .toastui-editor-contents h6 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toastui-editor-md-preview {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toastui-editor-toolbar {
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="dark"] .toastui-editor-toolbar-icons {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .toastui-editor-toolbar-icons:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch {
+  background-color: var(--bg-surface);
+  border-color: var(--border-default);
+}
+
+[data-theme="dark"] .toastui-editor-md-tab-container {
+  background-color: var(--bg-elevated);
+}
+
+[data-theme="dark"] .toastui-editor-md-splitter {
+  background-color: var(--border-subtle);
+}
+
+/* CodeMirror (에디터 내부) */
+[data-theme="dark"] .CodeMirror {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .CodeMirror-gutters {
+  background-color: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .CodeMirror-linenumber {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .CodeMirror-cursor {
+  border-left-color: var(--text-primary);
+}
+
+[data-theme="dark"] .CodeMirror-selected {
+  background-color: var(--bg-active);
+}
+
+/* ===== Phase 7: 설정 팝업 다크 모드 ===== */
+
+[data-theme="dark"] .settings-container {
+  background-color: var(--bg-surface);
+}
+
+[data-theme="dark"] .settings-header {
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="dark"] .settings-header h1 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-sidebar {
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+}
+
+[data-theme="dark"] .nav-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .nav-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-item.active {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+  border-left: 2px solid var(--text-primary);
+}
+
+[data-theme="dark"] .settings-content {
+  background-color: var(--bg-base);
+}
+
+[data-theme="dark"] .section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-description {
+  color: var(--text-secondary);
+}
+
+/* 설정 폼 요소 */
+[data-theme="dark"] .settings-group {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="dark"] .settings-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-hint {
+  color: var(--text-muted);
+}
+
+/* ===== 스크롤바 (15% 축소) ===== */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 7px;   /* was 8px */
+  height: 7px;  /* was 8px */
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;  /* was 4px */
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ===== 모달/팝업 ===== */
+[data-theme="dark"] .modal,
+[data-theme="dark"] .popup,
+[data-theme="dark"] .dialog {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .popup-header {
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-overlay,
+[data-theme="dark"] .popup-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* ===== 토스트 알림 ===== */
+[data-theme="dark"] .toast-notification,
+[data-theme="dark"] .toast {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .toast-success {
+  border-left: 3px solid var(--accent-success);
+}
+
+[data-theme="dark"] .toast-error {
+  border-left: 3px solid var(--accent-error);
+}
+
+[data-theme="dark"] .toast-warning {
+  border-left: 3px solid var(--accent-warning);
+}
+
+/* ===== 테마 토글 버튼 (15% 축소) ===== */
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  width: 27px;   /* was 32px */
+  height: 27px;  /* was 32px */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--text-secondary);
+}
+
+.theme-icon {
+  font-size: 14px;  /* was 16px */
+  line-height: 1;
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .theme-toggle-btn,
+:root .theme-toggle-btn {
+  color: var(--text-primary, #000000);
+  border-color: var(--border-default, #d4d4d4);
+}
+
+/* ===== Phase 8: 다크모드 강제 적용 (인라인 스타일 오버라이드) ===== */
+
+/* GPT 툴바 - 2줄 레이아웃 */
+[data-theme="dark"] .gpt-toolbar-wrapper {
+  background-color: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .gpt-toolbar {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+[data-theme="dark"] .gpt-toolbar-row1 {
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+/* AI 서비스/모델 선택 드롭다운 */
+[data-theme="dark"] #aiServiceSelect,
+[data-theme="dark"] #gptModelSelect,
+[data-theme="dark"] #grokModelSelect,
+[data-theme="dark"] #claudeModelSelect,
+[data-theme="dark"] #geminiModelSelect,
+[data-theme="dark"] #localModelSelect {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #aiServiceSelect option,
+[data-theme="dark"] #gptModelSelect option,
+[data-theme="dark"] select option {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 사용자/크레딧 표시 (아이디 버튼) - 불러오기 버튼과 동일한 스타일 */
+[data-theme="dark"] #currentUserDisplay {
+  background-color: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  color: #888888 !important;
+}
+
+[data-theme="dark"] #currentUserDisplay:hover {
+  background-color: transparent !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] #currentUserDisplay #creditPart {
+  color: var(--accent-success) !important;
+}
+
+/* 로그아웃 버튼 스타일은 index.html 인라인 스타일에서 관리 */
+
+/* API Key 버튼 */
+[data-theme="dark"] #apiKeyBtn {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 기타 메뉴 */
+[data-theme="dark"] .etc-menu-btn {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .etc-menu-dropdown {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .etc-menu-item {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .etc-menu-item:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* ===== Phase 9: TOAST UI Editor 강제 다크모드 ===== */
+
+[data-theme="dark"] .toastui-editor-defaultUI {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="dark"] .toastui-editor-defaultUI-toolbar {
+  background-color: var(--bg-elevated) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .toastui-editor-toolbar {
+  background-color: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .toastui-editor-toolbar-group {
+  border-right-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .toastui-editor-toolbar button {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .toastui-editor-toolbar button:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-ww-container,
+[data-theme="dark"] .toastui-editor-md-container {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents p,
+[data-theme="dark"] .toastui-editor-contents li,
+[data-theme="dark"] .toastui-editor-contents span {
+  color: var(--text-primary) !important;
+}
+
+/* 굵은 글씨, 이탤릭 등 텍스트 서식 태그 다크모드 지원 */
+[data-theme="dark"] .toastui-editor-contents strong,
+[data-theme="dark"] .toastui-editor-contents b,
+[data-theme="dark"] .toastui-editor-contents em,
+[data-theme="dark"] .toastui-editor-contents i,
+[data-theme="dark"] .toastui-editor-contents u,
+[data-theme="dark"] .toastui-editor-contents s,
+[data-theme="dark"] .toastui-editor-contents del,
+[data-theme="dark"] .toastui-editor-contents mark {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .ProseMirror strong,
+[data-theme="dark"] .ProseMirror b,
+[data-theme="dark"] .ProseMirror em,
+[data-theme="dark"] .ProseMirror i,
+[data-theme="dark"] .ProseMirror u,
+[data-theme="dark"] .ProseMirror s,
+[data-theme="dark"] .ProseMirror del,
+[data-theme="dark"] .ProseMirror mark {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .ProseMirror {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-splitter {
+  background-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch {
+  background-color: var(--bg-surface) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch .tab-item {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="dark"] .toastui-editor-mode-switch .tab-item.active {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* CodeMirror 강제 다크모드 */
+[data-theme="dark"] .CodeMirror {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .CodeMirror-gutters {
+  background-color: var(--bg-surface) !important;
+  border-right-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .CodeMirror-linenumber {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .CodeMirror-cursor {
+  border-left-color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .CodeMirror-selected {
+  background-color: var(--bg-active) !important;
+}
+
+[data-theme="dark"] .CodeMirror-line {
+  color: var(--text-primary) !important;
+}
+
+/* 마크다운 에디터 코드 블록 라인 배경 다크모드 */
+[data-theme="dark"] .toastui-editor-md-code-block-line-background {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* 마크다운 에디터 코드 블록 텍스트 색상 */
+[data-theme="dark"] .toastui-editor-md-code-block {
+  color: var(--text-primary) !important;
+}
+
+/* 마크다운 에디터 테이블 셀 텍스트 색상 */
+[data-theme="dark"] .toastui-editor-md-table-cell {
+  color: var(--text-primary) !important;
+}
+
+/* ===== Phase 10: 광고 영역 다크모드 ===== */
+
+[data-theme="dark"] .ad-container,
+[data-theme="dark"] .advertisement,
+[data-theme="dark"] [class*="ad-"],
+[data-theme="dark"] [id*="ad-"] {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* ===== Phase 11: 다중 AI 선택 탭 ===== */
+
+[data-theme="dark"] .ai-tabs,
+[data-theme="dark"] .ai-tab-container {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .ai-tab {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .ai-tab:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .ai-tab.active {
+  background-color: var(--bg-active) !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--text-primary) !important;
+}
+
+/* ===== Phase 12: 체크박스/라벨 다크모드 ===== */
+
+[data-theme="dark"] .gpt-toolbar label {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] #multiSelectAI {
+  accent-color: var(--accent-blue) !important;
+}
+
+/* ===== Phase 13: 콘텐츠 패널 (노드 내용) 다크모드 ===== */
+
+[data-theme="dark"] .content .button-toolbar {
+  background-color: var(--bg-surface) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+/* panel-toggle-btn은 별도 스타일 (exact-mymind2-layout.css) */
+[data-theme="dark"] .content .button-toolbar button:not(.panel-toggle-btn) {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .content .button-toolbar button:not(.panel-toggle-btn):hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 저장, PDF, PPT 버튼 - 불러오기 버튼과 동일한 스타일 */
+/* !important로 다른 CSS 오버라이드 방지 */
+[data-theme="dark"] #saveContentBtn,
+[data-theme="dark"] #pdfNodeBtn,
+[data-theme="dark"] #pptNodeBtn {
+  background-color: transparent !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] #saveContentBtn:hover,
+[data-theme="dark"] #pdfNodeBtn:hover,
+[data-theme="dark"] #pptNodeBtn:hover {
+  background-color: #2a2a2a !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 비활성화 상태도 불러오기와 동일하게 */
+[data-theme="dark"] #saveContentBtn:disabled,
+[data-theme="dark"] #pdfNodeBtn:disabled,
+[data-theme="dark"] #pptNodeBtn:disabled {
+  background-color: transparent !important;
+  border-color: #666666 !important;
+  color: #666666 !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* ===== Phase 14: 새 클래스 다크모드 스타일 ===== */
+
+/* 툴바 셀렉트 */
+[data-theme="dark"] .toolbar-select {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toolbar-select option {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 크레딧 표시 */
+[data-theme="dark"] .credit-display {
+  color: var(--accent-success) !important;
+}
+
+/* ===== Phase 15: 마인드맵 패널 버튼 다크모드 (모노크롬) ===== */
+
+/* 마인드맵 툴바 버튼 (메인 추가, 저장, 불러오기, 초기화) - 불러오기 스타일로 통일 */
+/* panel-toggle-btn은 제외 (별도 스타일 적용) */
+/* !important로 다른 CSS 오버라이드 방지 */
+[data-theme="dark"] .sidebar .button-toolbar button:not(.panel-toggle-btn),
+[data-theme="dark"] #addMainTitleBtn,
+[data-theme="dark"] #saveMapBtn,
+[data-theme="dark"] #loadMapBtn,
+[data-theme="dark"] #resetMapBtn {
+  background-color: transparent !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .sidebar .button-toolbar button:not(.panel-toggle-btn):hover,
+[data-theme="dark"] #addMainTitleBtn:hover,
+[data-theme="dark"] #saveMapBtn:hover,
+[data-theme="dark"] #loadMapBtn:hover,
+[data-theme="dark"] #resetMapBtn:hover {
+  background-color: #2a2a2a !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 패널 토글 버튼 (≫) - exact-mymind2-layout.css에서 통합 관리 */
+
+/* ===== Phase 16: 응답 패널 버튼 다크모드 (모노크롬) ===== */
+
+/* 전송, 삭제 버튼 - 불러오기 버튼과 동일한 스타일 */
+/* !important로 다른 CSS 오버라이드 방지 */
+[data-theme="dark"] #sendPromptBtn,
+[data-theme="dark"] #clearQaBtn {
+  background-color: transparent !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] #sendPromptBtn:hover:not(:disabled),
+[data-theme="dark"] #clearQaBtn:hover:not(:disabled) {
+  background-color: #2a2a2a !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  outline: 0.5px solid #ffffff !important;
+  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] #sendPromptBtn:disabled,
+[data-theme="dark"] #clearQaBtn:disabled {
+  background-color: transparent !important;
+  border-color: #666666 !important;
+  color: #666666 !important;
+  opacity: 0.6 !important;
+  box-shadow: none !important;
+}
+
+/* 입력 영역 */
+[data-theme="dark"] .input-area {
+  background-color: var(--bg-surface) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .input-area button {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .input-area button:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 이미지 첨부 버튼 - 다크모드 */
+[data-theme="dark"] .image-attach-btn {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .image-attach-btn:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+[data-theme="dark"] .image-attach-btn.has-image {
+  background-color: #1a4a2e !important;
+  border-color: #28a745 !important;
+}
+
+[data-theme="dark"] .image-attach-btn.has-text {
+  background-color: #4a3a1a !important;
+  border-color: #ffc107 !important;
+}
+
+/* 이미지 미리보기 영역 - 다크모드 */
+[data-theme="dark"] .image-preview-area {
+  background-color: var(--bg-surface) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] #attachedImagePreview {
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="dark"] .attached-image-name {
+  color: var(--text-muted) !important;
+}
+
+/* 텍스트 파일 미리보기 영역 - 다크모드 */
+[data-theme="dark"] .text-preview-area {
+  background-color: var(--bg-surface) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .attached-text-name {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .attached-text-size {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .text-preview-content {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ===== Phase 17: 광고 영역 다크모드 강제 적용 ===== */
+
+[data-theme="dark"] .ad-container {
+  background: var(--bg-surface) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .ad-placeholder {
+  background-color: transparent !important;
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .ad-icon {
+  opacity: 0.4 !important;
+}
+
+[data-theme="dark"] .ad-text {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .ad-subtext {
+  color: var(--text-muted) !important;
+}
+
+/* ===== Phase 18: AI 탭 바 다크모드 ===== */
+
+/* AI 탭 컨테이너 */
+[data-theme="dark"] .ai-tab-bar {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* AI 개별 탭 */
+[data-theme="dark"] .ai-tab {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .ai-tab:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* AI 활성 탭 */
+[data-theme="dark"] .ai-tab.active {
+  background-color: var(--bg-active) !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--text-primary) !important;
+}
+
+/* ===== Phase 19: TOAST UI Editor 완전 다크모드 ===== */
+
+/* 에디터 메인 래퍼 */
+[data-theme="dark"] .toastui-editor {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] .toastui-editor.md-mode,
+[data-theme="dark"] .toastui-editor.ww-mode {
+  background-color: var(--bg-base) !important;
+}
+
+/* 에디터 콘텐츠 영역 - 모든 인스턴스 */
+[data-theme="dark"] .toastui-editor-contents {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-ww-container .toastui-editor-contents {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* WYSIWYG 모드 에디터 */
+[data-theme="dark"] .toastui-editor-ww-container {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] .toastui-editor-ww-container .ProseMirror {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 에디터 메인 컨테이너 */
+[data-theme="dark"] .toastui-editor-main {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] .toastui-editor-main-container {
+  background-color: var(--bg-base) !important;
+}
+
+/* 마크다운/프리뷰 분할선 숨기기 */
+[data-theme="dark"] .toastui-editor-md-splitter {
+  background-color: var(--bg-base) !important;
+  width: 0px !important;
+  opacity: 0 !important;
+}
+
+/* 프리뷰 영역도 동일한 배경으로 통일 */
+[data-theme="dark"] .toastui-editor-md-preview {
+  background-color: var(--bg-base) !important;
+  border-left: none !important;
+}
+
+/* 프리뷰 영역 텍스트 서식 태그 다크모드 지원 */
+[data-theme="dark"] .toastui-editor-md-preview strong,
+[data-theme="dark"] .toastui-editor-md-preview b,
+[data-theme="dark"] .toastui-editor-md-preview em,
+[data-theme="dark"] .toastui-editor-md-preview i,
+[data-theme="dark"] .toastui-editor-md-preview u,
+[data-theme="dark"] .toastui-editor-md-preview s,
+[data-theme="dark"] .toastui-editor-md-preview del,
+[data-theme="dark"] .toastui-editor-md-preview mark,
+[data-theme="dark"] .toastui-editor-md-preview p,
+[data-theme="dark"] .toastui-editor-md-preview li,
+[data-theme="dark"] .toastui-editor-md-preview span {
+  color: var(--text-primary) !important;
+}
+
+/* 탭 컨테이너 */
+[data-theme="dark"] .toastui-editor-md-tab-container {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* 탭 아이템 */
+[data-theme="dark"] .toastui-editor-md-tab-container .tab-item {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-tab-container .tab-item.active {
+  background-color: var(--bg-active) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 컨텍스트 메뉴 */
+[data-theme="dark"] .toastui-editor-context-menu {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .toastui-editor-context-menu button {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-context-menu button:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* TOAST UI 클립보드 textarea 리사이즈 그립 숨기기 */
+[data-theme="dark"] .toastui-editor-pseudo-clipboard {
+  resize: none !important;
+}
+
+/* ===== Phase 20: 스크롤바 코너 다크모드 ===== */
+
+/* 전역 스크롤바 코너 */
+[data-theme="dark"] ::-webkit-scrollbar-corner {
+  background-color: var(--bg-base) !important;
+}
+
+/* 마인드맵 컨테이너 스크롤바 코너 */
+[data-theme="dark"] .mindmap-container::-webkit-scrollbar-corner {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="dark"] .sidebar::-webkit-scrollbar-corner {
+  background-color: var(--bg-base) !important;
+}
+
+/* 리사이저 그립 숨기기 */
+[data-theme="dark"] textarea {
+  resize: none !important;
+}
+
+/* ===== Phase 21: 폴더 불러오기/저장 팝업 다크모드 ===== */
+
+/* 폴더 불러오기 팝업 */
+[data-theme="dark"] #loadFolderPopup {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 팝업 제목 */
+[data-theme="dark"] #loadFolderPopup h3,
+[data-theme="dark"] #loadFolderPopup .popup-title {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+/* 폴더 리스트 */
+[data-theme="dark"] #loadFolderList {
+  background-color: var(--bg-surface) !important;
+}
+
+[data-theme="dark"] #loadFolderList li {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] #loadFolderList li:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 닫기 버튼 */
+[data-theme="dark"] #loadFolderPopupCloseBtn {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] #loadFolderPopupCloseBtn:hover {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-hover) !important;
+}
+
+/* 취소 버튼 */
+[data-theme="dark"] #loadFolderCancelBtn {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+}
+
+[data-theme="dark"] #loadFolderCancelBtn:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 폴더 저장 팝업 (동일한 스타일 적용) */
+[data-theme="dark"] #saveFolderPopup {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] #saveFolderPopup h3 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #saveFolderPopup input {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="dark"] #saveFolderList {
+  background-color: var(--bg-surface) !important;
+}
+
+[data-theme="dark"] #saveFolderList li {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark"] #saveFolderList li:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* ===== Phase 22: TOAST UI Editor 테이블 다크모드 ===== */
+
+/* 에디터 콘텐츠 내 테이블 */
+[data-theme="dark"] .toastui-editor-contents table {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents table th {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents table td {
+  background-color: var(--bg-base) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents table tr:nth-child(even) td {
+  background-color: var(--bg-surface) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents table tr:hover td {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 프리뷰 영역 테이블 */
+[data-theme="dark"] .toastui-editor-md-preview table {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview table th {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview table td {
+  background-color: var(--bg-base) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview table tr:nth-child(even) td {
+  background-color: var(--bg-surface) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview table tr:hover td {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 프리뷰 하이라이트 영역 내 테이블 */
+[data-theme="dark"] .toastui-editor-md-preview-highlight table {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview-highlight table th {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview-highlight table td {
+  background-color: var(--bg-base) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 테이블 캡션 */
+[data-theme="dark"] .toastui-editor-contents table caption,
+[data-theme="dark"] .toastui-editor-md-preview table caption {
+  color: var(--text-secondary) !important;
+}
+
+/* 테이블 바디/헤더/푸터 */
+[data-theme="dark"] .toastui-editor-contents thead,
+[data-theme="dark"] .toastui-editor-md-preview thead {
+  background-color: var(--bg-elevated) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents tbody,
+[data-theme="dark"] .toastui-editor-md-preview tbody {
+  background-color: var(--bg-base) !important;
+}
+
+/* 코드 블록 내 테이블 */
+[data-theme="dark"] .toastui-editor-contents pre,
+[data-theme="dark"] .toastui-editor-md-preview pre {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents code,
+[data-theme="dark"] .toastui-editor-md-preview code {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 인용구 */
+[data-theme="dark"] .toastui-editor-contents blockquote,
+[data-theme="dark"] .toastui-editor-md-preview blockquote {
+  background-color: var(--bg-surface) !important;
+  border-left-color: var(--border-strong) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* 구분선 */
+[data-theme="dark"] .toastui-editor-contents hr,
+[data-theme="dark"] .toastui-editor-md-preview hr {
+  border-color: var(--border-default) !important;
+  background-color: var(--border-default) !important;
+}
+
+/* 링크 */
+[data-theme="dark"] .toastui-editor-contents a,
+[data-theme="dark"] .toastui-editor-md-preview a {
+  color: var(--accent-blue) !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents a:hover,
+[data-theme="dark"] .toastui-editor-md-preview a:hover {
+  color: #60a5fa !important;
+}
+
+/* ===== Phase 23: TOAST UI Editor 프리뷰 영역 강제 다크모드 ===== */
+
+/* 마크다운 프리뷰 컨테이너 내 콘텐츠 영역 */
+[data-theme="dark"] .toastui-editor-md-preview .toastui-editor-contents {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* 마크다운 에디터 탭 컨테이너 - 최상위 우선순위 */
+[data-theme="dark"] .toastui-editor-md-tab-container,
+[data-theme="dark"] .toastui-editor-defaultUI .toastui-editor-md-tab-container {
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid #2a2a2a !important;
+}
+
+/* 탭 아이템 기본 스타일 - 모든 가능한 선택자 */
+[data-theme="dark"] .tab-item,
+[data-theme="dark"] .toastui-editor-md-tab-container .tab-item,
+[data-theme="dark"] .toastui-editor-defaultUI .tab-item,
+[data-theme="dark"] .toastui-editor .tab-item {
+  background-color: #111111 !important;
+  color: #888888 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+/* 활성 탭 아이템 */
+[data-theme="dark"] .tab-item.active,
+[data-theme="dark"] .toastui-editor-md-tab-container .tab-item.active,
+[data-theme="dark"] .toastui-editor-defaultUI .tab-item.active,
+[data-theme="dark"] .toastui-editor .tab-item.active {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #3b82f6 !important;
+}
+
+/* 탭 호버 */
+[data-theme="dark"] .tab-item:hover,
+[data-theme="dark"] .toastui-editor-md-tab-container .tab-item:hover {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* 프리뷰 영역 전체 배경 */
+[data-theme="dark"] .toastui-editor-md-preview {
+  background-color: #000000 !important;
+}
+
+/* 프리뷰 내 모든 요소 색상 */
+[data-theme="dark"] .toastui-editor-md-preview * {
+  background-color: inherit;
+  color: inherit;
+}
+
+/* 프리뷰 내 테이블 강제 다크모드 */
+[data-theme="dark"] .toastui-editor-md-preview table,
+[data-theme="dark"] .toastui-editor-md-preview .toastui-editor-contents table {
+  background-color: #0a0a0a !important;
+  border-color: #2a2a2a !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview th,
+[data-theme="dark"] .toastui-editor-md-preview .toastui-editor-contents th {
+  background-color: #111111 !important;
+  border-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .toastui-editor-md-preview td,
+[data-theme="dark"] .toastui-editor-md-preview .toastui-editor-contents td {
+  background-color: #000000 !important;
+  border-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+/* 마크다운 에디터 메인 컨테이너 */
+[data-theme="dark"] .toastui-editor-md-container {
+  background-color: #000000 !important;
+}
+
+/* CodeMirror 영역 */
+[data-theme="dark"] .toastui-editor-md-container .CodeMirror {
+  background-color: #000000 !important;
+}
+
+/* 에디터/프리뷰 분할선 완전히 숨기기 */
+[data-theme="dark"] .toastui-editor-md-splitter {
+  display: none !important;
+}
+
+/* 전체 에디터 DefaultUI 배경 */
+[data-theme="dark"] .toastui-editor-defaultUI {
+  background-color: #000000 !important;
+  border-color: #2a2a2a !important;
+}
+
+/* ===== Phase 24: 커스텀 에디터/프리뷰 탭 버튼 다크모드 ===== */
+
+/* 커스텀 탭 버튼 컨테이너 */
+[data-theme="dark"] .custom-tab-container {
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid #2a2a2a !important;
+}
+
+/* 커스텀 탭 버튼 기본 스타일 */
+[data-theme="dark"] .custom-tab-btn,
+[data-theme="dark"] #customTabWrite,
+[data-theme="dark"] #customTabPreview {
+  background-color: #111111 !important;
+  color: #888888 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+/* 커스텀 탭 버튼 활성 상태 */
+[data-theme="dark"] .custom-tab-btn.active,
+[data-theme="dark"] #customTabWrite.active,
+[data-theme="dark"] #customTabPreview.active {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #3b82f6 !important;
+}
+
+/* 커스텀 탭 버튼 호버 */
+[data-theme="dark"] .custom-tab-btn:hover,
+[data-theme="dark"] #customTabWrite:hover,
+[data-theme="dark"] #customTabPreview:hover {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* ===== Phase 25: 노드재구성 팝업 다크모드 ===== */
+
+/* 노드재구성 모달 오버레이 */
+[data-theme="dark"] #treeGenModal.modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 노드재구성 모달 컨텐츠 */
+[data-theme="dark"] #treeGenModal .modal-content {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 모달 헤더 */
+[data-theme="dark"] #treeGenModal .modal-header {
+  background-color: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] #treeGenModal .modal-header h3 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #treeGenModal .modal-close {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] #treeGenModal .modal-close:hover {
+  color: var(--text-primary) !important;
+}
+
+/* 모달 바디 */
+[data-theme="dark"] #treeGenModal .modal-body {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #treeGenModal .modal-body p {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] #treeGenModal .modal-body strong {
+  color: var(--accent-blue) !important;
+}
+
+/* 폼 라벨 */
+[data-theme="dark"] #treeGenModal .form-group label {
+  color: var(--text-primary) !important;
+}
+
+/* 입력 필드 */
+[data-theme="dark"] #treeGenModal #newMapName {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #treeGenModal #newMapName:focus {
+  border-color: var(--accent-blue) !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] #treeGenModal #newMapName::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* 셀렉트 박스 */
+[data-theme="dark"] #treeGenModal select,
+[data-theme="dark"] #treeGenModal #treeGenServiceSelect,
+[data-theme="dark"] #treeGenModal #treeGenModelSelect {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #treeGenModal select option {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 체크박스 라벨 */
+[data-theme="dark"] #treeGenModal #treeGenSaveAsDefault {
+  accent-color: var(--accent-blue) !important;
+}
+
+/* 진행 상태 영역 */
+[data-theme="dark"] #treeGenModal #genProgress {
+  background-color: var(--bg-surface) !important;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* 진행 단계 아이템 */
+[data-theme="dark"] #treeGenModal .step-item {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] #treeGenModal .step-item .step-icon {
+  background: var(--bg-hover) !important;
+  color: var(--text-muted) !important;
+}
+
+/* 노드 진행 상황 영역 */
+[data-theme="dark"] #treeGenModal #genNodeProgress {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] #treeGenModal #genNodeProgress span {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] #treeGenModal #genNodeCount {
+  color: var(--accent-blue) !important;
+}
+
+[data-theme="dark"] #treeGenModal #genCurrentNode {
+  color: var(--text-muted) !important;
+}
+
+/* 프로그레스 바 배경 */
+[data-theme="dark"] #treeGenModal #genNodeProgressBar {
+  background: linear-gradient(90deg, var(--accent-blue), #60a5fa) !important;
+}
+
+/* 상태 메시지 */
+[data-theme="dark"] #treeGenModal #genStatusMessage {
+  color: var(--text-secondary) !important;
+}
+
+/* 경과 시간 */
+[data-theme="dark"] #treeGenModal #genElapsedTime {
+  color: var(--accent-blue) !important;
+}
+
+/* 모달 푸터 */
+[data-theme="dark"] #treeGenModal .modal-footer {
+  background-color: var(--bg-surface) !important;
+  border-top: 1px solid var(--border-subtle) !important;
+}
+
+/* 취소 버튼 */
+[data-theme="dark"] #treeGenModal .btn-secondary {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] #treeGenModal .btn-secondary:hover {
+  background-color: var(--bg-hover) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+/* 생성 버튼 - 모노크롬 */
+[data-theme="dark"] #treeGenModal .btn-primary,
+[data-theme="dark"] #treeGenModal #generateTreeBtn2 {
+  background: transparent !important;
+  border: 1px solid #3a3a3a !important;
+  color: #888888 !important;
+}
+
+[data-theme="dark"] #treeGenModal .btn-primary:hover,
+[data-theme="dark"] #treeGenModal #generateTreeBtn2:hover {
+  background: transparent !important;
+  border-color: #fff !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 완료 상태 - 인라인 스타일 오버라이드 */
+[data-theme="dark"] #treeGenModal .step-item[style*="color: rgb(76, 175, 80)"] {
+  color: var(--accent-success) !important;
+}
+
+[data-theme="dark"] #treeGenModal #genStatusMessage[style*="color: rgb(76, 175, 80)"] {
+  color: var(--accent-success) !important;
+}
+
+/* ============================================
+   마인드맵 검색 UI 다크모드 스타일
+   ============================================ */
+
+/* 검색 컨테이너 다크모드 */
+[data-theme="dark"] .mindmap-search-container {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .mindmap-search-container:focus-within {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 검색 아이콘 다크모드 */
+[data-theme="dark"] .mindmap-search-container .search-icon {
+  color: var(--text-tertiary);
+}
+
+/* 검색 입력란 다크모드 */
+[data-theme="dark"] .mindmap-search-input {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+[data-theme="dark"] .mindmap-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* 검색 버튼 다크모드 */
+[data-theme="dark"] .mindmap-search-btn {
+  background: var(--accent-blue);
+  color: white;
+}
+
+[data-theme="dark"] .mindmap-search-btn:hover {
+  background: #2563eb;
+}
+
+/* 초기화 버튼 다크모드 */
+[data-theme="dark"] .mindmap-search-clear-btn {
+  background: var(--accent-danger);
+}
+
+[data-theme="dark"] .mindmap-search-clear-btn:hover {
+  background: #dc2626;
+}
+
+/* 검색 결과 카운트 다크모드 */
+[data-theme="dark"] .search-result-count {
+  color: var(--accent-success);
+}
+
+[data-theme="dark"] .search-result-count.no-results {
+  color: var(--accent-danger);
+}
+
+/* 노드 검색 하이라이트 다크모드 */
+[data-theme="dark"] .mindmap-node.search-highlight {
+  border: 3px solid #fbbf24 !important;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4) !important;
+}
+
+/* 콘텐츠 매칭 표시 아이콘 다크모드 */
+[data-theme="dark"] .mindmap-node.search-highlight.match-content::after {
+  background: var(--bg-secondary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* 에디터 내 검색어 하이라이트 다크모드 */
+[data-theme="dark"] .search-keyword-highlight {
+  background-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fcd34d !important;
+}
+
+[data-theme="dark"] .search-keyword-highlight.current {
+  background-color: rgba(251, 191, 36, 0.5) !important;
+  color: #fef3c7 !important;
+}
+
+[data-theme="dark"] .toastui-editor-contents .search-keyword-highlight {
+  background-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fcd34d !important;
+}
+
+/* 툴바 구분선 다크모드 */
+[data-theme="dark"] .toolbar-divider {
+  background: var(--border-primary);
+}
+
+/* 응답 패널 질문 입력 필드 - 다크모드 글씨 색상 강제 적용 */
+[data-theme="dark"] #promptInput {
+  color: #ffffff !important;
+  background-color: #1a1a1a !important;
+  border-color: #3a3a3a !important;
+}
+
+[data-theme="dark"] #promptInput::placeholder {
+  color: #888888 !important;
+}
+
+[data-theme="dark"] .input-area {
+  background-color: #111111 !important;
+  border-top-color: #3a3a3a !important;
+}
+
+/* 모델 기능 정보 표시 바 - 다크모드 */
+[data-theme="dark"] .model-capabilities-bar {
+  background: linear-gradient(135deg, #1a2a3a 0%, #0a1520 100%);
+  border-bottom-color: #2a4a6a;
+}
+
+[data-theme="dark"] .capabilities-label {
+  color: #8ab4d8;
+}
+
+[data-theme="dark"] .capabilities-icons {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .capabilities-icons:hover {
+  background-color: rgba(100, 180, 255, 0.2);
+}
+
+[data-theme="dark"] .capabilities-separator {
+  color: #2a4a6a;
+}
+
+[data-theme="dark"] .capabilities-desc {
+  color: #6ab0e8;
+}
+
+/* ============================================
+   전역 버튼 테두리 스타일 - 다크 모드
+   - 모든 버튼에 흰색 테두리 적용
+   - 선택/활성 시 더 밝은 흰색 + 굵기 증가
+   ============================================ */
+
+/* 모든 버튼 기본 테두리 - 다크 모드 (흰색) */
+[data-theme="dark"] button,
+[data-theme="dark"] .btn,
+[data-theme="dark"] [type="button"],
+[data-theme="dark"] [type="submit"],
+[data-theme="dark"] [type="reset"],
+[data-theme="dark"] .level-btn,
+[data-theme="dark"] .tab-btn {
+  border: 1px solid #fff !important;
+}
+
+/* 버튼 호버 - 다크 모드 */
+[data-theme="dark"] button:hover,
+[data-theme="dark"] .btn:hover,
+[data-theme="dark"] [type="button"]:hover,
+[data-theme="dark"] [type="submit"]:hover,
+[data-theme="dark"] .level-btn:hover,
+[data-theme="dark"] .tab-btn:hover {
+  border-color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+/* 버튼 활성화 시 원위치 - 다크 모드 */
+[data-theme="dark"] button:active,
+[data-theme="dark"] .btn:active,
+[data-theme="dark"] [type="button"]:active,
+[data-theme="dark"] [type="submit"]:active,
+[data-theme="dark"] .level-btn:active,
+[data-theme="dark"] .tab-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* 버튼 선택/활성 상태 강조 - 다크 모드 */
+[data-theme="dark"] button.active,
+[data-theme="dark"] button.selected,
+[data-theme="dark"] button:focus,
+[data-theme="dark"] .btn.active,
+[data-theme="dark"] .btn.selected,
+[data-theme="dark"] .level-btn.active,
+[data-theme="dark"] .tab-btn.active {
+  border-width: 2px !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Settings 좌측 메뉴 (nav-item) - 다크 모드 */
+/* 비선택: btn-reset 스타일, 선택: 비선택과 같은 두께(1px) */
+[data-theme="dark"] .nav-item {
+  border: 1px solid #3a3a3a !important;
+}
+
+[data-theme="dark"] .nav-item:hover {
+  border-color: #555 !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .nav-item.active {
+  border-width: 1px !important;
+  border-color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* 비활성화된 버튼 - 다크 모드 */
+[data-theme="dark"] button:disabled,
+[data-theme="dark"] .btn:disabled,
+[data-theme="dark"] [type="button"]:disabled {
+  border-color: #666 !important;
+  opacity: 0.5;
+}
+
+/* ===== 테마 토글 버튼 ===== */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0 !important;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* 다크 모드 테마 토글 버튼 */
+[data-theme="dark"] .theme-toggle-btn {
+  background: transparent;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover {
+  background-color: #1a1a1a;
+  border-color: #555;
+}
+
+/* ============================================
+   루트 노드 위 필터 리스트 - 다크모드
+   ============================================ */
+
+/* 필터 리스트 컨테이너 - 바 없음 */
+[data-theme="dark"] .node-filter-list {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* 필터 아이템 - 다크모드 */
+[data-theme="dark"] .filter-item {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 필터 아이템 호버 */
+[data-theme="dark"] .filter-item:hover {
+  background-color: #2a2a2a;
+  border-color: #555;
+}
+
+/* 체크된 상태 */
+[data-theme="dark"] .filter-item.checked,
+[data-theme="dark"] .filter-item:has(input:checked) {
+  background-color: rgba(59, 130, 246, 0.25);
+  border-color: #3b82f6;
+}
+
+/* 필터명 */
+[data-theme="dark"] .filter-name {
+  color: #e0e0e0;
+}
+
+/* 색상 표시 테두리 */
+[data-theme="dark"] .filter-color {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 전체 버튼 체크 시 */
+[data-theme="dark"] .filter-item-all.checked,
+[data-theme="dark"] .filter-item-all:has(input:checked) {
+  background-color: rgba(34, 197, 94, 0.25);
+  border-color: #22c55e;
+}
+
+/* ============================================
+   컨텍스트 메뉴 서브메뉴 - 다크모드
+   ============================================ */
+
+[data-theme="dark"] .context-submenu {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .submenu-filter-item:hover {
+  background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .filter-label {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .context-menu-item.has-submenu .menu-arrow {
+  color: #888;
+}
+
+/* ===== 노드 로딩 오버레이 (다크 테마) ===== */
+[data-theme="dark"] .node-loading-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .node-loading-bar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .node-loading-text {
+  color: rgba(255, 255, 255, 0.85);
+}

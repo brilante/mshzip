@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OAuth 토큰 생성기 | OAuth Token Generator</title>
+  <link rel="stylesheet" href="oauth-token-gen.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>OAuth 토큰 생성기</h1>
+      <p>JWT 토큰을 생성하고 디코딩하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('generate')" aria-label="토큰 생성">토큰 생성</button>
+        <button class="tab" onclick="showTab('decode')" aria-label="토큰 디코딩">토큰 디코딩</button>
+      </div>
+
+      <div class="tab-content" id="tab-generate">
+        <div class="form-section">
+          <h3>Header</h3>
+          <textarea id="jwtHeader">{
+  "alg": "HS256",
+  "typ": "JWT"
+}</textarea>
+
+          <h3>Payload</h3>
+          <textarea id="jwtPayload">{
+  "sub": "1234567890",
+  "name": "홍길동",
+  "email": "hong@example.com",
+  "role": "admin",
+  "iat": 1768263631,
+  "exp": 1768267231
+}</textarea>
+
+          <div class="form-group">
+            <label>Secret Key</label>
+            <input type="text" id="secretKey" value="your-256-bit-secret">
+          </div>
+
+          <button onclick="generateJWT()" aria-label="JWT 생성">JWT 생성</button>
+        </div>
+
+        <div class="result-section">
+          <h3>생성된 JWT</h3>
+          <div class="jwt-output" id="jwtOutput">
+            <span class="jwt-header"></span>.<span class="jwt-payload"></span>.<span class="jwt-signature"></span>
+          </div>
+          <button onclick="copyJWT()" aria-label="복사">복사</button>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" id="tab-decode">
+        <div class="form-section">
+          <h3>JWT 토큰 입력</h3>
+          <textarea id="decodeInput" placeholder="JWT 토큰을 붙여넣으세요..."></textarea>
+          <button onclick="decodeJWT()" aria-label="디코딩">디코딩</button>
+        </div>
+
+        <div class="decode-result" id="decodeResult">
+          <div class="decode-section">
+            <h4>Header</h4>
+            <pre id="decodedHeader"></pre>
+          </div>
+          <div class="decode-section">
+            <h4>Payload</h4>
+            <pre id="decodedPayload"></pre>
+          </div>
+          <div class="decode-section">
+            <h4>토큰 정보</h4>
+            <div id="tokenInfo"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="oauth-token-gen.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

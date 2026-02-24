@@ -1,0 +1,84 @@
+        <section id="content-payment" class="content-section">
+          <h2 class="section-title" data-i18n="paymentInfoTitle"><span data-icon="credit-card" data-icon-size="16"></span> 결제정보</h2>
+          <p class="section-description" data-i18n="paymentInfoDescription">크레딧 잔액 및 결제 수단을 관리합니다.</p>
+
+          <!-- 크레딧 잔액 현황 (v6.7) -->
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="creditBalanceTitle"><span data-icon="dollar-sign" data-icon-size="16"></span> 크레딧 잔액 현황</h3>
+
+            <!-- 구독 크레딧 섹션 (구독자만 표시) -->
+            <div id="subscriptionCreditsSection" class="credit-section" style="display: none;">
+              <div class="credit-section-header">
+                <span class="credit-icon" data-icon="package" data-icon-size="18"></span>
+                <span class="credit-type-label" id="subscriptionCreditsLabel" data-i18n="subscriptionCredits">구독 크레딧</span>
+              </div>
+              <div class="credit-detail-row">
+                <span class="credit-detail-label" data-i18n="monthlyRemainingLabel">이번달 남은 크레딧</span>
+                <span class="credit-detail-value" id="monthlyRemainingCredits">0 크레딧</span>
+              </div>
+              <div class="credit-detail-row">
+                <span class="credit-detail-label" data-i18n="dailyAvailableLabel">오늘 사용 가능</span>
+                <span class="credit-detail-value" id="dailyRemainingCredits">0 크레딧</span>
+              </div>
+              <div class="credit-detail-row">
+                <span class="credit-detail-label" data-i18n="expiryLabel">만료일</span>
+                <span class="credit-detail-value" id="subscriptionExpiryDate">-</span>
+              </div>
+            </div>
+
+            <!-- 일반 크레딧 섹션 (단독 구매 크레딧 보유시만 표시) -->
+            <div id="paidCreditsSection" class="credit-section" style="display: none;">
+              <div class="credit-section-header">
+                <span class="credit-icon" data-icon="credit-card" data-icon-size="18"></span>
+                <span class="credit-type-label" data-i18n="paidCredits">일반 크레딧</span>
+              </div>
+              <div class="credit-detail-row">
+                <span class="credit-detail-label" data-i18n="balanceLabel">보유 크레딧</span>
+                <span class="credit-detail-value" id="paidCreditsBalance">0 크레딧</span>
+              </div>
+              <div class="credit-detail-row">
+                <span class="credit-detail-label" data-i18n="expiryLabel">만료일</span>
+                <span class="credit-detail-value" id="paidExpiryDate">-</span>
+              </div>
+            </div>
+
+            <!-- 크레딧 없음 메시지 -->
+            <div id="noCreditsSection" class="credit-section" style="display: none;">
+              <div class="no-credits-message" data-i18n="noCreditsMessage">보유한 크레딧이 없습니다.</div>
+            </div>
+
+            <!-- 총 잔액 -->
+            <div class="credit-total-row">
+              <span class="credit-total-label" data-i18n="totalBalanceLabel">총 잔액</span>
+              <span class="credit-balance">0 <span data-i18n="credits">크레딧</span></span>
+            </div>
+
+            <div class="setting-item" style="margin-top: 16px;">
+              <div class="setting-label">
+                <label data-i18n="lastChargeLabel">마지막 충전일</label>
+                <p class="setting-description" data-i18n="lastChargeDesc">가장 최근 크레딧 충전 날짜</p>
+              </div>
+              <div class="setting-control">
+                <span class="info-text last-charge-date">-</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 결제 내역 -->
+          <div class="setting-group">
+            <h3 class="group-title" data-i18n="paymentHistoryTitle"><span data-icon="clipboard" data-icon-size="16"></span> 결제 내역</h3>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label data-i18n="viewPaymentHistoryLabel">충전 및 구독 내역 조회</label>
+                <p class="setting-description" data-i18n="viewPaymentHistoryDesc">과거 크레딧 충전 및 구독 결제 내역을 확인합니다</p>
+              </div>
+              <div class="setting-control">
+                <button class="btn-secondary" id="viewHistoryBtn" data-i18n="viewPaymentHistoryBtn"><span data-icon="clipboard" data-icon-size="14"></span> 내역 보기</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2025-12-10: 결제 수단 관리 섹션 삭제 (사용 안함) -->
+        </section>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개인정보처리방침 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="privacy-policy-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">개인정보처리방침 생성기</h1>
+      <p class="tool-description">웹사이트용 개인정보처리방침을 생성합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="form-section">
+        <h3 class="section-title">정보 입력</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>서비스/회사명</label>
+            <input type="text" id="companyName" class="form-input" placeholder="회사명" aria-label="회사명">
+          </div>
+          <div class="form-group">
+            <label>담당자 연락처</label>
+            <input type="email" id="contactEmail" class="form-input" placeholder="privacy@example.com" aria-label="privacy@example.com">
+          </div>
+          <div class="form-group full-width">
+            <label>수집하는 개인정보 (선택)</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" id="collectName" checked> 이름</label>
+              <label><input type="checkbox" id="collectEmail" checked> 이메일</label>
+              <label><input type="checkbox" id="collectPhone"> 연락처</label>
+              <label><input type="checkbox" id="collectAddress"> 주소</label>
+              <label><input type="checkbox" id="collectBirthdate"> 생년월일</label>
+              <label><input type="checkbox" id="collectPayment"> 결제정보</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>개인정보 보유기간</label>
+            <select id="retentionPeriod" class="form-input">
+              <option value="1년">1년</option>
+              <option value="2년">2년</option>
+              <option value="3년" selected>3년</option>
+              <option value="5년">5년</option>
+              <option value="회원 탈퇴 시까지">회원 탈퇴 시까지</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>쿠키 사용</label>
+            <select id="useCookies" class="form-input">
+              <option value="yes">예</option>
+              <option value="no">아니오</option>
+            </select>
+          </div>
+        </div>
+        <button class="generate-btn" onclick="PrivacyGen.generate()" aria-label="개인정보처리방침 생성">개인정보처리방침 생성</button>
+      </div>
+
+      <div class="preview-section">
+        <h3 class="section-title">미리보기</h3>
+        <div class="document-preview" id="preview"></div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="PrivacyGen.copyText()" aria-label="복사">복사</button>
+          <button class="export-btn secondary" onclick="PrivacyGen.downloadTxt()" aria-label="다운로드">다운로드</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="privacy-policy-gen.js"></script>
+</body>
+</html>

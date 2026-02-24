@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시험 D-Day - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 550px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .exam-card { background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 16px; padding: 1.5rem; color: white; margin-bottom: 1rem; }
+    .exam-name { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .exam-date { font-size: 0.9rem; opacity: 0.9; }
+    .exam-dday { font-size: 3rem; font-weight: 700; text-align: center; margin: 1rem 0; }
+    .exam-time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align: center; }
+    .time-box { background: rgba(255,255,255,0.2); padding: 0.75rem; border-radius: 8px; }
+    .time-value { font-size: 1.5rem; font-weight: 700; }
+    .time-label { font-size: 0.7rem; opacity: 0.8; }
+    .exam-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .exam-actions button { flex: 1; padding: 0.5rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; }
+    .btn-edit { background: rgba(255,255,255,0.2); color: white; }
+    .btn-delete { background: rgba(239, 68, 68, 0.8); color: white; }
+    .add-form { margin-bottom: 1rem; }
+    .input-group { margin-bottom: 0.75rem; }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block; }
+    .exam-empty { text-align: center; padding: 3rem; color: var(--text-secondary); }
+    .motivation { background: var(--bg-primary); padding: 1rem; border-radius: 8px; text-align: center; font-style: italic; margin-top: 1rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">시험 D-Day</h1>
+          <p class="tool-description">시험 일정 카운트다운</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel add-form">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">시험 추가</h3>
+        <div class="input-group">
+          <label class="input-label">시험명</label>
+          <input type="text" id="examName" class="tool-input" placeholder="예: 중간고사, 토익, 수능..." aria-label="예: 중간고사, 토익, 수능...">
+        </div>
+        <div class="input-group">
+          <label class="input-label">시험 날짜</label>
+          <input type="datetime-local" id="examDate" class="tool-input">
+        </div>
+        <button class="tool-btn tool-btn-primary" onclick="ExamCountdown.addExam()" style="width: 100%;" aria-label="추가하기">추가하기</button>
+      </div>
+
+      <div id="examList">
+        <div class="exam-empty">등록된 시험이 없습니다</div>
+      </div>
+
+      <div class="motivation" id="motivationQuote"></div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="exam-countdown.js"></script>
+</body>
+</html>

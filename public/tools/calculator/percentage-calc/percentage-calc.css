@@ -1,0 +1,85 @@
+/**
+ * 퍼센트 계산기 스타일
+ * @created 2026-01-12
+ */
+
+/* 계산 카드 */
+.calc-card {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+.calc-title { font-size: 16px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 4px; }
+.calc-description { font-size: 13px; color: var(--text-secondary, #666); margin-bottom: 16px; }
+
+/* 계산 행 */
+.calc-row {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 12px;
+}
+.calc-row.result-row { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color, #e9ecef); }
+.calc-text { font-size: 14px; color: var(--text-secondary, #666); white-space: nowrap; }
+.result-label { font-size: 14px; font-weight: 600; color: var(--text-primary, #333); }
+
+/* 입력 필드 */
+.calc-input {
+  flex: 1; min-width: 80px; padding: 12px 14px;
+  font-size: 16px; text-align: center;
+  border: 2px solid var(--border-color, #e9ecef); border-radius: 10px;
+  background: var(--bg-secondary, #f8f9fa); color: var(--text-primary, #333);
+  transition: border-color 0.2s;
+}
+.calc-input:focus { outline: none; border-color: var(--primary-color, #667eea); }
+.calc-input.small { max-width: 80px; }
+
+.calc-select {
+  padding: 12px 14px; font-size: 14px;
+  border: 2px solid var(--border-color, #e9ecef); border-radius: 10px;
+  background: var(--bg-secondary, #f8f9fa); color: var(--text-primary, #333);
+  cursor: pointer;
+}
+.calc-select:focus { outline: none; border-color: var(--primary-color, #667eea); }
+
+/* 결과 필드 */
+.calc-result {
+  flex: 1; min-width: 100px; padding: 12px 14px;
+  font-size: 18px; font-weight: 600; text-align: center;
+  border: 2px solid var(--primary-color, #667eea); border-radius: 10px;
+  background: rgba(102, 126, 234, 0.1); color: var(--primary-color, #667eea);
+  cursor: pointer; transition: all 0.2s;
+}
+.calc-result:hover { background: rgba(102, 126, 234, 0.2); }
+.calc-result.large { flex: 2; }
+.calc-result.positive { color: #27ae60; border-color: #27ae60; background: rgba(39, 174, 96, 0.1); }
+.calc-result.negative { color: #e74c3c; border-color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+
+/* 계산 버튼 */
+.calc-btn {
+  width: 100%; padding: 12px; font-size: 15px; font-weight: 600;
+  background: var(--primary-color, #667eea); color: white;
+  border: none; border-radius: 10px; cursor: pointer;
+  transition: background 0.2s;
+}
+.calc-btn:hover { background: #5a6fd6; }
+
+/* 도움말 */
+.tool-help { padding: 18px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px; border-left: 4px solid var(--primary-color, #667eea); }
+.help-title { font-size: 15px; font-weight: 600; color: var(--text-primary, #333); margin-bottom: 10px; }
+.help-content { font-size: 13px; color: var(--text-secondary, #666); line-height: 1.8; }
+.help-content p { margin: 4px 0; }
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .calc-row { flex-direction: column; align-items: stretch; }
+  .calc-input, .calc-input.small, .calc-result { max-width: none; width: 100%; }
+  .calc-text { text-align: center; }
+}
+
+/* 다크 모드 (data-theme 선택자로 통일) */
+[data-theme="dark"] .calc-card { background: #1e1e1e; border-color: #404040; }
+[data-theme="dark"] .calc-title { color: #e0e0e0; }
+[data-theme="dark"] .calc-input, [data-theme="dark"] .calc-select { background: #252525; border-color: #404040; color: #e0e0e0; }
+[data-theme="dark"] .calc-result { background: rgba(102, 126, 234, 0.15); }
+[data-theme="dark"] .calc-row.result-row { border-color: #404040; }
+[data-theme="dark"] .tool-help { background: #252525; }
+[data-theme="dark"] .help-title { color: #e0e0e0; }

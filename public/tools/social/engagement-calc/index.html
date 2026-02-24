@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인게이지먼트 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .engagement-container { max-width: 900px; margin: 0 auto; }
+    .engagement-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .platform-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .platform-tab { padding: 0.75rem 1.5rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .platform-tab:hover { border-color: var(--primary); }
+    .platform-tab.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .input-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .input-group { }
+    .input-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: block; }
+    .result-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 2rem; text-align: center; color: white; margin-top: 1.5rem; display: none; }
+    .result-rate { font-size: 4rem; font-weight: 800; line-height: 1; }
+    .result-label { font-size: 1rem; opacity: 0.9; margin-top: 0.5rem; }
+    .result-badge { display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 20px; margin-top: 1rem; font-size: 0.9rem; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; }
+    .metric-card { background: var(--bg-primary); border-radius: 10px; padding: 1rem; text-align: center; }
+    .metric-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .metric-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .benchmark-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    .benchmark-list { display: grid; gap: 0.75rem; }
+    .benchmark-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: var(--bg-primary); border-radius: 10px; }
+    .benchmark-bar { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .benchmark-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+    .benchmark-fill.low { background: #ef4444; }
+    .benchmark-fill.avg { background: #f59e0b; }
+    .benchmark-fill.good { background: #22c55e; }
+    .benchmark-fill.excellent { background: #3b82f6; }
+    .benchmark-label { font-size: 0.85rem; min-width: 100px; }
+    .benchmark-value { font-size: 0.85rem; color: var(--text-secondary); min-width: 60px; text-align: right; }
+    .tips-section { margin-top: 2rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.05); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .tip-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .tip-item:last-child { margin-bottom: 0; }
+    @media (max-width: 600px) {
+      .input-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">인게이지먼트 계산기</h1>
+          <p class="tool-description">SNS 인게이지먼트율 계산 및 분석</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="engagement-container">
+      <div class="engagement-panel">
+        <div class="section-title">플랫폼 선택</div>
+        <div class="platform-tabs">
+          <div class="platform-tab active" data-platform="instagram" onclick="EngagementCalc.selectPlatform('instagram')">
+            Instagram
+          </div>
+          <div class="platform-tab" data-platform="tiktok" onclick="EngagementCalc.selectPlatform('tiktok')">
+            TikTok
+          </div>
+          <div class="platform-tab" data-platform="twitter" onclick="EngagementCalc.selectPlatform('twitter')">
+            Twitter
+          </div>
+          <div class="platform-tab" data-platform="youtube" onclick="EngagementCalc.selectPlatform('youtube')">
+            YouTube
+          </div>
+        </div>
+
+        <div class="section-title">데이터 입력</div>
+        <div class="input-grid">
+          <div class="input-group">
+            <label class="input-label">팔로워 수</label>
+            <input type="number" id="followers" class="tool-input" placeholder="예: 10000" value="10000" aria-label="예: 10000">
+          </div>
+          <div class="input-group">
+            <label class="input-label">좋아요 수</label>
+            <input type="number" id="likes" class="tool-input" placeholder="예: 500" value="500" aria-label="예: 500">
+          </div>
+          <div class="input-group">
+            <label class="input-label">댓글 수</label>
+            <input type="number" id="comments" class="tool-input" placeholder="예: 30" value="30" aria-label="예: 30">
+          </div>
+          <div class="input-group">
+            <label class="input-label">공유/저장 수</label>
+            <input type="number" id="shares" class="tool-input" placeholder="예: 20" value="20" aria-label="예: 20">
+          </div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" style="width: 100%;" onclick="EngagementCalc.calculate()" aria-label="인게이지먼트율 계산">
+          인게이지먼트율 계산
+        </button>
+
+        <div class="result-card" id="resultCard">
+          <div class="result-rate" id="resultRate">0.00%</div>
+          <div class="result-label">인게이지먼트율</div>
+          <div class="result-badge" id="resultBadge">평균 수준</div>
+        </div>
+
+        <div class="metrics-grid" id="metricsGrid" style="display: none;">
+          <div class="metric-card">
+            <div class="metric-value" id="likeRate">0%</div>
+            <div class="metric-label">좋아요율</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="commentRate">0%</div>
+            <div class="metric-label">댓글율</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="shareRate">0%</div>
+            <div class="metric-label">공유율</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="totalEngagement">0</div>
+            <div class="metric-label">총 인게이지먼트</div>
+          </div>
+        </div>
+
+        <div class="benchmark-section">
+          <div class="section-title">업계 벤치마크 비교</div>
+          <div class="benchmark-list" id="benchmarkList"></div>
+        </div>
+
+        <div class="tips-section">
+          <div class="section-title">인게이지먼트 향상 팁</div>
+          <div class="tip-item">
+            <span></span>
+            <span>질문으로 끝나는 캡션으로 댓글을 유도하세요</span>
+          </div>
+          <div class="tip-item">
+            <span></span>
+            <span>최적의 시간대 (오전 9-11시, 오후 7-9시)에 게시하세요</span>
+          </div>
+          <div class="tip-item">
+            <span></span>
+            <span>스토리와 릴스를 활용해 노출을 높이세요</span>
+          </div>
+          <div class="tip-item">
+            <span></span>
+            <span>댓글에 빠르게 답변하여 대화를 이어가세요</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="engagement-calc.js"></script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+/**
+ * PDF 잠금 해제 도구 스타일
+ */
+
+.tool-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* 업로드 영역 */
+.upload-dropzone {
+  border: 2px dashed var(--tools-border);
+  border-radius: var(--tools-radius);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--tools-bg-secondary);
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  border-color: var(--tools-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.dropzone-text {
+  font-size: 16px;
+  color: var(--tools-text);
+  margin-bottom: 8px;
+}
+
+.dropzone-hint {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 잠금 해제 섹션 */
+.unlock-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+}
+
+/* 파일 정보 */
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--tools-bg);
+  border-radius: var(--tools-radius);
+  border: 1px solid var(--tools-border);
+  margin-bottom: 20px;
+}
+
+.file-icon {
+  font-size: 32px;
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--tools-text);
+  margin-bottom: 4px;
+}
+
+.file-meta {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+.file-remove {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--tools-text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.file-remove:hover {
+  background: var(--tools-error);
+  color: white;
+}
+
+/* 비밀번호 섹션 */
+.password-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tools-text);
+  margin-bottom: 12px;
+}
+
+.password-input-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.password-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  transition: border-color 0.2s;
+}
+
+.password-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.password-toggle {
+  width: 48px;
+  border: 2px solid var(--tools-border);
+  background: var(--tools-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.password-toggle:hover {
+  border-color: var(--tools-primary);
+  background: var(--tools-bg-secondary);
+}
+
+.password-hint {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+  margin: 0;
+}
+
+/* 잠금 해제 버튼 */
+.unlock-btn {
+  width: 100%;
+}
+
+/* 에러 섹션 */
+.error-section {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--tools-error);
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.error-message {
+  color: var(--tools-error);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* 결과 섹션 */
+.result-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.result-info {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--tools-text-secondary);
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* 도움말 */
+.tool-help {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 버튼 스타일 */
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--tools-border);
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: var(--tools-bg-secondary);
+}
+
+.tool-btn-primary {
+  background: var(--tools-primary);
+  border-color: var(--tools-primary);
+  color: white;
+}
+
+.tool-btn-primary:hover {
+  background: var(--tools-primary-dark);
+}
+
+.tool-btn-lg {
+  padding: 14px 28px;
+  font-size: 16px;
+}
+
+/* 로딩 */
+.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.loading::after {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

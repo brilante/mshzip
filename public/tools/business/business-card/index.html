@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>명함 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .card-layout { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .preview-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; margin-top: 1.5rem; }
+    .section-title:first-child { margin-top: 0; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .template-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .template-option { display: none; }
+    .template-label { display: block; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.85rem; }
+    .template-option:checked + .template-label { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .color-row { display: flex; gap: 1rem; }
+    .color-picker { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+    .color-picker input[type="color"] { width: 36px; height: 36px; border: none; border-radius: 8px; cursor: pointer; }
+    .card-preview-area { perspective: 1000px; margin: 2rem 0; }
+    .card-flipper { width: 350px; height: 200px; position: relative; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+    .card-flipper.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+    .card-back { transform: rotateY(180deg); }
+    .flip-hint { font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    @media (max-width: 900px) { .card-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">명함 생성</h1>
+          <p class="tool-description">디지털 명함 디자인</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="card-layout">
+      <div class="form-panel">
+        <div class="section-title">템플릿</div>
+        <div class="template-options">
+          <div>
+            <input type="radio" name="cardTemplate" id="tplClassic" value="classic" class="template-option" checked onchange="BusinessCard.updatePreview()">
+            <label for="tplClassic" class="template-label">클래식</label>
+          </div>
+          <div>
+            <input type="radio" name="cardTemplate" id="tplModern" value="modern" class="template-option" onchange="BusinessCard.updatePreview()">
+            <label for="tplModern" class="template-label">모던</label>
+          </div>
+          <div>
+            <input type="radio" name="cardTemplate" id="tplMinimal" value="minimal" class="template-option" onchange="BusinessCard.updatePreview()">
+            <label for="tplMinimal" class="template-label">미니멀</label>
+          </div>
+          <div>
+            <input type="radio" name="cardTemplate" id="tplBold" value="bold" class="template-option" onchange="BusinessCard.updatePreview()">
+            <label for="tplBold" class="template-label">볼드</label>
+          </div>
+        </div>
+
+        <div class="control-group" style="margin-top: 1rem;">
+          <label>색상</label>
+          <div class="color-row">
+            <div class="color-picker">
+              <input type="color" id="cardColor" value="#3b82f6" onchange="BusinessCard.updatePreview()">
+              <span>메인</span>
+            </div>
+            <div class="color-picker">
+              <input type="color" id="cardSecondaryColor" value="#1d4ed8" onchange="BusinessCard.updatePreview()">
+              <span>보조</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">기본 정보</div>
+        <div class="control-group">
+          <input type="text" id="cardName" class="tool-input" placeholder="이름" oninput="BusinessCard.updatePreview()" aria-label="이름">
+        </div>
+        <div class="row-2">
+          <input type="text" id="cardTitle" class="tool-input" placeholder="직책" oninput="BusinessCard.updatePreview()" aria-label="직책">
+          <input type="text" id="cardCompany" class="tool-input" placeholder="회사명" oninput="BusinessCard.updatePreview()" aria-label="회사명">
+        </div>
+
+        <div class="section-title">연락처</div>
+        <div class="row-2">
+          <input type="email" id="cardEmail" class="tool-input" placeholder="이메일" oninput="BusinessCard.updatePreview()" aria-label="이메일">
+          <input type="tel" id="cardPhone" class="tool-input" placeholder="전화번호" oninput="BusinessCard.updatePreview()" aria-label="전화번호">
+        </div>
+        <div class="control-group">
+          <input type="url" id="cardWebsite" class="tool-input" placeholder="웹사이트" oninput="BusinessCard.updatePreview()" aria-label="웹사이트">
+        </div>
+        <div class="control-group">
+          <input type="text" id="cardAddress" class="tool-input" placeholder="주소" oninput="BusinessCard.updatePreview()" aria-label="주소">
+        </div>
+        <div class="control-group">
+          <input type="url" id="cardLogo" class="tool-input" placeholder="로고 이미지 URL" oninput="BusinessCard.updatePreview()" aria-label="로고 이미지 URL">
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-title">미리보기</div>
+        <div class="card-preview-area">
+          <div class="card-flipper" onclick="BusinessCard.flipCard()">
+            <div class="card-front" id="cardFront"></div>
+            <div class="card-back" id="cardBack"></div>
+          </div>
+        </div>
+        <div class="flip-hint">클릭하여 뒤집기</div>
+
+        <div class="btn-row">
+          <button class="tool-btn tool-btn-secondary" onclick="BusinessCard.flipCard()" aria-label="뒤집기">뒤집기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="business-card.js"></script>
+</body>
+</html>

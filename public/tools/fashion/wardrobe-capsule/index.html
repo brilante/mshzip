@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>캡슐 옷장 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .season-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .season-tab { padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 0.9rem; }
+    .season-tab.active { background: var(--primary); color: white; }
+    .category-section { margin: 1rem 0; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px 8px 0 0; }
+    .category-name { font-weight: 600; }
+    .category-count { font-size: 0.85rem; color: var(--text-secondary); }
+    .item-list { background: var(--bg-primary); border-radius: 0 0 8px 8px; padding: 0.5rem; }
+    .item-row { display: flex; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--border); align-items: center; }
+    .item-row:last-child { border-bottom: none; }
+    .item-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .item-check.checked { background: #22c55e; border-color: #22c55e; color: white; }
+    .item-name { flex: 1; font-size: 0.9rem; }
+    .item-essential { font-size: 0.7rem; padding: 0.2rem 0.4rem; background: #fef3c7; color: #92400e; border-radius: 4px; }
+    .stats-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
+    .stat-box { background: var(--bg-primary); padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .progress-circle { width: 100px; height: 100px; margin: 0 auto 1rem; position: relative; }
+    .progress-circle svg { transform: rotate(-90deg); }
+    .progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.25rem; font-weight: 700; }
+    .add-item-form { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .add-item-form input { flex: 1; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">캡슐 옷장</h1>
+          <p class="tool-description">미니멀 옷장 체크리스트</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="season-tabs">
+        <div class="season-tab active" data-season="spring" onclick="Capsule.setSeason('spring')">봄</div>
+        <div class="season-tab" data-season="summer" onclick="Capsule.setSeason('summer')">여름</div>
+        <div class="season-tab" data-season="autumn" onclick="Capsule.setSeason('autumn')">가을</div>
+        <div class="season-tab" data-season="winter" onclick="Capsule.setSeason('winter')">겨울</div>
+      </div>
+
+      <div class="util-panel" style="text-align: center;">
+        <div class="progress-circle">
+          <svg width="100" height="100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-secondary)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" stroke-width="8" stroke-linecap="round" id="progressRing" stroke-dasharray="283" stroke-dashoffset="283"/>
+          </svg>
+          <div class="progress-text" id="progressText">0%</div>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">캡슐 옷장 완성도</p>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-box">
+          <div class="stat-value" id="totalItems">0</div>
+          <div class="stat-label">전체 아이템</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="ownedItems">0</div>
+          <div class="stat-label">보유 아이템</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="neededItems">0</div>
+          <div class="stat-label">필요 아이템</div>
+        </div>
+      </div>
+
+      <div id="categoryList">
+        <!-- 동적으로 생성됨 -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="wardrobe-capsule.js"></script>
+</body>
+</html>

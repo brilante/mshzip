@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>장보기 목록 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .cooking-container { max-width: 600px; margin: 0 auto; }
+    .cooking-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .add-item { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .category-section { background: var(--bg-primary); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--bg-secondary); }
+    .category-title { font-weight: 600; }
+    .category-count { font-size: 0.8rem; color: var(--text-secondary); }
+    .grocery-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 6px; }
+    .grocery-item:hover { background: var(--bg-secondary); }
+    .grocery-item.checked { opacity: 0.5; }
+    .grocery-item.checked .item-name { text-decoration: line-through; }
+    .item-checkbox { width: 20px; height: 20px; cursor: pointer; }
+    .item-name { flex: 1; }
+    .item-qty { font-size: 0.85rem; color: var(--text-secondary); }
+    .item-delete { background: none; border: none; cursor: pointer; opacity: 0.5; }
+    .summary-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 1rem; }
+    .progress-text { font-size: 0.9rem; }
+    .progress-bar { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; margin: 0 1rem; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">장보기 목록</h1>
+          <p class="tool-description">쇼핑 목록 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="cooking-container">
+      <div class="cooking-panel">
+        <div class="add-item">
+          <input type="text" id="itemName" class="tool-input" placeholder="품목 이름" style="flex: 1;" aria-label="품목 이름">
+          <input type="text" id="itemQty" class="tool-input" placeholder="수량" style="width: 80px;" aria-label="수량">
+          <select id="itemCategory" class="tool-input" style="width: 100px;">
+            <option value="produce">채소/과일</option>
+            <option value="meat">육류</option>
+            <option value="seafood">해산물</option>
+            <option value="dairy">유제품</option>
+            <option value="grain">곡류</option>
+            <option value="sauce">양념/소스</option>
+            <option value="frozen">냉동식품</option>
+            <option value="other">기타</option>
+          </select>
+          <button class="tool-btn tool-btn-primary" onclick="GroceryList.addItem()" aria-label="추가">추가</button>
+        </div>
+
+        <div class="summary-bar">
+          <span class="progress-text"><span id="checkedCount">0</span>/<span id="totalCount">0</span></span>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <span class="progress-text" id="progressPercent">0%</span>
+        </div>
+
+        <div id="groceryList"></div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="tool-btn tool-btn-secondary" onclick="GroceryList.clearChecked()" style="flex: 1;" aria-label="체크 항목 삭제">체크 항목 삭제</button>
+          <button class="tool-btn tool-btn-secondary" onclick="GroceryList.clearAll()" style="flex: 1;" aria-label="전체 삭제">전체 삭제</button>
+          <button class="tool-btn tool-btn-primary" onclick="GroceryList.exportList()" style="flex: 1;" aria-label="목록 복사">목록 복사</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="grocery-list.js"></script>
+</body>
+</html>

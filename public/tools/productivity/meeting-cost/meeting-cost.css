@@ -1,0 +1,455 @@
+/**
+ * 회의 비용 계산기 스타일
+ */
+
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* 섹션 카드 */
+.section-card {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+/* 참석자 목록 */
+.attendees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.attendee-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--tools-bg);
+  border-radius: 8px;
+}
+
+.attendee-role {
+  flex: 1;
+}
+
+.attendee-role input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+.attendee-wage {
+  width: 120px;
+}
+
+.attendee-wage input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: right;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+.attendee-wage-label {
+  font-size: 11px;
+  color: var(--tools-text-secondary);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.attendee-remove {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--tools-text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.attendee-remove:hover {
+  background: var(--tools-error);
+  color: white;
+}
+
+.add-attendee-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--tools-border);
+  background: transparent;
+  border-radius: 8px;
+  color: var(--tools-text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.add-attendee-btn:hover {
+  border-color: var(--tools-primary);
+  color: var(--tools-primary);
+}
+
+/* 시간 입력 */
+.time-input {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.time-group {
+  flex: 1;
+}
+
+.time-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--tools-text-secondary);
+  margin-bottom: 4px;
+}
+
+.quick-times {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-time-btn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--tools-border);
+  background: var(--tools-bg);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--tools-text);
+}
+
+.quick-time-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+.quick-time-btn.active {
+  background: var(--tools-primary);
+  border-color: var(--tools-primary);
+  color: white;
+}
+
+/* 폼 */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--tools-text);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-with-unit input {
+  flex: 1;
+}
+
+.unit {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+  min-width: 20px;
+}
+
+/* 결과 영역 */
+.result-section {
+  position: sticky;
+  top: 20px;
+}
+
+.total-cost-card {
+  background: linear-gradient(135deg, var(--tools-primary) 0%, #8b5cf6 100%);
+  border-radius: var(--tools-radius);
+  padding: 32px;
+  text-align: center;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.total-label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.total-value {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.total-subtext {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* 비용 분석 */
+.cost-breakdown {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.breakdown-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--tools-border);
+}
+
+.breakdown-item:last-child {
+  border-bottom: none;
+}
+
+.breakdown-label {
+  font-size: 14px;
+  color: var(--tools-text-secondary);
+}
+
+.breakdown-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tools-text);
+}
+
+/* 인사이트 */
+.insights {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.insights-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.insight-item {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+  line-height: 1.6;
+}
+
+.insight-item strong {
+  color: var(--tools-primary);
+}
+
+/* 실시간 카운터 */
+.live-counter {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  text-align: center;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.counter-label {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.counter-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #10b981;
+  font-family: 'Consolas', monospace;
+  margin-bottom: 8px;
+}
+
+.counter-elapsed {
+  font-size: 24px;
+  font-family: 'Consolas', monospace;
+  opacity: 0.8;
+  margin-bottom: 16px;
+}
+
+.counter-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.counter-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.counter-btn.start {
+  background: #10b981;
+  color: white;
+}
+
+.counter-btn.start:hover {
+  background: #059669;
+}
+
+.counter-btn.stop {
+  background: #ef4444;
+  color: white;
+}
+
+.counter-btn.stop:hover {
+  background: #dc2626;
+}
+
+.counter-btn.reset {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.counter-btn.reset:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.toggle-counter-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--tools-border);
+  background: var(--tools-bg);
+  border-radius: 8px;
+  color: var(--tools-text);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.toggle-counter-btn:hover {
+  background: var(--tools-bg-secondary);
+}
+
+/* 도움말 */
+.tool-help {
+  margin-top: 20px;
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 16px;
+}
+
+.help-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tools-text);
+}
+
+.help-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .result-section {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .attendee-row {
+    flex-wrap: wrap;
+  }
+
+  .attendee-role {
+    flex: 1 1 100%;
+    order: 1;
+  }
+
+  .attendee-wage {
+    flex: 1;
+    order: 2;
+  }
+
+  .attendee-remove {
+    order: 3;
+  }
+
+  .time-input {
+    flex-direction: row;
+  }
+
+  .quick-times {
+    flex-wrap: wrap;
+  }
+
+  .quick-time-btn {
+    flex: 1 1 45%;
+  }
+}

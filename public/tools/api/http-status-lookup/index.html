@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP 상태 코드 조회 | HTTP Status Lookup</title>
+  <link rel="stylesheet" href="http-status-lookup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>HTTP 상태 코드 조회</h1>
+      <p>HTTP 상태 코드의 의미를 확인하세요</p>
+    </header>
+
+    <div class="main-content">
+      <div class="search-section">
+        <input type="text" id="searchInput" placeholder="상태 코드 검색 (예: 404, Not Found)" oninput="filterCodes()" aria-label="상태 코드 검색 (예: 404, Not Found)">
+      </div>
+
+      <div class="category-filters">
+        <button class="filter-btn active" data-category="all" onclick="filterByCategory('all')" aria-label="전체">전체</button>
+        <button class="filter-btn info" data-category="1xx" onclick="filterByCategory('1xx')" aria-label="1xx 정보">1xx 정보</button>
+        <button class="filter-btn success" data-category="2xx" onclick="filterByCategory('2xx')" aria-label="2xx 성공">2xx 성공</button>
+        <button class="filter-btn redirect" data-category="3xx" onclick="filterByCategory('3xx')" aria-label="3xx 리다이렉트">3xx 리다이렉트</button>
+        <button class="filter-btn client-error" data-category="4xx" onclick="filterByCategory('4xx')" aria-label="4xx 클라이언트 오류">4xx 클라이언트 오류</button>
+        <button class="filter-btn server-error" data-category="5xx" onclick="filterByCategory('5xx')" aria-label="5xx 서버 오류">5xx 서버 오류</button>
+      </div>
+
+      <div class="codes-list" id="codesList">
+        <!-- 상태 코드 목록이 여기에 표시됩니다 -->
+      </div>
+    </div>
+  </div>
+  <script src="http-status-lookup.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

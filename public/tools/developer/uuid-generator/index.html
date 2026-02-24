@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="uuid-generator.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon">🆔</div>
+        <div>
+          <h1 class="tool-title">UUID 생성기</h1>
+          <p class="tool-description">UUID/GUID 생성 및 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">
+          ← 뒤로
+        </button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 옵션 -->
+    <div class="tool-options">
+      <div class="tool-option">
+        <label for="uuidCount">생성 개수:</label>
+        <select id="uuidCount">
+          <option value="1" selected>1개</option>
+          <option value="5">5개</option>
+          <option value="10">10개</option>
+          <option value="20">20개</option>
+          <option value="50">50개</option>
+          <option value="100">100개</option>
+        </select>
+      </div>
+      <div class="tool-option">
+        <label for="uuidVersion">버전:</label>
+        <select id="uuidVersion">
+          <option value="4" selected>v4 (랜덤)</option>
+          <option value="1">v1 (시간 기반)</option>
+        </select>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="uppercase"> 대문자
+        </label>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="noHyphens"> 하이픈 제거
+        </label>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="addBraces"> 중괄호 추가
+        </label>
+      </div>
+    </div>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel uuid-panel">
+      <!-- 생성 버튼 -->
+      <div class="generate-section">
+        <button class="tool-btn tool-btn-primary generate-btn" onclick="UuidGenerator.generate()" aria-label="UUID 생성">
+          UUID 생성
+        </button>
+        <button class="tool-btn tool-btn-secondary" onclick="UuidGenerator.clear()" aria-label="초기화">
+          초기화
+        </button>
+      </div>
+
+      <!-- 결과 패널 -->
+      <div class="output-panel">
+        <div class="panel-header">
+          <div class="panel-title">생성된 UUID</div>
+          <div class="panel-actions">
+            <button class="tool-btn tool-btn-sm" onclick="UuidGenerator.copyAll()" aria-label="전체 복사">
+              전체 복사
+            </button>
+            <button class="tool-btn tool-btn-sm" onclick="UuidGenerator.download()" aria-label="다운로드">
+              다운로드
+            </button>
+          </div>
+        </div>
+        <div id="uuidOutput" class="uuid-output">
+          <div class="uuid-placeholder">UUID 생성 버튼을 클릭하세요</div>
+        </div>
+      </div>
+
+      <!-- 검증 패널 -->
+      <div class="validate-section">
+        <div class="panel-title">UUID 검증</div>
+        <div class="validate-input-wrapper">
+          <input
+            type="text"
+            id="validateInput"
+            class="validate-input"
+            placeholder="검증할 UUID를 입력하세요..."
+            oninput="UuidGenerator.validate()"
+           aria-label="검증할 UUID를 입력하세요...">
+          <span id="validateResult" class="validate-result"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="tool-stats" id="uuidStats">
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statTotal">0</div>
+        <div class="tool-stat-label">생성된 UUID</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statVersion">v4</div>
+        <div class="tool-stat-label">버전</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statFormat">표준</div>
+        <div class="tool-stat-label">포맷</div>
+      </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="tool-help">
+      <div class="help-title">UUID란?</div>
+      <div class="help-content">
+        <p><strong>UUID (Universally Unique Identifier)</strong>는 128비트 고유 식별자입니다.</p>
+        <ul>
+          <li><strong>v1</strong>: 시간 + MAC 주소 기반 (순서 보장)</li>
+          <li><strong>v4</strong>: 완전 랜덤 (가장 많이 사용)</li>
+        </ul>
+        <p>표준 형식: <code>xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx</code></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="uuid-generator.js"></script>
+</body>
+</html>

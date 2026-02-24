@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>행 번호 추가 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">행 번호 추가</h1>
+          <p class="tool-description">각 줄에 번호 추가/제거</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 옵션 -->
+    <div class="tool-options">
+      <div class="tool-option">
+        <label for="mode">모드:</label>
+        <select id="mode">
+          <option value="add">번호 추가</option>
+          <option value="remove">번호 제거</option>
+        </select>
+      </div>
+      <div class="tool-option">
+        <label for="startNumber">시작 번호:</label>
+        <input type="number" id="startNumber" value="1" min="0" style="width: 80px;">
+      </div>
+      <div class="tool-option">
+        <label for="separator">구분자:</label>
+        <select id="separator">
+          <option value=". ">. (점+공백)</option>
+          <option value=": ">: (콜론+공백)</option>
+          <option value=") ">) (괄호+공백)</option>
+          <option value="\t">탭</option>
+          <option value="  ">공백 2개</option>
+          <option value="custom">직접 입력</option>
+        </select>
+      </div>
+      <div class="tool-option" id="customSeparatorContainer" style="display: none;">
+        <label for="customSeparator">직접 입력:</label>
+        <input type="text" id="customSeparator" placeholder="예: | " style="width: 100px;" aria-label="예: | ">
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="padNumbers"> 자릿수 맞춤 (001, 002...)
+        </label>
+      </div>
+      <div class="tool-option">
+        <label>
+          <input type="checkbox" id="skipEmpty"> 빈 줄 건너뛰기
+        </label>
+      </div>
+    </div>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel">
+      <!-- 입력 패널 -->
+      <div class="input-panel">
+        <div class="panel-title">입력 텍스트</div>
+        <textarea
+          id="textInput"
+          class="tool-textarea"
+          placeholder="행 번호를 추가할 텍스트를 입력하세요...&#10;&#10;예시:&#10;첫 번째 줄&#10;두 번째 줄&#10;세 번째 줄"
+          spellcheck="false"
+          oninput="LineNumber.liveProcess()"
+        ></textarea>
+        <div class="tool-actions">
+          <label class="tool-btn tool-btn-secondary" style="cursor: pointer;">
+            파일 선택
+            <input type="file" accept=".txt,.md,.csv,.js,.html,.css" style="display: none;" onchange="LineNumber.loadFile(this)">
+          </label>
+          <button class="tool-btn tool-btn-primary" onclick="LineNumber.process()" aria-label="번호 추가 →">
+            번호 추가 →
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="LineNumber.clear()" aria-label="초기화">
+            초기화
+          </button>
+        </div>
+      </div>
+
+      <!-- 출력 패널 -->
+      <div class="output-panel" style="position: relative;">
+        <div class="panel-title">결과</div>
+        <button class="copy-btn" onclick="LineNumber.copyOutput()" aria-label="복사">복사</button>
+        <textarea
+          id="textOutput"
+          class="tool-textarea"
+          placeholder="처리 결과가 여기에 표시됩니다..."
+          spellcheck="false"
+          readonly
+        ></textarea>
+        <div class="tool-actions">
+          <button class="tool-btn tool-btn-secondary" onclick="LineNumber.download()" aria-label="다운로드">
+            다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="tool-stats">
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statLines">0</div>
+        <div class="tool-stat-label">총 줄 수</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statNumbered">0</div>
+        <div class="tool-stat-label">번호 부여됨</div>
+      </div>
+      <div class="tool-stat">
+        <div class="tool-stat-value" id="statSkipped">0</div>
+        <div class="tool-stat-label">건너뜀</div>
+      </div>
+    </div>
+
+    <!-- 미리보기 형식 -->
+    <div class="input-panel" style="margin-top: 16px;">
+      <div class="panel-title">출력 형식 미리보기</div>
+      <div id="formatPreview" style="font-family: monospace; font-size: 14px; color: var(--tools-text-secondary); padding: 12px; background: var(--tools-bg-secondary); border-radius: 6px;">
+        1. 첫 번째 줄<br>
+        2. 두 번째 줄<br>
+        3. 세 번째 줄
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="line-number.js"></script>
+</body>
+</html>

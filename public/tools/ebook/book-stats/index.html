@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도서 통계 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 800px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .stat-card { background: var(--bg-primary); border-radius: 12px; padding: 1rem; text-align: center; }
+    .stat-card-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .stat-card-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-card-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .freq-bar { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .freq-word { width: 100px; font-size: 0.85rem; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .freq-fill { height: 20px; background: var(--primary); border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.5rem; color: white; font-size: 0.75rem; min-width: 30px; }
+    .readability-meter { height: 30px; background: linear-gradient(to right, #22c55e, #f59e0b, #ef4444); border-radius: 8px; position: relative; margin: 1rem 0; }
+    .readability-marker { position: absolute; top: -8px; width: 4px; height: 46px; background: #1f2937; transform: translateX(-50%); }
+    .readability-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); }
+    .detail-table { width: 100%; border-collapse: collapse; }
+    .detail-table th, .detail-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .detail-table th { font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">도서 통계</h1>
+          <p class="tool-description">텍스트 분석 및 통계</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">텍스트 입력</h3>
+        <textarea id="textInput" class="tool-input" rows="8" placeholder="분석할 텍스트를 입력하세요..."></textarea>
+        <button class="tool-btn tool-btn-primary" onclick="BookStats.analyze()" style="width: 100%; margin-top: 0.5rem;" aria-label="분석하기">분석하기</button>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">기본 통계</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="charCount">0</div>
+            <div class="stat-card-label">글자 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="wordCount">0</div>
+            <div class="stat-card-label">단어 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="sentenceCount">0</div>
+            <div class="stat-card-label">문장 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="paragraphCount">0</div>
+            <div class="stat-card-label">문단 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="pageCount">0</div>
+            <div class="stat-card-label">페이지 (A4)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"></div>
+            <div class="stat-card-value" id="readTime">0분</div>
+            <div class="stat-card-label">읽기 시간</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">가독성 점수</h3>
+        <div class="readability-meter">
+          <div class="readability-marker" id="readabilityMarker" style="left: 50%;"></div>
+        </div>
+        <div class="readability-labels">
+          <span>쉬움</span>
+          <span>보통</span>
+          <span>어려움</span>
+        </div>
+        <div style="text-align: center; margin-top: 0.75rem;">
+          <span style="font-size: 1.25rem; font-weight: 700;" id="readabilityScore">-</span>
+          <span style="font-size: 0.85rem; color: var(--text-secondary);" id="readabilityDesc"></span>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">자주 사용된 단어 (Top 10)</h3>
+        <div id="freqWords">
+          <div style="text-align: center; color: var(--text-secondary); padding: 1rem;">텍스트를 분석하면 표시됩니다</div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">상세 분석</h3>
+        <table class="detail-table">
+          <tr>
+            <th>항목</th>
+            <th>값</th>
+          </tr>
+          <tr>
+            <td>평균 문장 길이</td>
+            <td id="avgSentence">-</td>
+          </tr>
+          <tr>
+            <td>평균 단어 길이</td>
+            <td id="avgWord">-</td>
+          </tr>
+          <tr>
+            <td>최장 문장</td>
+            <td id="longestSentence">-</td>
+          </tr>
+          <tr>
+            <td>고유 단어 수</td>
+            <td id="uniqueWords">-</td>
+          </tr>
+          <tr>
+            <td>어휘 다양성</td>
+            <td id="lexicalDiversity">-</td>
+          </tr>
+          <tr>
+            <td>한글 비율</td>
+            <td id="koreanRatio">-</td>
+          </tr>
+          <tr>
+            <td>영문 비율</td>
+            <td id="englishRatio">-</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="book-stats.js"></script>
+</body>
+</html>

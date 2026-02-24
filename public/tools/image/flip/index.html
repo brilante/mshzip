@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이미지 뒤집기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .flip-controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .flip-btn {
+      padding: 16px 32px;
+      background: var(--tools-card-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      color: var(--tools-text);
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 140px;
+    }
+    .flip-btn:hover {
+      background: var(--tools-primary);
+      color: white;
+      border-color: var(--tools-primary);
+    }
+    .flip-btn .icon {
+      font-size: 32px;
+    }
+    .preview-container {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .preview-box {
+      text-align: center;
+    }
+    .preview-label {
+      font-size: 14px;
+      color: var(--tools-text-secondary);
+      margin-bottom: 8px;
+    }
+    .preview-image {
+      max-width: 400px;
+      max-height: 400px;
+      background: var(--tools-card-bg);
+      border: 1px solid var(--tools-border);
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-image img {
+      max-width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+    }
+    .preview-info {
+      font-size: 12px;
+      color: var(--tools-text-secondary);
+      margin-top: 8px;
+    }
+    .upload-dropzone {
+      border: 2px dashed var(--tools-border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--tools-card-bg);
+    }
+    .upload-dropzone:hover,
+    .upload-dropzone.dragover {
+      border-color: var(--tools-primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .dropzone-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .dropzone-text {
+      font-size: 16px;
+      color: var(--tools-text);
+      margin-bottom: 8px;
+    }
+    .dropzone-hint {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .flip-status {
+      font-size: 13px;
+      color: var(--tools-text-secondary);
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon">↔</div>
+        <div>
+          <h1 class="tool-title">이미지 뒤집기</h1>
+          <p class="tool-description">이미지를 좌우 또는 상하로 뒤집기</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 메인 패널 -->
+    <div class="tool-panel">
+      <!-- 파일 업로드 -->
+      <div class="upload-section" id="uploadSection">
+        <div class="upload-dropzone" id="dropzone">
+          <div class="dropzone-icon"></div>
+          <div class="dropzone-text">이미지를 드래그하거나 클릭하여 선택</div>
+          <div class="dropzone-hint">PNG, JPG, WebP, GIF 지원</div>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <!-- 뒤집기 컨트롤 -->
+      <div id="controlSection" style="display: none;">
+        <div class="flip-controls">
+          <button class="flip-btn" onclick="ImageFlip.flipHorizontal()">
+            <span class="icon">↔</span>
+            <span>좌우 뒤집기</span>
+          </button>
+          <button class="flip-btn" onclick="ImageFlip.flipVertical()">
+            <span class="icon">↕</span>
+            <span>상하 뒤집기</span>
+          </button>
+          <button class="flip-btn" onclick="ImageFlip.flipBoth()">
+            <span class="icon">⤡</span>
+            <span>양방향 뒤집기</span>
+          </button>
+        </div>
+        <div class="flip-status" id="flipStatus">뒤집기 상태: 없음</div>
+
+        <!-- 미리보기 -->
+        <div class="preview-container">
+          <div class="preview-box">
+            <div class="preview-label">원본</div>
+            <div class="preview-image">
+              <img id="originalImage" src="" alt="원본">
+            </div>
+            <div class="preview-info" id="originalInfo"></div>
+          </div>
+          <div class="preview-box">
+            <div class="preview-label">결과</div>
+            <div class="preview-image">
+              <img id="flippedImage" src="" alt="결과">
+            </div>
+            <div class="preview-info" id="flippedInfo"></div>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="action-buttons">
+          <button class="tool-btn tool-btn-primary" onclick="ImageFlip.download()">
+            다운로드
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="ImageFlip.reset()">
+            ↩초기화
+          </button>
+          <button class="tool-btn tool-btn-danger" onclick="ImageFlip.clear()">
+            새 이미지
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="tool-help">
+      <div class="help-title">이미지 뒤집기 안내</div>
+      <div class="help-content">
+        <ul>
+          <li><strong>좌우 뒤집기</strong>: 거울에 비친 것처럼 좌우 반전</li>
+          <li><strong>상하 뒤집기</strong>: 위아래를 뒤집어 반전</li>
+          <li><strong>양방향 뒤집기</strong>: 좌우 + 상하 동시 뒤집기 (180° 회전과 동일)</li>
+          <li>뒤집기는 토글 방식입니다. 같은 버튼을 다시 클릭하면 원래대로</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="image-flip.js"></script>
+</body>
+</html>

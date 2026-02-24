@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경비 추적 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .expense-layout { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .main-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+    .stats-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .list-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; flex: 1; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--bg-primary); border-radius: 10px; padding: 1rem; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+    .chart-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .chart-label { width: 80px; font-size: 0.85rem; }
+    .chart-bar-bg { flex: 1; height: 20px; background: var(--bg-primary); border-radius: 10px; overflow: hidden; }
+    .chart-bar { height: 100%; background: var(--primary); border-radius: 10px; }
+    .chart-value { width: 120px; font-size: 0.8rem; text-align: right; }
+    .filter-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+    .filter-row select { flex: 1; }
+    .expense-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.5rem; }
+    .expense-icon { font-size: 1.5rem; }
+    .expense-info { flex: 1; }
+    .expense-desc { font-weight: 500; }
+    .expense-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 0.75rem; }
+    .expense-note { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .expense-amount { font-size: 1rem; font-weight: 600; color: var(--primary); }
+    .delete-btn { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--text-secondary); opacity: 0.5; }
+    .delete-btn:hover { opacity: 1; color: var(--error); }
+    .empty-state { text-align: center; color: var(--text-secondary); padding: 2rem; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    @media (max-width: 900px) { .expense-layout { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">경비 추적</h1>
+          <p class="tool-description">비즈니스 경비 관리</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="expense-layout">
+      <div class="form-panel">
+        <div class="section-title">경비 추가</div>
+        <div class="control-group">
+          <label>설명 *</label>
+          <input type="text" id="expenseDesc" class="tool-input" placeholder="택시비, 점심 식사 등" aria-label="택시비, 점심 식사 등">
+        </div>
+        <div class="row-2">
+          <div class="control-group">
+            <label>금액 *</label>
+            <input type="number" id="expenseAmount" class="tool-input" placeholder="0" aria-label="0">
+          </div>
+          <div class="control-group">
+            <label>날짜 *</label>
+            <input type="date" id="expenseDate" class="tool-input">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>카테고리</label>
+          <select id="expenseCategory" class="tool-input">
+            <option value="transport">교통비</option>
+            <option value="meal">식비</option>
+            <option value="supplies">사무용품</option>
+            <option value="software">소프트웨어</option>
+            <option value="accommodation">숙박비</option>
+            <option value="entertainment">접대비</option>
+            <option value="communication">통신비</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>메모</label>
+          <input type="text" id="expenseNote" class="tool-input" placeholder="추가 메모..." aria-label="추가 메모...">
+        </div>
+        <button class="tool-btn tool-btn-primary" style="width:100%" onclick="ExpenseTracker.addExpense()" aria-label="+ 경비 추가">+ 경비 추가</button>
+      </div>
+
+      <div class="main-panel">
+        <div class="stats-panel">
+          <div class="section-title">이번 달 통계</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="monthlyTotal">₩0</div>
+              <div class="stat-label">이번 달 합계</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="expenseCount">0건</div>
+              <div class="stat-label">경비 건수</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="totalExpenses">₩0</div>
+              <div class="stat-label">전체 합계</div>
+            </div>
+          </div>
+          <div class="section-title">카테고리별</div>
+          <div id="categoryChart"></div>
+        </div>
+
+        <div class="list-panel">
+          <div class="header-row">
+            <div class="section-title" style="margin:0">경비 내역</div>
+            <div style="display:flex;gap:0.5rem">
+              <button class="tool-btn tool-btn-secondary" onclick="ExpenseTracker.exportCSV()" aria-label="CSV">CSV</button>
+              <button class="tool-btn tool-btn-secondary" onclick="ExpenseTracker.clearAll()" aria-label="전체 삭제">전체 삭제</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <select id="filterCategory" class="tool-input" onchange="ExpenseTracker.renderExpenses()">
+              <option value="all">전체 카테고리</option>
+              <option value="transport">교통비</option>
+              <option value="meal">식비</option>
+              <option value="supplies">사무용품</option>
+              <option value="software">소프트웨어</option>
+              <option value="accommodation">숙박비</option>
+              <option value="entertainment">접대비</option>
+              <option value="communication">통신비</option>
+              <option value="other">기타</option>
+            </select>
+            <input type="month" id="filterMonth" class="tool-input" onchange="ExpenseTracker.renderExpenses()">
+          </div>
+          <div id="expensesList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="expense-tracker.js"></script>
+</body>
+</html>

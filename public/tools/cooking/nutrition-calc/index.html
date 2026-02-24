@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영양소 계산기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .cooking-container { max-width: 700px; margin: 0 auto; }
+    .cooking-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .food-search { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .food-list { background: var(--bg-primary); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; max-height: 200px; overflow-y: auto; }
+    .food-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-radius: 6px; cursor: pointer; }
+    .food-item:hover { background: var(--bg-secondary); }
+    .selected-foods { background: var(--bg-primary); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+    .selected-item { display: grid; grid-template-columns: 1fr 80px 40px; gap: 0.5rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--bg-secondary); }
+    .selected-item:last-child { border-bottom: none; }
+    .nutrition-summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; color: white; }
+    .nutrition-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
+    .nutrition-value { font-size: 1.5rem; font-weight: 700; }
+    .nutrition-label { font-size: 0.75rem; opacity: 0.9; }
+    .nutrition-bar { height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; margin-top: 0.25rem; overflow: hidden; }
+    .nutrition-fill { height: 100%; background: white; border-radius: 4px; }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">영양소 계산기</h1>
+          <p class="tool-description">식품별 영양소 계산</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="cooking-container">
+      <div class="cooking-panel">
+        <div class="food-search">
+          <input type="text" id="searchInput" class="tool-input" placeholder="음식 검색 (예: 밥, 계란, 닭가슴살)" oninput="NutritionCalc.search()" aria-label="음식 검색 (예: 밥, 계란, 닭가슴살)">
+        </div>
+
+        <div class="food-list" id="foodList">
+          <div style="text-align: center; color: var(--text-secondary);">음식을 검색하세요</div>
+        </div>
+
+        <div class="selected-foods">
+          <h3 style="font-weight: 600; margin-bottom: 0.75rem;">선택한 음식</h3>
+          <div id="selectedFoods">
+            <div style="text-align: center; color: var(--text-secondary); padding: 0.5rem;">음식을 추가하세요</div>
+          </div>
+        </div>
+
+        <div class="nutrition-summary">
+          <h3 style="font-weight: 600; margin-bottom: 1rem;">총 영양소</h3>
+          <div class="nutrition-grid">
+            <div>
+              <div class="nutrition-value" id="totalCalories">0</div>
+              <div class="nutrition-label">칼로리 (kcal)</div>
+              <div class="nutrition-bar"><div class="nutrition-fill" id="calBar" style="width: 0%"></div></div>
+            </div>
+            <div>
+              <div class="nutrition-value" id="totalCarbs">0</div>
+              <div class="nutrition-label">탄수화물 (g)</div>
+              <div class="nutrition-bar"><div class="nutrition-fill" id="carbBar" style="width: 0%"></div></div>
+            </div>
+            <div>
+              <div class="nutrition-value" id="totalProtein">0</div>
+              <div class="nutrition-label">단백질 (g)</div>
+              <div class="nutrition-bar"><div class="nutrition-fill" id="proteinBar" style="width: 0%"></div></div>
+            </div>
+            <div>
+              <div class="nutrition-value" id="totalFat">0</div>
+              <div class="nutrition-label">지방 (g)</div>
+              <div class="nutrition-bar"><div class="nutrition-fill" id="fatBar" style="width: 0%"></div></div>
+            </div>
+          </div>
+          <div style="margin-top: 1rem; font-size: 0.75rem; opacity: 0.8; text-align: center;">
+            일일 권장량 기준: 칼로리 2000kcal, 탄수화물 300g, 단백질 60g, 지방 65g
+          </div>
+        </div>
+
+        <button class="tool-btn tool-btn-secondary" onclick="NutritionCalc.clearAll()" style="width: 100%; margin-top: 1rem;" aria-label="초기화">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="nutrition-calc.js"></script>
+</body>
+</html>

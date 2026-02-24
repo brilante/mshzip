@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜덤 생성기 - 유틸리티</title>
+    <link rel="stylesheet" href="random-generator.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>랜덤 생성기</h1>
+            <p>다양한 랜덤 값을 쉽게 생성하세요</p>
+        </header>
+
+        <div class="generators">
+            <div class="gen-card">
+                <h3>숫자</h3>
+                <div class="gen-form">
+                    <input type="number" id="numMin" value="1" placeholder="최소" aria-label="최소">
+                    <span>~</span>
+                    <input type="number" id="numMax" value="100" placeholder="최대" aria-label="최대">
+                    <input type="number" id="numCount" value="1" placeholder="개수" min="1" max="100" aria-label="개수">
+                </div>
+                <button onclick="generateNumbers()" aria-label="생성">생성</button>
+                <div class="result" id="numResult">-</div>
+            </div>
+
+            <div class="gen-card">
+                <h3>비밀번호</h3>
+                <div class="gen-form">
+                    <input type="number" id="pwLength" value="16" min="4" max="64">
+                    <label><input type="checkbox" id="pwUpper" checked> 대문자</label>
+                    <label><input type="checkbox" id="pwLower" checked> 소문자</label>
+                    <label><input type="checkbox" id="pwNumber" checked> 숫자</label>
+                    <label><input type="checkbox" id="pwSymbol" checked> 특수문자</label>
+                </div>
+                <button onclick="generatePassword()" aria-label="생성">생성</button>
+                <div class="result mono" id="pwResult">-</div>
+            </div>
+
+            <div class="gen-card">
+                <h3>UUID</h3>
+                <button onclick="generateUUID()" aria-label="생성">생성</button>
+                <div class="result mono" id="uuidResult">-</div>
+            </div>
+
+            <div class="gen-card">
+                <h3>색상</h3>
+                <button onclick="generateColor()" aria-label="생성">생성</button>
+                <div class="color-result">
+                    <div id="colorPreview" class="color-preview"></div>
+                    <div class="result mono" id="colorResult">-</div>
+                </div>
+            </div>
+
+            <div class="gen-card">
+                <h3>동전 던지기</h3>
+                <button onclick="flipCoin()" aria-label="던지기">던지기</button>
+                <div class="result coin" id="coinResult"></div>
+            </div>
+
+            <div class="gen-card">
+                <h3>주사위</h3>
+                <select id="diceType">
+                    <option value="6">6면체</option>
+                    <option value="4">4면체</option>
+                    <option value="8">8면체</option>
+                    <option value="10">10면체</option>
+                    <option value="12">12면체</option>
+                    <option value="20">20면체</option>
+                </select>
+                <input type="number" id="diceCount" value="1" min="1" max="10">
+                <button onclick="rollDice()" aria-label="굴리기">굴리기</button>
+                <div class="result" id="diceResult"></div>
+            </div>
+        </div>
+    </div>
+    <script src="random-generator.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

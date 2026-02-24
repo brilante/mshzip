@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포모도로 타이머 - 학습 도구</title>
+    <link rel="stylesheet" href="pomodoro-timer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>포모도로 타이머</h1>
+            <p>25분 집중, 5분 휴식으로 생산성을 높이세요</p>
+        </header>
+
+        <div class="timer-card">
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-mode="work" aria-label="집중">집중</button>
+                <button class="mode-tab" data-mode="short" aria-label="짧은 휴식">짧은 휴식</button>
+                <button class="mode-tab" data-mode="long" aria-label="긴 휴식">긴 휴식</button>
+            </div>
+
+            <div class="timer-display">
+                <svg class="progress-ring" viewBox="0 0 200 200">
+                    <circle class="progress-ring-bg" cx="100" cy="100" r="90"/>
+                    <circle class="progress-ring-circle" cx="100" cy="100" r="90"/>
+                </svg>
+                <div class="timer-text">
+                    <span id="minutes">25</span>:<span id="seconds">00</span>
+                </div>
+            </div>
+
+            <div class="timer-controls">
+                <button id="startBtn" class="btn-primary" aria-label="시작">시작</button>
+                <button id="resetBtn" class="btn-secondary" aria-label="리셋">리셋</button>
+            </div>
+
+            <div class="session-info">
+                <span>완료한 세션: <strong id="sessionCount">0</strong></span>
+                <span>오늘 집중 시간: <strong id="totalTime">0분</strong></span>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h3>설정</h3>
+            <div class="setting-row">
+                <label>집중 시간 (분)</label>
+                <input type="number" id="workTime" value="25" min="1" max="60">
+            </div>
+            <div class="setting-row">
+                <label>짧은 휴식 (분)</label>
+                <input type="number" id="shortBreak" value="5" min="1" max="30">
+            </div>
+            <div class="setting-row">
+                <label>긴 휴식 (분)</label>
+                <input type="number" id="longBreak" value="15" min="1" max="60">
+            </div>
+            <div class="setting-row">
+                <label>긴 휴식까지 세션 수</label>
+                <input type="number" id="sessionsUntilLong" value="4" min="2" max="10">
+            </div>
+            <div class="setting-row">
+                <label>
+                    <input type="checkbox" id="autoStart" checked>
+                    자동 시작
+                </label>
+            </div>
+            <div class="setting-row">
+                <label>
+                    <input type="checkbox" id="soundEnabled" checked>
+                    알림 소리
+                </label>
+            </div>
+        </div>
+
+        <div class="tasks-card">
+            <h3>오늘의 할 일</h3>
+            <div class="task-input">
+                <input type="text" id="newTask" placeholder="할 일을 입력하세요" aria-label="할 일을 입력하세요">
+                <button id="addTask" aria-label="추가">추가</button>
+            </div>
+            <div id="taskList"></div>
+        </div>
+    </div>
+    <script src="pomodoro-timer.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>폰트 조합 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="font-pairing.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">폰트 조합</h1>
+          <p class="tool-description">어울리는 폰트 조합을 찾아보세요</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <!-- 폰트 선택 -->
+    <div class="font-selectors">
+      <div class="font-selector">
+        <label>제목 폰트</label>
+        <select id="headingFont" onchange="FontPairing.updatePreview()"></select>
+      </div>
+      <div class="font-selector">
+        <label>본문 폰트</label>
+        <select id="bodyFont" onchange="FontPairing.updatePreview()"></select>
+      </div>
+      <button class="tool-btn tool-btn-primary" onclick="FontPairing.randomPair()" aria-label="랜덤 조합">
+        랜덤 조합
+      </button>
+    </div>
+
+    <!-- 추천 조합 -->
+    <div class="pairing-section">
+      <div class="section-title">추천 조합</div>
+      <div class="pairing-grid" id="pairingGrid"></div>
+    </div>
+
+    <!-- 프리뷰 -->
+    <div class="preview-section">
+      <div class="section-title">미리보기</div>
+      <div class="preview-controls">
+        <div class="control-group">
+          <label>제목 크기</label>
+          <input type="range" id="headingSize" min="24" max="72" value="48" onchange="FontPairing.updatePreview()">
+          <span id="headingSizeValue">48px</span>
+        </div>
+        <div class="control-group">
+          <label>본문 크기</label>
+          <input type="range" id="bodySize" min="12" max="24" value="16" onchange="FontPairing.updatePreview()">
+          <span id="bodySizeValue">16px</span>
+        </div>
+        <div class="control-group">
+          <label>줄 간격</label>
+          <input type="range" id="lineHeight" min="1" max="2.5" step="0.1" value="1.6" onchange="FontPairing.updatePreview()">
+          <span id="lineHeightValue">1.6</span>
+        </div>
+      </div>
+
+      <div class="preview-card" id="previewCard">
+        <h1 class="preview-heading">멋진 제목이 여기에</h1>
+        <p class="preview-body">
+          본문 텍스트는 여기에 표시됩니다. 좋은 폰트 조합은 가독성과 미적 균형을 모두 만족시켜야 합니다.
+          제목 폰트는 시선을 끌고, 본문 폰트는 읽기 편해야 합니다.
+          다양한 조합을 시도해보고 프로젝트에 맞는 최적의 조합을 찾아보세요.
+        </p>
+        <h2 class="preview-subheading">부제목 스타일</h2>
+        <p class="preview-body">
+          부제목은 보통 제목과 같은 폰트를 사용하지만, 크기와 굵기를 조절하여 계층 구조를 만듭니다.
+          일관된 타이포그래피는 전문적인 느낌을 줍니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 코드 출력 -->
+    <div class="code-section">
+      <div class="section-title">CSS 코드</div>
+      <div class="code-output" style="position: relative;">
+        <button class="copy-btn" onclick="FontPairing.copyCode()" aria-label="복사">복사</button>
+        <pre id="cssCode"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="font-pairing.js"></script>
+</body>
+</html>

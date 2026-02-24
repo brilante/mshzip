@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>투자 수익률 계산기 - JEOGI Tools</title>
+  <link rel="stylesheet" href="investment-roi.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>투자 수익률 계산기</h1>
+      <p class="subtitle">ROI, 복리 수익률, 연환산 수익률을 계산합니다</p>
+    </header>
+
+    <main class="main-content">
+      <section class="tabs">
+        <button class="tab-btn active" data-tab="roi" aria-label="ROI 계산">ROI 계산</button>
+        <button class="tab-btn" data-tab="compound" aria-label="복리 계산">복리 계산</button>
+        <button class="tab-btn" data-tab="cagr" aria-label="CAGR 계산">CAGR 계산</button>
+      </section>
+
+      <section class="tab-content" id="roiTab">
+        <div class="input-grid">
+          <div class="input-group">
+            <label>초기 투자금</label>
+            <div class="input-with-unit">
+              <input type="number" id="roiInitial" value="10000000" />
+              <span>원</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>최종 금액</label>
+            <div class="input-with-unit">
+              <input type="number" id="roiFinal" value="15000000" />
+              <span>원</span>
+            </div>
+          </div>
+        </div>
+        <div class="roi-result">
+          <div class="roi-value" id="roiValue">50%</div>
+          <div class="roi-label">투자 수익률 (ROI)</div>
+          <div class="roi-gain" id="roiGain">수익금: +5,000,000원</div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="compoundTab" style="display:none;">
+        <div class="input-grid">
+          <div class="input-group">
+            <label>원금</label>
+            <div class="input-with-unit">
+              <input type="number" id="compPrincipal" value="10000000" />
+              <span>원</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>연 수익률</label>
+            <div class="input-with-unit">
+              <input type="number" id="compRate" value="7" step="0.1" />
+              <span>%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>투자 기간</label>
+            <div class="input-with-unit">
+              <input type="number" id="compYears" value="10" />
+              <span>년</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>복리 주기</label>
+            <select id="compFreq">
+              <option value="1">연 1회</option>
+              <option value="4">분기별</option>
+              <option value="12" selected>월별</option>
+              <option value="365">일별</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>월 적립금 (선택)</label>
+            <div class="input-with-unit">
+              <input type="number" id="compMonthly" value="0" />
+              <span>원</span>
+            </div>
+          </div>
+        </div>
+        <div class="compound-result">
+          <div class="result-row">
+            <span class="label">최종 금액</span>
+            <span class="value" id="compFinal">0원</span>
+          </div>
+          <div class="result-row">
+            <span class="label">총 투자금</span>
+            <span class="value" id="compInvested">0원</span>
+          </div>
+          <div class="result-row highlight">
+            <span class="label">복리 수익</span>
+            <span class="value" id="compGain">0원</span>
+          </div>
+        </div>
+        <div class="compound-chart">
+          <canvas id="compoundChart" width="600" height="250"></canvas>
+        </div>
+      </section>
+
+      <section class="tab-content" id="cagrTab" style="display:none;">
+        <div class="input-grid">
+          <div class="input-group">
+            <label>초기 가치</label>
+            <div class="input-with-unit">
+              <input type="number" id="cagrBegin" value="10000000" />
+              <span>원</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>최종 가치</label>
+            <div class="input-with-unit">
+              <input type="number" id="cagrEnd" value="25000000" />
+              <span>원</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>투자 기간</label>
+            <div class="input-with-unit">
+              <input type="number" id="cagrYears" value="5" />
+              <span>년</span>
+            </div>
+          </div>
+        </div>
+        <div class="cagr-result">
+          <div class="cagr-value" id="cagrValue">20.11%</div>
+          <div class="cagr-label">연평균 성장률 (CAGR)</div>
+          <div class="cagr-info">
+            <p>매년 <span id="cagrPercent">20.11%</span>씩 성장했을 때의 수익률입니다</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="comparison-section">
+        <h3>투자 비교 시뮬레이션</h3>
+        <div class="comparison-inputs">
+          <div class="input-group">
+            <label>원금</label>
+            <input type="number" id="simPrincipal" value="10000000" />
+          </div>
+          <div class="input-group">
+            <label>기간 (년)</label>
+            <input type="number" id="simYears" value="20" />
+          </div>
+          <button id="simBtn" aria-label="시뮬레이션">시뮬레이션</button>
+        </div>
+        <div class="comparison-results" id="comparisonResults"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="investment-roi.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+.header { text-align: center; color: white; margin-bottom: 30px; }
+.header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.main-content { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.layout { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+.controls-panel { display: flex; flex-direction: column; gap: 15px; }
+.upload-area { border: 2px dashed #ddd; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; }
+.control-group { display: flex; flex-direction: column; gap: 8px; }
+.control-group label { font-size: 14px; font-weight: 600; }
+.control-group input[type="text"], .control-group select { padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; }
+.gradient-inputs { display: flex; gap: 10px; }
+.gradient-inputs input { flex: 1; height: 40px; }
+.download-btn { padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: auto; }
+.preview-panel { display: flex; justify-content: center; align-items: center; }
+.preview-container { width: 300px; height: 650px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.title-text { font-size: 28px; font-weight: 900; color: white; margin-bottom: 10px; line-height: 1.2; }
+.subtitle-text { font-size: 16px; color: rgba(255,255,255,0.9); margin-bottom: 30px; }
+.device-wrapper { flex: 1; display: flex; align-items: center; }
+.phone-frame { width: 180px; background: #1a1a1a; border-radius: 30px; padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.phone-screen { background: white; border-radius: 24px; overflow: hidden; aspect-ratio: 9/19.5; }
+.phone-screen img { width: 100%; height: 100%; object-fit: cover; }
+.placeholder { height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #999; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }

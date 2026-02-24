@@ -1,0 +1,25 @@
+        <section id="content-ai-model-admin" class="content-section admin-only">
+          <h2 class="section-title" data-i18n="aiModelAdminTitle"><span data-icon="robot" data-icon-size="16"></span> AI 모델 관리</h2>
+          <p class="section-description" data-i18n="aiModelAdminDesc">서비스에서 사용할 AI 서비스와 모델을 선택합니다.</p>
+
+          <div id="aiModelAdminPanel" class="ai-model-admin-container">
+            <!-- 로딩 표시 -->
+            <div id="aiModelLoading" class="ai-model-loading" style="display: none;">
+              <span data-i18n="loading">로딩 중...</span>
+            </div>
+
+            <!-- AI 서비스/모델 목록 -->
+            <div id="aiModelList" class="ai-model-list">
+              <!-- JavaScript로 동적 생성 -->
+            </div>
+
+            <!-- 버튼 영역 -->
+            <div class="ai-model-buttons">
+              <button type="button" id="aiModelResetBtn" class="btn-secondary" data-i18n="aiModelReset">초기화</button>
+              <button type="button" id="aiModelSaveBtn" class="btn-primary" data-i18n="aiModelSave">저장</button>
+              <button type="button" id="aiModelSyncBtn" class="btn-sync" style="display: none;" data-i18n-title="aiModelSyncTooltip">
+                <span data-i18n="aiModelSyncBtn"><span data-icon="refresh-cw" data-icon-size="14"></span> 동기화</span>
+              </button>
+            </div>
+          </div>
+        </section>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>비디오 변환 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .convert-container { max-width: 800px; margin: 0 auto; }
+    .convert-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .upload-zone { border: 2px dashed var(--border-color); border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .upload-zone:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+    .upload-zone.dragover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .file-info { background: var(--bg-primary); border-radius: 10px; padding: 1.5rem; margin-top: 1rem; display: none; }
+    .format-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-top: 1rem; }
+    .format-btn { padding: 1rem; border: 2px solid var(--border-color); border-radius: 10px; background: var(--bg-primary); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .format-btn:hover { border-color: var(--primary); }
+    .format-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .format-name { font-weight: 600; font-size: 1.1rem; }
+    .format-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .progress-container { margin: 1rem 0; display: none; }
+    .progress-bar { height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #8b5cf6); transition: width 0.3s; }
+    .progress-text { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center; }
+    .server-notice { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; padding: 1rem; border-radius: 10px; margin-top: 1.5rem; font-size: 0.9rem; }
+    @media (max-width: 600px) { .format-grid { grid-template-columns: repeat(2, 1fr); } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">비디오 변환</h1>
+          <p class="tool-description">비디오 포맷 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="convert-container">
+      <div class="convert-panel">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon"></div>
+          <p>비디오 파일을 드래그하거나 클릭하여 선택</p>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+            MP4, MOV, AVI, MKV, WebM, FLV
+          </p>
+        </div>
+        <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="VideoConvert.handleFile(this.files[0])">
+
+        <div class="file-info" id="fileInfo">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2rem;"></span>
+            <div style="flex: 1;">
+              <div style="font-weight: 600;" id="fileName">-</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary);" id="fileSize">-</div>
+            </div>
+            <button class="tool-btn tool-btn-secondary" onclick="VideoConvert.clear()" aria-label=""></button>
+          </div>
+        </div>
+
+        <div id="formatSection" style="display: none;">
+          <div class="section-title" style="margin-top: 1.5rem;">출력 포맷 선택</div>
+          <div class="format-grid">
+            <button class="format-btn active" data-format="mp4" onclick="VideoConvert.selectFormat('mp4')">
+              <div class="format-name">MP4</div>
+              <div class="format-desc">가장 호환성 좋음</div>
+            </button>
+            <button class="format-btn" data-format="webm" onclick="VideoConvert.selectFormat('webm')">
+              <div class="format-name">WebM</div>
+              <div class="format-desc">웹 최적화</div>
+            </button>
+            <button class="format-btn" data-format="mov" onclick="VideoConvert.selectFormat('mov')">
+              <div class="format-name">MOV</div>
+              <div class="format-desc">Apple 기기</div>
+            </button>
+            <button class="format-btn" data-format="avi" onclick="VideoConvert.selectFormat('avi')">
+              <div class="format-name">AVI</div>
+              <div class="format-desc">레거시 호환</div>
+            </button>
+            <button class="format-btn" data-format="mkv" onclick="VideoConvert.selectFormat('mkv')">
+              <div class="format-name">MKV</div>
+              <div class="format-desc">고품질 저장</div>
+            </button>
+            <button class="format-btn" data-format="flv" onclick="VideoConvert.selectFormat('flv')">
+              <div class="format-name">FLV</div>
+              <div class="format-desc">Flash Video</div>
+            </button>
+            <button class="format-btn" data-format="wmv" onclick="VideoConvert.selectFormat('wmv')">
+              <div class="format-name">WMV</div>
+              <div class="format-desc">Windows Media</div>
+            </button>
+            <button class="format-btn" data-format="3gp" onclick="VideoConvert.selectFormat('3gp')">
+              <div class="format-name">3GP</div>
+              <div class="format-desc">모바일 기기</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-text" id="progressText">변환 중...</div>
+        </div>
+
+        <button class="tool-btn tool-btn-primary" style="width: 100%; margin-top: 1rem; display: none;" id="convertBtn" onclick="VideoConvert.convert()" aria-label="변환 시작">
+          변환 시작
+        </button>
+
+        <div class="server-notice">
+          <strong>데모 모드</strong><br>
+          실제 비디오 변환은 서버 측 처리가 필요합니다. 현재 시뮬레이션 모드로 작동합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="video-convert.js"></script>
+</body>
+</html>

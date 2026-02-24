@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>집중 모드 - 생산성 도구</title>
+    <link rel="stylesheet" href="focus-mode.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container" id="mainContainer">
+        <header>
+            <h1>집중 모드</h1>
+            <p>방해 없이 몰입하세요</p>
+        </header>
+
+        <div class="focus-setup" id="setupPanel">
+            <div class="form-group">
+                <label>집중할 작업</label>
+                <input type="text" id="focusTask" placeholder="오늘 집중할 작업을 입력하세요" aria-label="오늘 집중할 작업을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>집중 시간 (분)</label>
+                <div class="time-buttons">
+                    <button class="time-btn" data-time="15" aria-label="15분">15분</button>
+                    <button class="time-btn active" data-time="25" aria-label="25분">25분</button>
+                    <button class="time-btn" data-time="45" aria-label="45분">45분</button>
+                    <button class="time-btn" data-time="60" aria-label="60분">60분</button>
+                    <button class="time-btn" data-time="90" aria-label="90분">90분</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>배경 사운드</label>
+                <select id="bgSound">
+                    <option value="none">없음</option>
+                    <option value="rain">빗소리</option>
+                    <option value="forest">숲속</option>
+                    <option value="cafe">카페</option>
+                    <option value="fire">모닥불</option>
+                    <option value="whitenoise">화이트노이즈</option>
+                </select>
+            </div>
+            <button id="startFocus" class="btn-start" aria-label="집중 모드 시작">집중 모드 시작</button>
+        </div>
+
+        <div class="focus-active hidden" id="focusPanel">
+            <div class="focus-task" id="displayTask">작업에 집중하세요</div>
+            <div class="timer-circle">
+                <svg viewBox="0 0 100 100">
+                    <circle class="timer-bg" cx="50" cy="50" r="45"/>
+                    <circle class="timer-progress" id="timerProgress" cx="50" cy="50" r="45"/>
+                </svg>
+                <div class="timer-text">
+                    <span id="timerDisplay">25:00</span>
+                </div>
+            </div>
+            <div class="focus-controls">
+                <button id="pauseFocus" class="btn-pause" aria-label="일시정지">일시정지</button>
+                <button id="endFocus" class="btn-end" aria-label="종료">종료</button>
+            </div>
+            <div class="focus-quote" id="quote">
+                "집중력은 성공의 열쇠다."
+            </div>
+        </div>
+
+        <div class="focus-complete hidden" id="completePanel">
+            <div class="complete-icon"></div>
+            <h2>수고하셨습니다!</h2>
+            <p class="complete-time" id="completedTime">25분 동안 집중하셨습니다</p>
+            <button id="newSession" class="btn-new-session" aria-label="새 세션 시작">새 세션 시작</button>
+        </div>
+
+        <div class="stats-section">
+            <h3>오늘의 집중</h3>
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="stat-value" id="totalSessions">0</span>
+                    <span class="stat-label">세션</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="totalMinutes">0</span>
+                    <span class="stat-label">분</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="focus-mode.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

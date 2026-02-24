@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>레이더 차트 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="radar-chart.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">레이더 차트 생성기</h1>
+      <p class="tool-description">다차원 데이터를 방사형 차트로 시각화합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="chart-preview">
+        <canvas id="radarChart"></canvas>
+      </div>
+
+      <div class="data-section">
+        <h3 class="section-title">데이터 입력</h3>
+        <div class="data-input-area">
+          <div class="input-row header-row">
+            <span>항목명</span>
+            <span>값 (0-100)</span>
+            <span></span>
+          </div>
+          <div id="dataRows"></div>
+          <button class="add-row-btn" onclick="RadarChart.addRow()" aria-label="+ 항목 추가">+ 항목 추가</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="section-title">차트 설정</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>차트 제목</label>
+            <input type="text" id="chartTitle" class="form-input" value="레이더 차트" onchange="RadarChart.updateChart()">
+          </div>
+          <div class="setting-item">
+            <label>영역 색상</label>
+            <input type="color" id="areaColor" class="form-input color" value="#667eea" onchange="RadarChart.updateChart()">
+          </div>
+          <div class="setting-item">
+            <label>채우기 투명도</label>
+            <select id="fillOpacity" class="form-input" onchange="RadarChart.updateChart()">
+              <option value="0.2">20%</option>
+              <option value="0.4" selected>40%</option>
+              <option value="0.6">60%</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>포인트 표시</label>
+            <select id="showPoints" class="form-input" onchange="RadarChart.updateChart()">
+              <option value="true">표시</option>
+              <option value="false">숨김</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="RadarChart.exportImage('png')" aria-label="PNG 다운로드">PNG 다운로드</button>
+          <button class="export-btn" onclick="RadarChart.exportImage('jpg')" aria-label="JPG 다운로드">JPG 다운로드</button>
+          <button class="export-btn secondary" onclick="RadarChart.exportData()" aria-label="데이터 내보내기">데이터 내보내기</button>
+        </div>
+      </div>
+
+      <div class="preset-section">
+        <h3 class="section-title">프리셋</h3>
+        <div class="preset-buttons">
+          <button class="preset-btn" onclick="RadarChart.loadPreset('skills')" aria-label="역량 평가">역량 평가</button>
+          <button class="preset-btn" onclick="RadarChart.loadPreset('product')" aria-label="제품 비교">제품 비교</button>
+          <button class="preset-btn" onclick="RadarChart.loadPreset('health')" aria-label="건강 지표">건강 지표</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="radar-chart.js"></script>
+</body>
+</html>

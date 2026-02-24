@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>송장 생성 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .invoice-layout { display: grid; grid-template-columns: 400px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; max-height: 85vh; overflow-y: auto; }
+    .preview-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; margin-top: 1.5rem; }
+    .section-title:first-child { margin-top: 0; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .items-header { display: grid; grid-template-columns: 1fr 80px 100px 100px 30px; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem; }
+    .item-row { display: grid; grid-template-columns: 1fr 80px 100px 100px 30px; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+    .item-total { font-weight: 600; text-align: right; font-size: 0.9rem; }
+    .remove-item { background: none; border: none; color: var(--error); font-size: 1.25rem; cursor: pointer; }
+    .invoice-preview { background: #fff; border-radius: 8px; padding: 2rem; color: #333; }
+    .invoice-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+    .company-info h2 { margin: 0 0 0.5rem; font-size: 1.5rem; }
+    .company-info p { margin: 0.25rem 0; font-size: 0.85rem; color: #666; }
+    .invoice-meta { text-align: right; }
+    .invoice-meta h1 { margin: 0 0 1rem; font-size: 1.75rem; color: var(--primary); }
+    .meta-row { font-size: 0.85rem; margin: 0.25rem 0; }
+    .meta-label { color: #666; }
+    .parties { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+    .party { flex: 1; }
+    .party h3 { font-size: 0.8rem; color: #666; margin: 0 0 0.5rem; text-transform: uppercase; }
+    .party p { margin: 0.25rem 0; font-size: 0.85rem; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .items-table th { background: #f5f5f5; padding: 0.75rem; text-align: left; font-size: 0.8rem; border-bottom: 2px solid #ddd; }
+    .items-table td { padding: 0.75rem; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+    .text-right { text-align: right; }
+    .totals { margin-left: auto; width: 250px; }
+    .total-row { display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; }
+    .total-row.grand { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; margin-top: 0.5rem; padding-top: 0.75rem; }
+    .notes { margin-top: 2rem; padding: 1rem; background: #f9f9f9; border-radius: 4px; font-size: 0.85rem; color: #666; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    @media (max-width: 1000px) { .invoice-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">송장 생성</h1>
+          <p class="tool-description">비즈니스 송장/인보이스</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="invoice-layout">
+      <div class="form-panel">
+        <div class="section-title">발신 정보</div>
+        <div class="control-group">
+          <label>회사/상호명</label>
+          <input type="text" id="companyName" class="tool-input" placeholder="My Company" oninput="InvoiceGen.updatePreview()" aria-label="My Company">
+        </div>
+        <div class="control-group">
+          <label>주소</label>
+          <input type="text" id="companyAddress" class="tool-input" placeholder="서울시 강남구..." oninput="InvoiceGen.updatePreview()" aria-label="서울시 강남구...">
+        </div>
+        <div class="control-group">
+          <label>연락처/이메일</label>
+          <input type="text" id="companyContact" class="tool-input" placeholder="contact@company.com" oninput="InvoiceGen.updatePreview()" aria-label="contact@company.com">
+        </div>
+
+        <div class="section-title">수신 정보</div>
+        <div class="control-group">
+          <label>고객명</label>
+          <input type="text" id="clientName" class="tool-input" placeholder="Customer Name" oninput="InvoiceGen.updatePreview()" aria-label="Customer Name">
+        </div>
+        <div class="control-group">
+          <label>주소</label>
+          <input type="text" id="clientAddress" class="tool-input" placeholder="고객 주소" oninput="InvoiceGen.updatePreview()" aria-label="고객 주소">
+        </div>
+        <div class="control-group">
+          <label>연락처</label>
+          <input type="text" id="clientContact" class="tool-input" placeholder="고객 연락처" oninput="InvoiceGen.updatePreview()" aria-label="고객 연락처">
+        </div>
+
+        <div class="section-title">송장 정보</div>
+        <div class="row-2">
+          <div class="control-group">
+            <label>송장 번호</label>
+            <input type="text" id="invoiceNumber" class="tool-input" value="INV-0001" oninput="InvoiceGen.updatePreview()">
+          </div>
+          <div class="control-group">
+            <label>통화</label>
+            <select id="currency" class="tool-input" onchange="InvoiceGen.updatePreview()">
+              <option value="KRW">KRW (₩)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="JPY">JPY (¥)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="control-group">
+            <label>발행일</label>
+            <input type="date" id="invoiceDate" class="tool-input" oninput="InvoiceGen.updatePreview()">
+          </div>
+          <div class="control-group">
+            <label>결제기한</label>
+            <input type="date" id="dueDate" class="tool-input" oninput="InvoiceGen.updatePreview()">
+          </div>
+        </div>
+
+        <div class="section-title">품목</div>
+        <div class="items-header">
+          <span>설명</span>
+          <span>수량</span>
+          <span>단가</span>
+          <span>금액</span>
+          <span></span>
+        </div>
+        <div id="itemsList"></div>
+        <button class="tool-btn tool-btn-secondary" onclick="InvoiceGen.addItem()" aria-label="+ 품목 추가">+ 품목 추가</button>
+
+        <div class="row-2" style="margin-top: 1rem;">
+          <div class="control-group">
+            <label>세율 (%)</label>
+            <input type="number" id="taxRate" class="tool-input" value="10" min="0" max="100" oninput="InvoiceGen.updatePreview()">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>메모</label>
+          <textarea id="invoiceNotes" class="tool-input" rows="2" placeholder="추가 메모..." oninput="InvoiceGen.updatePreview()"></textarea>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="invoice-preview" id="invoicePreview">
+          <div class="invoice-header">
+            <div class="company-info">
+              <h2 id="previewCompany">회사명</h2>
+              <p id="previewCompanyAddress">회사 주소</p>
+              <p id="previewCompanyContact">연락처</p>
+            </div>
+            <div class="invoice-meta">
+              <h1>송장</h1>
+              <div class="meta-row"><span class="meta-label">송장번호: </span><span id="previewInvoiceNo">INV-0001</span></div>
+              <div class="meta-row"><span class="meta-label">발행일: </span><span id="previewInvoiceDate"></span></div>
+              <div class="meta-row"><span class="meta-label">결제기한: </span><span id="previewDueDate"></span></div>
+            </div>
+          </div>
+
+          <div class="parties">
+            <div class="party">
+              <h3>청구 대상</h3>
+              <p id="previewClient">고객명</p>
+              <p id="previewClientAddress">고객 주소</p>
+              <p id="previewClientContact">고객 연락처</p>
+            </div>
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>품목</th>
+                <th class="text-right">수량</th>
+                <th class="text-right">단가</th>
+                <th class="text-right">금액</th>
+              </tr>
+            </thead>
+            <tbody id="previewItems"></tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>소계</span>
+              <span id="previewSubtotal">₩0</span>
+            </div>
+            <div class="total-row">
+              <span id="previewTaxLabel">세금 (10%)</span>
+              <span id="previewTax">₩0</span>
+            </div>
+            <div class="total-row grand">
+              <span>총액</span>
+              <span id="previewTotal">₩0</span>
+            </div>
+          </div>
+
+          <div class="notes" id="previewNotes"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="tool-btn tool-btn-primary" onclick="InvoiceGen.printInvoice()" aria-label="인쇄/PDF">인쇄/PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="invoice-gen.js"></script>
+</body>
+</html>

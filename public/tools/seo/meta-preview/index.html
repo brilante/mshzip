@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메타 태그 미리보기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .meta-layout { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; }
+    .form-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .preview-panel { }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .control-group { margin-bottom: 1rem; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .analysis-box { background: var(--bg-primary); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    .analysis-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.good { background: #22c55e; }
+    .status-dot.warning { background: #f59e0b; }
+    .preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .preview-card { background: var(--bg-secondary); border-radius: 12px; padding: 1rem; }
+    .preview-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    /* Google Preview */
+    .google-preview { background: #fff; border-radius: 8px; padding: 1rem; font-family: Arial, sans-serif; }
+    .google-title { color: #1a0dab; font-size: 1.1rem; margin-bottom: 0.25rem; cursor: pointer; text-decoration: none; }
+    .google-title:hover { text-decoration: underline; }
+    .google-url { color: #006621; font-size: 0.8rem; margin-bottom: 0.25rem; }
+    .google-desc { color: #545454; font-size: 0.85rem; line-height: 1.4; }
+    /* Facebook Preview */
+    .fb-preview { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #dddfe2; }
+    .fb-image { width: 100%; height: 150px; object-fit: cover; display: none; background: #f0f2f5; }
+    .fb-content { padding: 0.75rem; }
+    .fb-domain { font-size: 0.7rem; color: #606770; text-transform: uppercase; }
+    .fb-title { font-size: 0.95rem; font-weight: 600; color: #1c1e21; margin: 0.25rem 0; }
+    .fb-desc { font-size: 0.8rem; color: #606770; }
+    /* Twitter Preview */
+    .tw-preview { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e1e8ed; }
+    .tw-image { width: 100%; height: 150px; object-fit: cover; display: none; background: #e1e8ed; }
+    .tw-content { padding: 0.75rem; }
+    .tw-title { font-size: 0.9rem; font-weight: 700; color: #0f1419; }
+    .tw-desc { font-size: 0.8rem; color: #536471; margin: 0.25rem 0; }
+    .tw-domain { font-size: 0.75rem; color: #536471; display: flex; align-items: center; gap: 0.25rem; }
+    /* LinkedIn Preview */
+    .li-preview { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; }
+    .li-image { width: 100%; height: 150px; object-fit: cover; display: none; background: #f3f2ef; }
+    .li-content { padding: 0.75rem; }
+    .li-title { font-size: 0.9rem; font-weight: 600; color: rgba(0,0,0,0.9); }
+    .li-domain { font-size: 0.75rem; color: rgba(0,0,0,0.6); margin-top: 0.25rem; }
+    /* Kakao Preview */
+    .kakao-preview { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e5e5; display: flex; }
+    .kakao-image { width: 100px; height: 100px; object-fit: cover; display: none; background: #f5f5f5; flex-shrink: 0; }
+    .kakao-content { padding: 0.75rem; flex: 1; }
+    .kakao-title { font-size: 0.85rem; font-weight: 600; color: #000; }
+    .kakao-desc { font-size: 0.75rem; color: #666; margin: 0.25rem 0; }
+    .kakao-domain { font-size: 0.7rem; color: #999; }
+    @media (max-width: 1200px) { .preview-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .meta-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">메타 태그 미리보기</h1>
+          <p class="tool-description">검색 결과 및 소셜 미디어 미리보기</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="meta-layout">
+      <div class="form-panel">
+        <div class="section-title">메타 정보 입력</div>
+        <div class="control-group">
+          <label>페이지 제목</label>
+          <input type="text" id="pageTitle" class="tool-input" placeholder="My Awesome Page" oninput="MetaPreview.updatePreviews()" aria-label="My Awesome Page">
+        </div>
+        <div class="control-group">
+          <label>페이지 설명</label>
+          <textarea id="pageDescription" class="tool-input" rows="3" placeholder="페이지에 대한 설명..." oninput="MetaPreview.updatePreviews()"></textarea>
+        </div>
+        <div class="control-group">
+          <label>페이지 URL</label>
+          <input type="url" id="pageUrl" class="tool-input" placeholder="https://example.com/page" oninput="MetaPreview.updatePreviews()" aria-label="https://example.com/page">
+        </div>
+        <div class="control-group">
+          <label>OG 이미지 URL</label>
+          <input type="url" id="pageImage" class="tool-input" placeholder="https://example.com/image.jpg" oninput="MetaPreview.updatePreviews()" aria-label="https://example.com/image.jpg">
+        </div>
+
+        <div class="analysis-box">
+          <div class="section-title">분석</div>
+          <div class="analysis-item" id="titleAnalysis"></div>
+          <div class="analysis-item" id="descAnalysis"></div>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-grid">
+          <!-- Google -->
+          <div class="preview-card">
+            <div class="preview-label">Google 검색 결과</div>
+            <div class="google-preview">
+              <div class="google-title" id="googleTitle">페이지 제목</div>
+              <div class="google-url" id="googleUrl">example.com › page</div>
+              <div class="google-desc" id="googleDesc">페이지 설명이 여기에 표시됩니다.</div>
+            </div>
+          </div>
+
+          <!-- Facebook -->
+          <div class="preview-card">
+            <div class="preview-label">Facebook</div>
+            <div class="fb-preview">
+              <img id="fbImage" class="fb-image" src="" alt="Preview">
+              <div class="fb-content">
+                <div class="fb-domain" id="fbDomain">example.com</div>
+                <div class="fb-title" id="fbTitle">페이지 제목</div>
+                <div class="fb-desc" id="fbDesc">페이지 설명</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Twitter -->
+          <div class="preview-card">
+            <div class="preview-label">Twitter</div>
+            <div class="tw-preview">
+              <img id="twImage" class="tw-image" src="" alt="Preview">
+              <div class="tw-content">
+                <div class="tw-title" id="twTitle">페이지 제목</div>
+                <div class="tw-desc" id="twDesc">페이지 설명</div>
+                <div class="tw-domain"><span id="twDomain">example.com</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LinkedIn -->
+          <div class="preview-card">
+            <div class="preview-label">LinkedIn</div>
+            <div class="li-preview">
+              <img id="liImage" class="li-image" src="" alt="Preview">
+              <div class="li-content">
+                <div class="li-title" id="liTitle">페이지 제목</div>
+                <div class="li-domain" id="liDomain">example.com</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KakaoTalk -->
+          <div class="preview-card">
+            <div class="preview-label">카카오톡</div>
+            <div class="kakao-preview">
+              <img id="kakaoImage" class="kakao-image" src="" alt="Preview">
+              <div class="kakao-content">
+                <div class="kakao-title" id="kakaoTitle">페이지 제목</div>
+                <div class="kakao-desc" id="kakaoDesc">페이지 설명</div>
+                <div class="kakao-domain" id="kakaoDomain">example.com</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="meta-preview.js"></script>
+</body>
+</html>

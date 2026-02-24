@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 탐지 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .detect-layout { display: grid; grid-template-columns: 1fr 350px; gap: 1.5rem; }
+    .input-panel textarea { min-height: 350px; font-size: 1rem; line-height: 1.8; }
+    .results-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .meter-container { margin-bottom: 2rem; }
+    .meter-bar { height: 24px; background: linear-gradient(to right, #22c55e, #f59e0b, #ef4444); border-radius: 12px; position: relative; }
+    .meter-pointer { position: absolute; top: -8px; width: 4px; height: 40px; background: white; border: 2px solid #333; border-radius: 2px; transform: translateX(-50%); }
+    .meter-labels { display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .result-box { background: var(--bg-primary); border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1rem; }
+    .result-percent { font-size: 3rem; font-weight: bold; }
+    .result-label { font-size: 0.9rem; color: var(--text-secondary); }
+    .detail-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+    .premium-badge { display: inline-block; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+    @media (max-width: 900px) { .detect-layout { grid-template-columns: 1fr; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">AI 탐지 <span class="premium-badge">PREMIUM</span></h1>
+          <p class="tool-description">AI 생성 텍스트 감지</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="detect-layout">
+      <div class="input-panel">
+        <textarea id="textInput" class="tool-input" placeholder="분석할 텍스트를 입력하세요..."></textarea>
+        <button class="tool-btn tool-btn-primary" style="width:100%; margin-top:1rem" onclick="AiDetect.analyze()" aria-label="AI 탐지">AI 탐지</button>
+      </div>
+
+      <div class="results-panel">
+        <div class="section-title">분석 결과</div>
+
+        <div class="meter-container">
+          <div class="meter-bar">
+            <div class="meter-pointer" id="meterPointer" style="left: 50%"></div>
+          </div>
+          <div class="meter-labels">
+            <span>사람 작성</span>
+            <span>혼합</span>
+            <span>AI 생성</span>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-percent" id="aiPercent">-</div>
+          <div class="result-label">AI 생성 확률</div>
+        </div>
+
+        <div class="section-title">세부 분석</div>
+        <div id="detailList">
+          <div class="detail-row">
+            <span>문장 복잡도</span>
+            <span id="complexity">-</span>
+          </div>
+          <div class="detail-row">
+            <span>어휘 다양성</span>
+            <span id="vocabulary">-</span>
+          </div>
+          <div class="detail-row">
+            <span>패턴 일관성</span>
+            <span id="pattern">-</span>
+          </div>
+          <div class="detail-row">
+            <span>자연스러움</span>
+            <span id="naturalness">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="ai-detect.js"></script>
+</body>
+</html>

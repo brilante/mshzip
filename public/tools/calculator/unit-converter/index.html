@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>단위 변환기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="unit-converter.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">단위 변환기</h1>
+      <p class="tool-description">다양한 단위를 쉽게 변환합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="tool-panel">
+        <!-- 카테고리 선택 -->
+        <div class="category-tabs">
+          <button class="category-tab active" data-category="length" onclick="UnitConverter.setCategory('length')" aria-label="길이">길이</button>
+          <button class="category-tab" data-category="weight" onclick="UnitConverter.setCategory('weight')" aria-label="무게">무게</button>
+          <button class="category-tab" data-category="area" onclick="UnitConverter.setCategory('area')" aria-label="면적">면적</button>
+          <button class="category-tab" data-category="volume" onclick="UnitConverter.setCategory('volume')" aria-label="부피">부피</button>
+          <button class="category-tab" data-category="temperature" onclick="UnitConverter.setCategory('temperature')" aria-label="온도">온도</button>
+          <button class="category-tab" data-category="speed" onclick="UnitConverter.setCategory('speed')" aria-label="속도">속도</button>
+          <button class="category-tab" data-category="data" onclick="UnitConverter.setCategory('data')" aria-label="데이터">데이터</button>
+          <button class="category-tab" data-category="time" onclick="UnitConverter.setCategory('time')" aria-label="시간">시간</button>
+        </div>
+
+        <!-- 변환 섹션 -->
+        <div class="converter-section">
+          <div class="converter-row">
+            <div class="input-group">
+              <label class="input-label">변환할 값</label>
+              <input type="number" id="inputValue" class="converter-input" value="1" oninput="UnitConverter.convert()">
+            </div>
+            <div class="input-group">
+              <label class="input-label">변환 전 단위</label>
+              <select id="fromUnit" class="converter-select" onchange="UnitConverter.convert()"></select>
+            </div>
+          </div>
+
+          <div class="swap-btn-container">
+            <button class="swap-btn" onclick="UnitConverter.swap()" title="단위 교환" aria-label="⇄">⇄</button>
+          </div>
+
+          <div class="converter-row">
+            <div class="input-group">
+              <label class="input-label">변환 결과</label>
+              <input type="text" id="outputValue" class="converter-input result" readonly>
+            </div>
+            <div class="input-group">
+              <label class="input-label">변환 후 단위</label>
+              <select id="toUnit" class="converter-select" onchange="UnitConverter.convert()"></select>
+            </div>
+          </div>
+
+          <button class="tool-btn tool-btn-primary copy-btn" onclick="UnitConverter.copy()" aria-label="결과 복사">
+            결과 복사
+          </button>
+        </div>
+
+        <!-- 빠른 참조 테이블 -->
+        <div class="reference-section">
+          <div class="section-title">빠른 참조</div>
+          <div id="referenceTable" class="reference-table"></div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="tool-help">
+          <div class="help-title">사용 팁</div>
+          <div class="help-content">
+            <p>• 값을 입력하면 자동으로 변환됩니다</p>
+            <p>• ⇄ 버튼으로 변환 전/후 단위를 교환할 수 있습니다</p>
+            <p>• 빠른 참조 테이블에서 다른 단위 변환값을 확인할 수 있습니다</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="/tools/common/tool-base.js?v=20260124"></script>
+  <script src="unit-converter.js"></script>
+</body>
+</html>

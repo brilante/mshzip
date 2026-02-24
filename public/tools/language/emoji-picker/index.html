@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이모지 선택기 - ALLINONE</title>
+    <link rel="stylesheet" href="emoji-picker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>이모지 선택기</h1>
+            <p class="subtitle">원하는 이모지를 찾아 복사하세요</p>
+        </header>
+        <main class="main-content">
+            <div class="search-section">
+                <input type="text" id="searchInput" placeholder="이모지 검색 (예: 웃음, heart, 손)" aria-label="이모지 검색 (예: 웃음, heart, 손)">
+                <div class="recent-section">
+                    <span class="recent-label">최근 사용:</span>
+                    <div id="recentEmojis" class="recent-emojis"></div>
+                </div>
+            </div>
+            <div class="categories-nav">
+                <button class="cat-btn active" data-category="all" aria-label="전체">전체</button>
+                <button class="cat-btn" data-category="smileys" aria-label=""></button>
+                <button class="cat-btn" data-category="people" aria-label=""></button>
+                <button class="cat-btn" data-category="animals" aria-label=""></button>
+                <button class="cat-btn" data-category="food" aria-label=""></button>
+                <button class="cat-btn" data-category="activities" aria-label=""></button>
+                <button class="cat-btn" data-category="travel" aria-label=""></button>
+                <button class="cat-btn" data-category="objects" aria-label=""></button>
+                <button class="cat-btn" data-category="symbols" aria-label=""></button>
+                <button class="cat-btn" data-category="flags" aria-label=""></button>
+            </div>
+            <div class="emoji-section">
+                <div id="emojiGrid" class="emoji-grid"></div>
+            </div>
+            <div class="preview-section" id="previewSection">
+                <div class="preview-emoji" id="previewEmoji"></div>
+                <div class="preview-info">
+                    <div class="preview-name" id="previewName">-</div>
+                    <div class="preview-codes" id="previewCodes"></div>
+                </div>
+                <button class="copy-btn" onclick="copyPreview()" aria-label="복사">복사</button>
+            </div>
+        </main>
+    </div>
+    <script src="emoji-picker.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

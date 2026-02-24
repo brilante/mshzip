@@ -1,0 +1,260 @@
+/**
+ * 워드 클라우드 생성기 스타일
+ */
+
+.chart-preview {
+  background: white;
+  border-radius: var(--tools-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.wordcloud-container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  position: relative;
+}
+
+.wordcloud-word {
+  display: inline-block;
+  padding: 4px 8px;
+  cursor: default;
+  transition: transform 0.2s;
+  font-weight: 500;
+}
+
+.wordcloud-word:hover {
+  transform: scale(1.1);
+}
+
+.wordcloud-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 400px;
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+/* 데이터 입력 섹션 */
+.data-section, .settings-section, .export-section, .preset-section {
+  background: var(--tools-bg-secondary);
+  border-radius: var(--tools-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tools-text);
+}
+
+.data-input-area {
+  background: var(--tools-bg);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  background: var(--tools-bg-secondary);
+  color: var(--tools-text);
+  font-family: inherit;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.input-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.action-btn.secondary {
+  background: var(--tools-bg-secondary);
+  color: var(--tools-text);
+  border: 1px solid var(--tools-border);
+}
+
+.word-list-section {
+  background: var(--tools-bg);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.word-list-section h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tools-text-secondary);
+  margin-bottom: 12px;
+}
+
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.word-item {
+  display: grid;
+  grid-template-columns: 1fr 80px 40px;
+  gap: 12px;
+  align-items: center;
+}
+
+.word-item input {
+  padding: 8px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--tools-bg-secondary);
+  color: var(--tools-text);
+}
+
+.word-item input:focus {
+  outline: none;
+  border-color: var(--tools-primary);
+}
+
+.delete-word-btn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+}
+
+.delete-word-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.add-word-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px dashed var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--tools-text-secondary);
+  margin-top: 12px;
+}
+
+.add-word-btn:hover {
+  border-color: var(--tools-primary);
+  color: var(--tools-primary);
+}
+
+/* 설정 그리드 */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-item label {
+  font-size: 13px;
+  color: var(--tools-text-secondary);
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid var(--tools-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--tools-bg);
+  color: var(--tools-text);
+}
+
+/* 버튼 */
+.export-buttons, .preset-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 12px 24px;
+  background: var(--tools-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background: var(--tools-primary-dark);
+}
+
+.export-btn.secondary {
+  background: var(--tools-bg);
+  color: var(--tools-text);
+  border: 1px solid var(--tools-border);
+}
+
+.preset-btn {
+  padding: 12px 20px;
+  background: var(--tools-bg);
+  border: 1px solid var(--tools-border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--tools-text);
+}
+
+.preset-btn:hover {
+  border-color: var(--tools-primary);
+}
+
+@media (max-width: 768px) {
+  .input-actions { flex-direction: column; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .export-buttons, .preset-buttons { flex-direction: column; }
+  .word-item { grid-template-columns: 1fr 60px 36px; }
+}

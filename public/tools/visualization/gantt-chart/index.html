@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>간트 차트 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="gantt-chart.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">간트 차트 생성기</h1>
+      <p class="tool-description">프로젝트 일정을 간트 차트로 시각화합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 id="projectTitle">프로젝트 일정</h3>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-color pending"></span>대기</span>
+            <span class="legend-item"><span class="legend-color progress"></span>진행중</span>
+            <span class="legend-item"><span class="legend-color completed"></span>완료</span>
+          </div>
+        </div>
+        <div class="gantt-wrapper" id="ganttChart"></div>
+      </div>
+
+      <div class="data-section">
+        <h3 class="section-title">작업 추가</h3>
+        <div class="task-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>작업명</label>
+              <input type="text" id="taskName" class="form-input" placeholder="작업명 입력" aria-label="작업명 입력">
+            </div>
+            <div class="form-group">
+              <label>상태</label>
+              <select id="taskStatus" class="form-input">
+                <option value="pending">대기</option>
+                <option value="progress">진행중</option>
+                <option value="completed">완료</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>시작일</label>
+              <input type="date" id="taskStart" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>종료일</label>
+              <input type="date" id="taskEnd" class="form-input">
+            </div>
+          </div>
+          <button class="add-task-btn" onclick="GanttChart.addTask()" aria-label="+ 작업 추가">+ 작업 추가</button>
+        </div>
+      </div>
+
+      <div class="tasks-section">
+        <h3 class="section-title">작업 목록</h3>
+        <div id="tasksList" class="tasks-list"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="section-title">설정</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>프로젝트 제목</label>
+            <input type="text" id="chartTitle" class="form-input" value="프로젝트 일정" onchange="GanttChart.updateChart()">
+          </div>
+          <div class="setting-item">
+            <label>보기 모드</label>
+            <select id="viewMode" class="form-input" onchange="GanttChart.updateChart()">
+              <option value="day">일별</option>
+              <option value="week" selected>주별</option>
+              <option value="month">월별</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <h3 class="section-title">내보내기</h3>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="GanttChart.exportImage()" aria-label="이미지 저장">이미지 저장</button>
+          <button class="export-btn secondary" onclick="GanttChart.exportData()" aria-label="데이터 내보내기">데이터 내보내기</button>
+          <button class="export-btn secondary" onclick="GanttChart.importData()" aria-label="데이터 가져오기">데이터 가져오기</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <input type="file" id="fileInput" accept=".json" style="display:none" onchange="GanttChart.handleImport(event)">
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="gantt-chart.js"></script>
+</body>
+</html>

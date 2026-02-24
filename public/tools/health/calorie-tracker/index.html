@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>칼로리 추적기 - 건강 도구</title>
+    <link rel="stylesheet" href="calorie-tracker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>칼로리 추적기</h1>
+            <p>일일 칼로리 섭취를 기록하고 관리하세요</p>
+        </header>
+
+        <div class="summary card">
+            <div class="goal-setting">
+                <span>일일 목표:</span>
+                <input type="number" id="dailyGoal" value="2000" min="1000" max="5000">
+                <span>kcal</span>
+            </div>
+            <div class="progress-ring">
+                <svg viewBox="0 0 100 100">
+                    <circle class="bg" cx="50" cy="50" r="40"/>
+                    <circle class="progress" id="progressCircle" cx="50" cy="50" r="40"/>
+                </svg>
+                <div class="progress-text">
+                    <span id="currentCal">0</span>
+                    <small>/ <span id="goalCal">2000</span></small>
+                </div>
+            </div>
+            <div class="remaining">
+                남은 칼로리: <strong id="remainingCal">2000</strong> kcal
+            </div>
+        </div>
+
+        <div class="add-food card">
+            <h3>음식 추가</h3>
+            <div class="food-form">
+                <input type="text" id="foodName" placeholder="음식 이름" aria-label="음식 이름">
+                <input type="number" id="foodCal" placeholder="칼로리 (kcal)" aria-label="칼로리 (kcal)">
+                <select id="mealType">
+                    <option value="breakfast">아침</option>
+                    <option value="lunch">점심</option>
+                    <option value="dinner">저녁</option>
+                    <option value="snack">간식</option>
+                </select>
+                <button id="addFood" aria-label="추가">추가</button>
+            </div>
+        </div>
+
+        <div class="food-list card">
+            <h3>오늘 섭취한 음식</h3>
+            <div id="foodsList"></div>
+        </div>
+    </div>
+    <script src="calorie-tracker.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

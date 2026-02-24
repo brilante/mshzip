@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회의록 - 생산성 도구</title>
+    <link rel="stylesheet" href="meeting-notes.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>회의록</h1>
+            <p>회의 내용을 체계적으로 기록하고 관리하세요</p>
+        </header>
+
+        <div class="main-content">
+            <div class="meeting-form card">
+                <h3 id="formTitle">새 회의록 작성</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>회의 제목</label>
+                        <input type="text" id="meetingTitle" placeholder="예: 주간 정기 회의" aria-label="예: 주간 정기 회의">
+                    </div>
+                    <div class="form-group">
+                        <label>날짜</label>
+                        <input type="datetime-local" id="meetingDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>참석자</label>
+                    <input type="text" id="attendees" placeholder="예: 홍길동, 김철수, 이영희" aria-label="예: 홍길동, 김철수, 이영희">
+                </div>
+                <div class="form-group">
+                    <label>안건</label>
+                    <textarea id="agenda" placeholder="회의 안건을 입력하세요"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>회의 내용</label>
+                    <textarea id="notes" placeholder="회의 내용을 기록하세요" rows="6"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>결정 사항</label>
+                    <textarea id="decisions" placeholder="회의에서 결정된 사항"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>액션 아이템</label>
+                    <div id="actionItems">
+                        <div class="action-item-row">
+                            <input type="text" placeholder="할 일" aria-label="할 일">
+                            <input type="text" placeholder="담당자" aria-label="담당자">
+                            <input type="date">
+                        </div>
+                    </div>
+                    <button type="button" id="addActionItem" class="btn-small" aria-label="+ 액션 아이템 추가">+ 액션 아이템 추가</button>
+                </div>
+                <div class="form-actions">
+                    <button id="saveMeeting" class="btn-save" aria-label="저장">저장</button>
+                    <button id="cancelEdit" class="btn-cancel" style="display: none;" aria-label="취소">취소</button>
+                </div>
+            </div>
+
+            <div class="meetings-list card">
+                <h3>회의록 목록</h3>
+                <input type="text" id="searchMeeting" placeholder="회의록 검색..." aria-label="회의록 검색...">
+                <div id="meetingsList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="meeting-notes.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

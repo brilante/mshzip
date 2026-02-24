@@ -1,0 +1,292 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    opacity: 0.9;
+}
+
+.input-panels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+    .input-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+.panel {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.panel h2 {
+    color: #1e3c72;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.input-group label {
+    flex: 1;
+    color: #555;
+    font-size: 13px;
+}
+
+.input-group input {
+    width: 100px;
+    padding: 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-align: right;
+    font-size: 14px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #1e3c72;
+}
+
+.input-group .unit {
+    width: 35px;
+    margin-left: 5px;
+    color: #888;
+    font-size: 12px;
+}
+
+.calc-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 30px;
+    padding: 18px;
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+}
+
+.result-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.comparison-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.option {
+    flex: 1;
+    max-width: 250px;
+    text-align: center;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.option.lease {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.option.buy {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+}
+
+.option h3 {
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.total-cost {
+    font-size: 1.8em;
+    font-weight: 700;
+}
+
+.vs {
+    font-size: 2em;
+    font-weight: 700;
+    color: #888;
+}
+
+.verdict {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.verdict.lease-win {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: #667eea;
+}
+
+.verdict.buy-win {
+    background: linear-gradient(135deg, rgba(17, 153, 142, 0.1), rgba(56, 239, 125, 0.1));
+    color: #11998e;
+}
+
+.breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 700px) {
+    .breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.breakdown-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.breakdown-card h4 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.breakdown-table td {
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.breakdown-table td:last-child {
+    text-align: right;
+    font-weight: 500;
+}
+
+.breakdown-table tr.total td {
+    border-top: 2px solid #333;
+    border-bottom: none;
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #1e3c72;
+}
+
+.pros-cons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 700px) {
+    .pros-cons {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pros-cons-card {
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.pros-cons-card.lease {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+}
+
+.pros-cons-card.buy {
+    background: linear-gradient(135deg, rgba(17, 153, 142, 0.1), rgba(56, 239, 125, 0.1));
+}
+
+.pros-cons-card h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.pros, .cons {
+    margin-bottom: 15px;
+}
+
+.pros strong {
+    color: #11998e;
+}
+
+.cons strong {
+    color: #e74c3c;
+}
+
+.pros ul, .cons ul {
+    margin-top: 8px;
+    padding-left: 20px;
+}
+
+.pros li, .cons li {
+    padding: 4px 0;
+    color: #555;
+    font-size: 14px;
+}

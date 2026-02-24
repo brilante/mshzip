@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이스브레이커 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="icebreaker-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">아이스브레이커 생성기</h1>
+      <p class="tool-description">회의를 활기차게 시작할 질문과 활동을 제안합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 카테고리 선택 -->
+      <div class="category-section">
+        <div class="category-buttons">
+          <button class="category-btn active" data-category="all" onclick="IcebreakerGen.setCategory('all')" aria-label="전체">전체</button>
+          <button class="category-btn" data-category="question" onclick="IcebreakerGen.setCategory('question')" aria-label="질문">질문</button>
+          <button class="category-btn" data-category="wouldyou" onclick="IcebreakerGen.setCategory('wouldyou')" aria-label="이러면?">이러면?</button>
+          <button class="category-btn" data-category="activity" onclick="IcebreakerGen.setCategory('activity')" aria-label="활동">활동</button>
+          <button class="category-btn" data-category="team" onclick="IcebreakerGen.setCategory('team')" aria-label="팀빌딩">팀빌딩</button>
+          <button class="category-btn" data-category="creative" onclick="IcebreakerGen.setCategory('creative')" aria-label="창의적">창의적</button>
+        </div>
+      </div>
+
+      <!-- 현재 아이스브레이커 -->
+      <div class="icebreaker-display">
+        <div class="icebreaker-card" id="currentCard">
+          <div class="card-category" id="cardCategory">질문</div>
+          <div class="card-content" id="cardContent">
+            버튼을 눌러 아이스브레이커를 생성하세요!
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="generate-btn" onclick="IcebreakerGen.generate()" aria-label="새로운 아이스브레이커">
+            새로운 아이스브레이커
+          </button>
+        </div>
+
+        <div class="sub-actions">
+          <button class="sub-btn" onclick="IcebreakerGen.copyToClipboard()" aria-label="복사">복사</button>
+          <button class="sub-btn" onclick="IcebreakerGen.addToFavorites()" aria-label="즐겨찾기">즐겨찾기</button>
+          <button class="sub-btn" onclick="IcebreakerGen.share()" aria-label="공유">공유</button>
+        </div>
+      </div>
+
+      <!-- 히스토리 & 즐겨찾기 -->
+      <div class="tabs-section">
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="IcebreakerGen.switchTab('history')" aria-label="히스토리">히스토리</button>
+          <button class="tab-btn" onclick="IcebreakerGen.switchTab('favorites')" aria-label="즐겨찾기">즐겨찾기</button>
+          <button class="tab-btn" onclick="IcebreakerGen.switchTab('custom')" aria-label="직접 추가">직접 추가</button>
+        </div>
+
+        <div class="tab-content active" id="historyTab">
+          <div class="list-container" id="historyList">
+            <div class="empty-list">아직 생성된 아이스브레이커가 없습니다</div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="favoritesTab">
+          <div class="list-container" id="favoritesList">
+            <div class="empty-list">즐겨찾기에 추가된 항목이 없습니다</div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="customTab">
+          <div class="custom-form">
+            <select id="customCategory" class="form-select">
+              <option value="question">질문</option>
+              <option value="wouldyou">이러면?</option>
+              <option value="activity">활동</option>
+              <option value="team">팀빌딩</option>
+              <option value="creative">창의적</option>
+            </select>
+            <textarea id="customContent" class="form-textarea" placeholder="나만의 아이스브레이커를 입력하세요..." rows="3"></textarea>
+            <button class="add-custom-btn" onclick="IcebreakerGen.addCustom()" aria-label="추가하기">추가하기</button>
+          </div>
+          <div class="custom-list" id="customList">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 팁 섹션 -->
+      <div class="tips-section">
+        <h3 class="tips-title">아이스브레이커 활용 팁</h3>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <div class="tip-icon"></div>
+            <div class="tip-text">5분 이내로 짧게 진행하세요</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon"></div>
+            <div class="tip-text">모두가 편하게 참여할 수 있는 주제를 선택하세요</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon"></div>
+            <div class="tip-text">순서대로 돌아가며 답변하면 좋아요</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon"></div>
+            <div class="tip-text">경청하고 긍정적으로 반응해주세요</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">사용 방법</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>카테고리 선택</strong>: 원하는 유형의 아이스브레이커를 필터링</li>
+            <li><strong>생성</strong>: 버튼을 눌러 랜덤 아이스브레이커 생성</li>
+            <li><strong>즐겨찾기</strong>: 마음에 드는 것은 즐겨찾기에 저장</li>
+            <li><strong>직접 추가</strong>: 나만의 아이스브레이커를 추가할 수 있어요</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="icebreaker-gen.js"></script>
+</body>
+</html>

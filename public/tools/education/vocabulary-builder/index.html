@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>어휘 학습기 - 학습 도구</title>
+    <link rel="stylesheet" href="vocabulary-builder.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>어휘 학습기</h1>
+            <p>새로운 단어를 효과적으로 암기하세요</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="add" aria-label="단어 추가">단어 추가</button>
+            <button class="tab" data-tab="learn" aria-label="학습하기">학습하기</button>
+            <button class="tab" data-tab="review" aria-label="복습하기">복습하기</button>
+            <button class="tab" data-tab="list" aria-label="단어 목록">단어 목록</button>
+        </div>
+
+        <div class="tab-content active" id="add">
+            <div class="add-form">
+                <div class="form-group">
+                    <label>단어</label>
+                    <input type="text" id="wordInput" placeholder="영단어 입력" aria-label="영단어 입력">
+                </div>
+                <div class="form-group">
+                    <label>뜻</label>
+                    <input type="text" id="meaningInput" placeholder="뜻 입력" aria-label="뜻 입력">
+                </div>
+                <div class="form-group">
+                    <label>예문 (선택)</label>
+                    <textarea id="exampleInput" placeholder="예문 입력"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <input type="text" id="categoryInput" placeholder="예: TOEIC, 일상, 비즈니스" aria-label="예: TOEIC, 일상, 비즈니스">
+                </div>
+                <button id="addWord" class="btn-primary" aria-label="단어 추가">단어 추가</button>
+            </div>
+        </div>
+
+        <div class="tab-content" id="learn">
+            <div class="learn-stats">
+                <span>오늘 학습: <strong id="todayLearned">0</strong>개</span>
+                <span>전체: <strong id="totalWords">0</strong>개</span>
+            </div>
+            <div class="word-card" id="learnCard">
+                <div class="word-front">
+                    <h2 id="learnWord">단어를 추가하세요</h2>
+                    <p class="hint">클릭하여 뜻 확인</p>
+                </div>
+                <div class="word-back hidden">
+                    <h3 id="learnMeaning">뜻</h3>
+                    <p id="learnExample" class="example"></p>
+                </div>
+            </div>
+            <div class="learn-controls">
+                <button id="knowBtn" class="btn-know" aria-label="알고 있음">알고 있음</button>
+                <button id="dontKnowBtn" class="btn-dont-know" aria-label="모름">모름</button>
+            </div>
+        </div>
+
+        <div class="tab-content" id="review">
+            <div class="review-mode">
+                <h3>복습 모드</h3>
+                <p>모르는 단어를 집중적으로 학습합니다</p>
+            </div>
+            <div class="word-card" id="reviewCard">
+                <div class="word-front">
+                    <h2 id="reviewWord">복습할 단어가 없습니다</h2>
+                </div>
+                <div class="word-back hidden">
+                    <h3 id="reviewMeaning">뜻</h3>
+                    <p id="reviewExample" class="example"></p>
+                </div>
+            </div>
+            <div class="learn-controls">
+                <button id="reviewKnow" class="btn-know" aria-label="이제 알겠음">이제 알겠음</button>
+                <button id="reviewAgain" class="btn-dont-know" aria-label="다시 복습">다시 복습</button>
+            </div>
+        </div>
+
+        <div class="tab-content" id="list">
+            <div class="list-controls">
+                <input type="text" id="searchWord" placeholder="단어 검색..." aria-label="단어 검색...">
+                <select id="filterCategory">
+                    <option value="">전체 카테고리</option>
+                </select>
+            </div>
+            <div class="word-stats">
+                <span class="stat known">알고 있음: <strong id="knownCount">0</strong></span>
+                <span class="stat unknown">모름: <strong id="unknownCount">0</strong></span>
+            </div>
+            <div id="wordList" class="word-list"></div>
+        </div>
+    </div>
+    <script src="vocabulary-builder.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

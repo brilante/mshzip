@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브레인스토밍 - 생산성 도구</title>
+    <link rel="stylesheet" href="brainstorm.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>브레인스토밍 보드</h1>
+            <p>아이디어를 자유롭게 떠올리고 정리하세요</p>
+        </header>
+
+        <div class="toolbar">
+            <input type="text" id="sessionTitle" placeholder="세션 제목" aria-label="세션 제목">
+            <button id="newSession" class="btn-new" aria-label="새 세션">새 세션</button>
+            <button id="saveSession" class="btn-save" aria-label="저장">저장</button>
+            <button id="clearBoard" class="btn-clear" aria-label="보드 지우기">보드 지우기</button>
+        </div>
+
+        <div class="board-container">
+            <div class="idea-input">
+                <textarea id="ideaText" placeholder="아이디어를 입력하세요... (Enter로 추가)"></textarea>
+                <div class="color-picker">
+                    <button class="color-btn active" data-color="#fff9c4" style="background: #fff9c4;"></button>
+                    <button class="color-btn" data-color="#f8bbd9" style="background: #f8bbd9;"></button>
+                    <button class="color-btn" data-color="#c5e1a5" style="background: #c5e1a5;"></button>
+                    <button class="color-btn" data-color="#b3e5fc" style="background: #b3e5fc;"></button>
+                    <button class="color-btn" data-color="#e1bee7" style="background: #e1bee7;"></button>
+                    <button class="color-btn" data-color="#ffccbc" style="background: #ffccbc;"></button>
+                </div>
+                <button id="addIdea" class="btn-add" aria-label="아이디어 추가">아이디어 추가</button>
+            </div>
+
+            <div id="ideaBoard" class="idea-board"></div>
+        </div>
+
+        <div class="sessions-panel">
+            <h3>저장된 세션</h3>
+            <div id="sessionsList"></div>
+        </div>
+    </div>
+    <script src="brainstorm.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

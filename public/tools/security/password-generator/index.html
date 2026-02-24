@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비밀번호 생성기 - ALLINONE</title>
+    <link rel="stylesheet" href="password-generator.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+    <div class="container">
+        <header class="header">
+            <a href="/tools" class="back-btn">← 돌아가기</a>
+            <h1>비밀번호 생성기</h1>
+            <p class="subtitle">안전한 무작위 비밀번호를 생성합니다</p>
+        </header>
+        <main class="main-content">
+            <div class="password-display">
+                <div class="password-text" id="passwordText">비밀번호 생성</div>
+                <div class="password-actions">
+                    <button class="action-btn" onclick="copyPassword()" aria-label=""></button>
+                    <button class="action-btn" onclick="generatePassword()" aria-label=""></button>
+                </div>
+            </div>
+            <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <div class="strength-label" id="strengthLabel">강도: -</div>
+            <div class="options-section">
+                <div class="option-group">
+                    <label>비밀번호 길이: <span id="lengthValue">16</span></label>
+                    <input type="range" id="lengthRange" min="4" max="64" value="16">
+                </div>
+                <div class="option-group checkboxes">
+                    <label><input type="checkbox" id="uppercase" checked> 대문자 (A-Z)</label>
+                    <label><input type="checkbox" id="lowercase" checked> 소문자 (a-z)</label>
+                    <label><input type="checkbox" id="numbers" checked> 숫자 (0-9)</label>
+                    <label><input type="checkbox" id="symbols" checked> 특수문자 (!@#$%)</label>
+                </div>
+                <div class="option-group">
+                    <label><input type="checkbox" id="excludeSimilar"> 유사 문자 제외 (i, l, 1, L, o, 0, O)</label>
+                    <label><input type="checkbox" id="excludeAmbiguous"> 모호한 문자 제외 ({ } [ ] ( ) / \ ' " ` ~)</label>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="generatePassword()" aria-label="비밀번호 생성">비밀번호 생성</button>
+            <div class="history-section">
+                <h3>최근 생성 기록</h3>
+                <div class="history-list" id="historyList"></div>
+            </div>
+        </main>
+    </div>
+    <script src="password-generator.js"></script>
+  <script src="/tools/common/tools-common.js?v=20260117"></script>
+</body>
+</html>

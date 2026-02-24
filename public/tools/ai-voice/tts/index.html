@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-to-Speech - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .ai-container { max-width: 900px; margin: 0 auto; }
+    .ai-panel { background: var(--bg-secondary); border-radius: 12px; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .model-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .model-btn { padding: 0.6rem 1rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .model-btn:hover { border-color: var(--primary); }
+    .model-btn.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .voice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    .voice-card { padding: 1rem; border-radius: 10px; border: 2px solid var(--border-color); background: var(--bg-primary); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .voice-card:hover { border-color: var(--primary); }
+    .voice-card.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+    .voice-avatar { font-size: 2rem; margin-bottom: 0.25rem; }
+    .voice-name { font-size: 0.85rem; font-weight: 600; }
+    .voice-type { font-size: 0.7rem; color: var(--text-secondary); }
+    .text-input { min-height: 150px; resize: vertical; margin-bottom: 1rem; }
+    .settings-row { display: flex; gap: 1.5rem; margin: 1rem 0; }
+    .setting-group { flex: 1; }
+    .setting-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+    .audio-player { width: 100%; margin: 1rem 0; }
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+    .premium-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 10px; font-size: 0.65rem; font-weight: 600; }
+    .char-count { font-size: 0.8rem; color: var(--text-secondary); text-align: right; margin-top: 0.25rem; }
+    @media (max-width: 700px) { .voice-grid { grid-template-columns: repeat(2, 1fr); } .settings-row { flex-direction: column; } }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">Text-to-Speech</h1>
+          <p class="tool-description">텍스트를 자연스러운 음성으로 변환</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <span class="premium-badge">Premium</span>
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="ai-container">
+      <div class="ai-panel">
+        <div class="section-title">AI 모델 선택</div>
+        <div class="model-selector">
+          <div class="model-btn active" data-model="elevenlabs" onclick="TTS.selectModel('elevenlabs')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">ElevenLabs</span>
+          </div>
+          <div class="model-btn" data-model="openai-tts" onclick="TTS.selectModel('openai-tts')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">OpenAI TTS</span>
+          </div>
+          <div class="model-btn" data-model="google-tts" onclick="TTS.selectModel('google-tts')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">Google TTS</span>
+          </div>
+          <div class="model-btn" data-model="azure-tts" onclick="TTS.selectModel('azure-tts')">
+            <span style="font-size: 1.2rem;"></span>
+            <span style="font-weight: 600;">Azure TTS</span>
+          </div>
+        </div>
+
+        <div class="section-title">음성 선택</div>
+        <div class="voice-grid">
+          <div class="voice-card active" data-voice="alloy" onclick="TTS.selectVoice('alloy')">
+            <div class="voice-avatar"></div>
+            <div class="voice-name">Alloy</div>
+            <div class="voice-type">남성 • 차분한</div>
+          </div>
+          <div class="voice-card" data-voice="echo" onclick="TTS.selectVoice('echo')">
+            <div class="voice-avatar"></div>
+            <div class="voice-name">Echo</div>
+            <div class="voice-type">남성 • 전문적</div>
+          </div>
+          <div class="voice-card" data-voice="nova" onclick="TTS.selectVoice('nova')">
+            <div class="voice-avatar"></div>
+            <div class="voice-name">Nova</div>
+            <div class="voice-type">여성 • 친근한</div>
+          </div>
+          <div class="voice-card" data-voice="shimmer" onclick="TTS.selectVoice('shimmer')">
+            <div class="voice-avatar"></div>
+            <div class="voice-name">Shimmer</div>
+            <div class="voice-type">여성 • 부드러운</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 1.5rem;">텍스트 입력</div>
+        <textarea id="textInput" class="tool-input text-input" placeholder="음성으로 변환할 텍스트를 입력하세요..." oninput="TTS.updateCharCount()"></textarea>
+        <div class="char-count"><span id="charCount">0</span> / 5000자</div>
+
+        <div class="settings-row">
+          <div class="setting-group">
+            <div class="setting-label">
+              <span>속도</span>
+              <span id="speedValue">1.0x</span>
+            </div>
+            <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1" style="width: 100%;" oninput="document.getElementById('speedValue').textContent = this.value + 'x'">
+          </div>
+          <div class="setting-group">
+            <div class="setting-label">
+              <span>피치</span>
+              <span id="pitchValue">1.0</span>
+            </div>
+            <input type="range" id="pitchSlider" min="0.5" max="1.5" step="0.1" value="1" style="width: 100%;" oninput="document.getElementById('pitchValue').textContent = this.value">
+          </div>
+        </div>
+
+        <audio id="audioPlayer" class="audio-player" controls style="display: none;"></audio>
+
+        <div class="action-row">
+          <button class="tool-btn tool-btn-primary" style="flex: 1;" onclick="TTS.generate()" aria-label="음성 생성">
+            음성 생성
+          </button>
+          <button class="tool-btn tool-btn-secondary" onclick="TTS.download()" id="downloadBtn" disabled aria-label="다운로드">
+            다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="tts.js"></script>
+</body>
+</html>

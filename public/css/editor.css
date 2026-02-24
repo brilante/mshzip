@@ -1,0 +1,1303 @@
+/* MyMind3 - Apple-Inspired Content Editor */
+
+/* 테이블 색상 변수 (라이트 모드 기본값) */
+:root {
+  --editor-table-th-bg: #e0e0e0;
+  --editor-table-th-color: #000000;
+  --editor-table-th-border: #666666;
+  --editor-table-td-bg: #ffffff;
+  --editor-table-td-color: #000000;
+}
+
+/* Main Editor Container */
+.editor-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-system-background);
+    font-family: var(--font-family-primary);
+}
+
+/* Toast UI Editor Base Customization */
+.toastui-editor-defaultUI {
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-card) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+.toastui-editor-main {
+    flex: 1 !important; /* height: 100%에서 flex: 1로 변경 - 스크롤 가능하도록 */
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--color-system-background) !important;
+    overflow: hidden !important; /* 내부에서 스크롤 처리 */
+}
+
+/* Apple-Style Toolbar */
+.toastui-editor-toolbar {
+    background: #f5f5f5 !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    -webkit-backdrop-filter: var(--backdrop-blur) !important;
+    border: none !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    padding: 8px 0 8px 8px !important;
+    min-height: 56px !important;
+    display: inline-flex !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 0 !important;
+}
+
+/* Preview 탭 활성화 시 툴바 숨김 */
+.toastui-editor-defaultUI:has(.tab-item[aria-label="Preview"].active) .toastui-editor-toolbar {
+    display: none !important;
+}
+
+/* 커스텀 프리뷰 탭 활성화 시 툴바 숨김 */
+body:has(#customTabPreview.active) .toastui-editor-toolbar {
+    display: none !important;
+}
+
+.toastui-editor-toolbar button {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: var(--spacing-sm) !important;
+    border-radius: var(--radius-md) !important;
+    transition: all var(--transition-fast) !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    font-size: 17px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.toastui-editor-toolbar button:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(0, 0, 0, 0.3) !important;
+    color: #000000 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.toastui-editor-toolbar button:active {
+    transform: scale(0.95) !important;
+    transition-duration: 50ms !important;
+}
+
+.toastui-editor-toolbar button.active {
+    background: #007aff !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-card) !important;
+}
+
+/* 툴바 버튼 아이콘 가시성 강제 */
+.toastui-editor-toolbar button svg {
+    fill: currentColor !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.toastui-editor-toolbar button:hover svg {
+    fill: currentColor !important;
+}
+
+/* TOAST UI 아이콘 CSS 복원 */
+.toastui-editor-toolbar-icons::before {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+}
+
+/* 각 버튼별 아이콘 텍스트 */
+.toastui-editor-toolbar button.heading::before {
+    content: "H" !important;
+    font-weight: bold !important;
+}
+
+.toastui-editor-toolbar button.bold::before {
+    content: "B" !important;
+    font-weight: bold !important;
+}
+
+.toastui-editor-toolbar button.italic::before {
+    content: "I" !important;
+    font-style: italic !important;
+}
+
+.toastui-editor-toolbar button.strike::before {
+    content: "S" !important;
+    text-decoration: line-through !important;
+}
+
+.toastui-editor-toolbar button.hrline::before {
+    content: "—" !important;
+}
+
+.toastui-editor-toolbar button.quote::before {
+    content: "\"\"" !important;
+}
+
+.toastui-editor-toolbar button.bullet-list::before {
+    content: "•" !important;
+    font-size: 20px !important;
+}
+
+.toastui-editor-toolbar button.ordered-list::before {
+    content: "1." !important;
+}
+
+.toastui-editor-toolbar button.task-list::before {
+    content: "" !important;
+}
+
+.toastui-editor-toolbar button.indent::before {
+    content: "→" !important;
+}
+
+.toastui-editor-toolbar button.outdent::before {
+    content: "←" !important;
+}
+
+.toastui-editor-toolbar button.table::before {
+    content: "⊞" !important;
+}
+
+.toastui-editor-toolbar button.image::before {
+    content: "" !important;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-color: currentColor;
+    vertical-align: middle;
+}
+
+.toastui-editor-toolbar button.link::before {
+    content: "" !important;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-color: currentColor;
+    vertical-align: middle;
+}
+
+.toastui-editor-toolbar button.code::before {
+    content: "</>" !important;
+}
+
+.toastui-editor-toolbar button.codeblock::before {
+    content: "CB" !important;
+    font-family: monospace !important;
+}
+
+/* Content Areas - Force White Background */
+.toastui-editor-md-container,
+.toastui-editor-ww-container {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: none !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Force White Background for All Editor Elements */
+.toastui-editor,
+.toastui-editor-defaultUI,
+.toastui-editor-defaultUI-toolbar,
+.toastui-editor.md-mode,
+.toastui-editor .ProseMirror,
+.toastui-editor-md-tab-container,
+.toastui-editor-md-vertical-style,
+.CodeMirror,
+.CodeMirror-scroll,
+.CodeMirror-gutters {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Remove all padding/margin from editor containers */
+.toastui-editor .ProseMirror,
+.CodeMirror,
+.CodeMirror-scroll,
+.CodeMirror-lines,
+.CodeMirror-code {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* CodeMirror line padding override */
+.CodeMirror pre.CodeMirror-line,
+.CodeMirror pre.CodeMirror-line-like {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Apple-Style Content Typography - MINIMAL to avoid KaTeX conflicts */
+.toastui-editor-contents {
+    /* 폰트, line-height 강제 제거 - KaTeX 호환성 */
+    /* font-family: var(--font-family-primary) !important; */
+    /* font-size: var(--font-size-body) !important; */
+    /* line-height: 1.6 !important; */
+    /* color 제거 - 표 헤더 색상 충돌 방지 */
+    /* color: var(--color-text-primary) !important; */
+    padding: 0 !important;
+    background: var(--color-system-background) !important;
+    min-height: 100% !important;
+    /* overflow 제거 - 부모 요소에서 스크롤 처리 */
+    /* 프리뷰 영역에서 텍스트 선택 및 복사 가능하도록 설정 */
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
+/* Headings - MINIMAL (TOAST UI 기본값 사용) */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2,
+.toastui-editor-contents h3,
+.toastui-editor-contents h4,
+.toastui-editor-contents h5,
+.toastui-editor-contents h6 {
+    /* font-family, font-size, line-height 강제 제거 */
+    color: var(--color-text-primary) !important;
+}
+
+.toastui-editor-contents h1 {
+    border-bottom: 1px solid var(--color-separator) !important;
+    padding-bottom: var(--spacing-sm) !important;
+}
+
+/* Paragraphs and Text - MINIMAL */
+.toastui-editor-contents p {
+    /* font-size, line-height 강제 제거 - TOAST UI 기본값 사용 */
+    margin-bottom: var(--spacing-md) !important;
+    color: var(--color-text-primary) !important;
+}
+
+/* 모든 텍스트 요소에 기본 색상 적용 (표 헤더는 별도 규칙 적용) */
+.toastui-editor-contents div,
+.toastui-editor-contents span:not(th span):not(thead span),
+.toastui-editor-contents li {
+    color: var(--color-text-primary) !important;
+}
+
+.toastui-editor-contents strong {
+    font-weight: var(--font-weight-semibold) !important;
+    color: var(--color-text-primary) !important;
+}
+
+.toastui-editor-contents em {
+    font-style: italic !important;
+    color: var(--color-text-secondary) !important;
+}
+
+/* Apple-Style Blockquotes */
+.toastui-editor-contents blockquote {
+    border-left: 4px solid var(--color-accent-blue) !important;
+    padding-left: var(--spacing-md) !important;
+    padding-right: var(--spacing-md) !important;
+    padding-top: var(--spacing-sm) !important;
+    padding-bottom: var(--spacing-sm) !important;
+    margin: var(--spacing-lg) 0 !important;
+    color: var(--color-text-secondary) !important;
+    background: var(--color-fill-tertiary) !important;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
+    font-style: italic !important;
+}
+
+/* Code Elements - MINIMAL */
+.toastui-editor-contents code {
+    /* font-family, font-size 강제 제거 */
+    background: var(--color-fill-tertiary) !important;
+    color: var(--color-accent-purple) !important;
+    padding: 2px var(--spacing-xs) !important;
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--color-separator) !important;
+}
+
+.toastui-editor-contents pre {
+    background: var(--color-fill-secondary) !important;
+    border: 1px solid var(--color-separator) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: var(--spacing-md) !important;
+    overflow-x: auto !important;
+    margin: var(--spacing-lg) 0 !important;
+}
+
+.toastui-editor-contents pre code {
+    /* font-family, font-size 강제 제거 */
+    background: none !important;
+    color: var(--color-text-primary) !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Apple-Style Tables - High Contrast for Better Visibility */
+.toastui-editor-contents table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    margin: var(--spacing-lg) 0 !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    border: 2px solid #666666 !important;
+}
+
+.toastui-editor-contents th,
+.toastui-editor-contents td {
+    border: none !important;
+    border-right: 1px solid #999999 !important;
+    border-bottom: 1px solid #999999 !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    text-align: left !important;
+}
+
+/* 표 헤더 스타일 - 검은색 텍스트로 명확하게 표시 */
+.toastui-editor-contents thead,
+.toastui-editor-contents thead th,
+.toastui-editor-contents th,
+.toastui-editor-contents table thead,
+.toastui-editor-contents table thead th,
+.toastui-editor-contents table th,
+table thead,
+table thead th,
+table th {
+    /* font-size 강제 제거 */
+    background-color: var(--editor-table-th-bg) !important;
+    background: var(--editor-table-th-bg) !important;
+    font-weight: 600 !important;
+    color: var(--editor-table-th-color) !important;
+    border-bottom: 2px solid var(--editor-table-th-border) !important;
+}
+
+/* 프리뷰에서 표 헤더 텍스트 색상 강제 적용 - 최고 우선순위 */
+.toastui-editor-md-preview thead,
+.toastui-editor-md-preview thead th,
+.toastui-editor-md-preview th,
+.toastui-editor-md-preview table thead,
+.toastui-editor-md-preview table thead th,
+.toastui-editor-md-preview table th,
+.toastui-editor-md-preview .toastui-editor-contents thead,
+.toastui-editor-md-preview .toastui-editor-contents thead th,
+.toastui-editor-md-preview .toastui-editor-contents th,
+.toastui-editor-md-preview .toastui-editor-contents table thead,
+.toastui-editor-md-preview .toastui-editor-contents table thead th,
+.toastui-editor-md-preview .toastui-editor-contents table th {
+    color: var(--editor-table-th-color) !important;
+    background-color: var(--editor-table-th-bg) !important;
+    background: var(--editor-table-th-bg) !important;
+    font-weight: 600 !important;
+}
+
+.toastui-editor-contents td {
+    background: var(--editor-table-td-bg) !important;
+    color: var(--editor-table-td-color) !important;
+}
+
+.toastui-editor-contents th:last-child,
+.toastui-editor-contents td:last-child {
+    border-right: none !important;
+}
+
+.toastui-editor-contents tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+.toastui-editor-contents tbody tr:hover td {
+    background: #f5f5f5 !important;
+}
+
+/* Lists - Apple Style */
+.toastui-editor-contents ul,
+.toastui-editor-contents ol {
+    padding-left: var(--spacing-lg) !important;
+    margin: var(--spacing-md) 0 !important;
+}
+
+.toastui-editor-contents li {
+    /* line-height 강제 제거 */
+    margin: var(--spacing-xs) 0 !important;
+}
+
+.toastui-editor-contents ul li {
+    list-style-type: disc !important;
+}
+
+.toastui-editor-contents ol li {
+    list-style-type: decimal !important;
+}
+
+/* Links - Apple Style */
+.toastui-editor-contents a {
+    color: var(--color-accent-blue) !important;
+    text-decoration: none !important;
+    font-weight: var(--font-weight-medium) !important;
+    transition: color var(--transition-fast) !important;
+}
+
+.toastui-editor-contents a:hover {
+    color: var(--color-accent-blue-hover) !important;
+    text-decoration: underline !important;
+}
+
+/* Editor Tab Navigation */
+.toastui-editor-tabs {
+    background: var(--color-fill-secondary) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--color-separator) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    -webkit-backdrop-filter: var(--backdrop-blur) !important;
+}
+
+.toastui-editor-tab-section {
+    background: transparent !important;
+}
+
+.toastui-editor-tab-section .tab-item {
+    color: var(--color-text-secondary) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    font-size: var(--font-size-callout) !important;
+    font-weight: var(--font-weight-medium) !important;
+    transition: all var(--transition-fast) !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+}
+
+.toastui-editor-tab-section .tab-item:hover {
+    color: var(--color-text-primary) !important;
+    background: var(--color-fill-quaternary) !important;
+}
+
+.toastui-editor-tab-section .tab-item.active {
+    color: var(--color-accent-blue) !important;
+    background: var(--color-system-background) !important;
+    border-bottom: 2px solid var(--color-accent-blue) !important;
+}
+
+/* Preview Mode */
+.toastui-editor-md-preview {
+    background: var(--color-system-background) !important;
+    color: var(--color-text-primary) !important;
+    padding: 0 !important;
+    flex: 1 !important; /* flex로 남은 공간 차지 */
+    overflow-y: scroll !important; /* auto에서 scroll로 변경 - 항상 스크롤바 표시 */
+    overflow-x: hidden !important;
+    line-height: 0.8 !important;
+    /* 프리뷰 영역에서 텍스트 선택 및 복사 가능하도록 설정 */
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
+/* 프리뷰 영역 내부의 contents padding 설정 */
+.toastui-editor-md-preview .toastui-editor-contents {
+    padding: 3.5em var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) !important; /* 상단에 더 많은 여유 공간 추가 */
+}
+
+/* 프리뷰 콘텐츠 하단에 추가 공간 (20줄 정도) */
+.toastui-editor-md-preview .toastui-editor-contents::after {
+    content: "" !important;
+    display: block !important;
+    height: 500px !important; /* 약 20줄 분량의 스크롤 공간 */
+    width: 100% !important;
+}
+
+/* 커스텀 프리뷰 컨테이너 padding 설정 */
+.custom-preview-container {
+    padding: 3.5em var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) !important; /* 상단에 더 많은 여유 공간 추가 */
+}
+
+/* 커스텀 프리뷰 하단에 추가 공간 (20줄 정도) */
+.custom-preview-container::after {
+    content: "" !important;
+    display: block !important;
+    height: 500px !important; /* 약 20줄 분량의 스크롤 공간 */
+    width: 100% !important;
+}
+
+/* Scroll Sync 버튼 숨김 (기능은 백그라운드에서 항상 ON) */
+.scroll-sync {
+    display: none !important;
+}
+
+/* Apple-Style Popups and Modals */
+.toastui-editor-popup {
+    background: var(--color-fill-secondary) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    -webkit-backdrop-filter: var(--backdrop-blur) !important;
+    border: 1px solid var(--color-separator) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-menu) !important;
+    padding: var(--spacing-md) !important;
+}
+
+.toastui-editor-popup-add-link,
+.toastui-editor-popup-add-image,
+.toastui-editor-popup-add-table {
+    background: var(--color-fill-secondary) !important;
+    border-radius: var(--radius-lg) !important;
+}
+
+.toastui-editor-popup input[type="text"],
+.toastui-editor-popup input[type="url"],
+.toastui-editor-popup textarea {
+    background: var(--color-system-background) !important;
+    color: var(--color-text-primary) !important;
+    border: 1px solid var(--color-separator) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-sm) !important;
+    font-family: var(--font-family-primary) !important;
+    transition: border-color var(--transition-fast) !important;
+}
+
+.toastui-editor-popup input:focus,
+.toastui-editor-popup textarea:focus {
+    border-color: var(--color-accent-blue) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+}
+
+/* Dropdown Menus */
+.toastui-editor-dropdown-toolbar {
+    background: var(--color-fill-secondary) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    -webkit-backdrop-filter: var(--backdrop-blur) !important;
+    border: 1px solid var(--color-separator) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-menu) !important;
+    overflow: hidden !important;
+}
+
+.toastui-editor-dropdown-toolbar button {
+    color: var(--color-text-primary) !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    font-size: var(--font-size-body) !important;
+    transition: background-color var(--transition-fast) !important;
+}
+
+.toastui-editor-dropdown-toolbar button:hover {
+    background: var(--color-fill-quaternary) !important;
+}
+
+/* Editor State Indicators */
+.editor-container.readonly {
+    opacity: 0.7;
+}
+
+.editor-container.readonly .toastui-editor-toolbar {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+}
+
+.editor-container.focus {
+    box-shadow: 0 0 0 3px var(--color-accent-blue-alpha) !important;
+    border-radius: var(--radius-lg) !important;
+}
+
+/* Custom Editor Controls */
+.editor-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-fill-secondary);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border-bottom: 1px solid var(--color-separator);
+    font-size: var(--font-size-caption1);
+    color: var(--color-text-secondary);
+    min-height: 44px; /* Apple touch target */
+}
+
+.editor-mode-toggle {
+    display: flex;
+    gap: var(--spacing-xxs);
+}
+
+.mode-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-separator);
+    background: var(--color-fill-tertiary);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-caption2);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 28px;
+}
+
+.mode-btn.active {
+    background: var(--color-accent-blue);
+    color: var(--color-white);
+    border-color: var(--color-accent-blue);
+    box-shadow: var(--shadow-card);
+}
+
+.mode-btn:hover:not(.active) {
+    background: var(--color-fill-quaternary);
+    color: var(--color-text-primary);
+    transform: translateY(-1px);
+}
+
+.mode-btn:active {
+    transform: translateY(0);
+    transition-duration: 50ms;
+}
+
+.editor-status {
+    font-size: var(--font-size-caption2);
+    color: var(--color-text-tertiary);
+    font-weight: var(--font-weight-regular);
+}
+
+/* KaTeX 수식 - test3/editor.html처럼 기본 스타일만 사용 */
+/* TOAST UI Editor + KaTeX의 기본 CSS에 의존하여 정상 렌더링 */
+/* 커스텀 CSS 간섭 제거 */
+
+/* KaTeX Display Math 간격 조정 (85% 감소) */
+.toastui-editor-md-preview .katex-display {
+    margin-top: 0.15em !important;
+    margin-bottom: 0.15em !important;
+}
+
+/* Code Syntax Highlighting - Apple Colors */
+.editor-container .hljs {
+    background: var(--color-fill-secondary) !important;
+    color: var(--color-text-primary) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+.editor-container .hljs-keyword {
+    color: var(--color-accent-purple) !important;
+    font-weight: var(--font-weight-semibold) !important;
+}
+
+.editor-container .hljs-string {
+    color: var(--color-accent-green) !important;
+}
+
+.editor-container .hljs-comment {
+    color: var(--color-text-tertiary) !important;
+    font-style: italic !important;
+}
+
+.editor-container .hljs-number {
+    color: var(--color-accent-orange) !important;
+}
+
+.editor-container .hljs-function {
+    color: var(--color-accent-blue) !important;
+}
+
+.editor-container .hljs-variable {
+    color: var(--color-accent-teal) !important;
+}
+
+/* Custom Scrollbars - Apple Style - 가시성 대폭 개선 */
+.toastui-editor-contents::-webkit-scrollbar,
+.toastui-editor-md-preview::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+.toastui-editor-contents::-webkit-scrollbar-track,
+.toastui-editor-md-preview::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 7px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.toastui-editor-contents::-webkit-scrollbar-thumb,
+.toastui-editor-md-preview::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 7px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.toastui-editor-contents::-webkit-scrollbar-thumb:hover,
+.toastui-editor-md-preview::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 7px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.toastui-editor-contents::-webkit-scrollbar-corner,
+.toastui-editor-md-preview::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Focus and Selection Styles */
+.toastui-editor-contents ::selection {
+    background: var(--color-accent-blue-alpha) !important;
+    color: var(--color-text-primary) !important;
+}
+
+/* Accessibility Improvements */
+.toastui-editor-toolbar button:focus-visible {
+    outline: 2px solid var(--color-accent-blue) !important;
+    outline-offset: 2px !important;
+}
+
+/* FIX: <p>, </p> 태그가 텍스트로 표시되는 것 강제 숨김 */
+.toastui-editor-md-preview *,
+.custom-preview-container * {
+    /* <p>, </p> 패턴이 포함된 텍스트 노드에서 해당 부분만 숨김 */
+}
+
+/* 텍스트로 표시되는 HTML 태그들을 숨김 처리 */
+.toastui-editor-md-preview,
+.custom-preview-container {
+    /* JavaScript의 cleanPTagTexts 함수가 처리하므로 CSS는 보조 역할 */
+}
+
+.mode-btn:focus-visible {
+    outline: 2px solid var(--color-accent-blue);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .toastui-editor-toolbar button,
+    .mode-btn,
+    .toastui-editor-tab-section .tab-item {
+        transition: none !important;
+    }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .toastui-editor-toolbar {
+        padding: var(--spacing-xs) !important;
+        min-height: 48px !important;
+    }
+
+    .toastui-editor-toolbar button {
+        padding: var(--spacing-xs) !important;
+        margin: 0 1px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+    }
+
+    .toastui-editor-contents {
+        /* mobile에서도 font-size 강제 제거 */
+        padding: 0 !important;
+    }
+
+    .editor-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-xs);
+        min-height: auto;
+        padding: var(--spacing-md);
+    }
+
+    .editor-mode-toggle {
+        justify-content: center;
+    }
+
+    .mode-btn {
+        min-height: 44px; /* Touch target */
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .toastui-editor-popup {
+        margin: var(--spacing-md) !important;
+        max-width: calc(100vw - 32px) !important;
+    }
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+    .toastui-editor-toolbar button:hover {
+        background: var(--color-accent-blue) !important;
+        color: var(--color-white) !important;
+    }
+
+    .toastui-editor-contents a {
+        text-decoration: underline !important;
+    }
+
+    .toastui-editor-contents code {
+        border-width: 2px !important;
+    }
+}
+
+/* ========================================
+   FINAL OVERRIDE - 표 헤더 검은색 강제 적용
+   ======================================== */
+/* 모든 표 헤더 텍스트를 검은색으로 - 최고 우선순위 */
+th,
+thead th,
+table th,
+table thead th,
+.toastui-editor-contents th,
+.toastui-editor-contents thead th,
+.toastui-editor-contents table th,
+.toastui-editor-contents table thead th,
+.toastui-editor-md-preview th,
+.toastui-editor-md-preview thead th,
+.toastui-editor-md-preview table th,
+.toastui-editor-md-preview table thead th,
+.toastui-editor-md-preview .toastui-editor-contents th,
+.toastui-editor-md-preview .toastui-editor-contents thead th,
+.toastui-editor-md-preview .toastui-editor-contents table th,
+.toastui-editor-md-preview .toastui-editor-contents table thead th {
+    color: var(--editor-table-th-color) !important;
+    background-color: var(--editor-table-th-bg) !important;
+    font-weight: 600 !important;
+}
+
+/* ========================================
+   프리뷰 커서 스타일 - 커서 위치 기반 복사 기능
+   ======================================== */
+
+/* 프리뷰 컨테이너 contenteditable 스타일 */
+.custom-preview-container[contenteditable="true"] {
+    caret-color: #1976d2;  /* 파란색 커서 */
+    cursor: text;
+}
+
+/* 포커스 시 시각적 피드백 */
+.custom-preview-container[contenteditable="true"]:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(25, 118, 210, 0.15);
+}
+
+/* 텍스트 선택 영역 스타일 */
+.custom-preview-container[contenteditable="true"]::selection,
+.custom-preview-container[contenteditable="true"] *::selection {
+    background-color: rgba(25, 118, 210, 0.25);
+}
+
+/* 커서 위치 표시기 */
+.preview-cursor-indicator {
+    position: fixed;
+    width: 3px;  /* 커서 두께 */
+    height: 1.2em;
+    background-color: #1976d2;
+    animation: cursor-blink 1s step-end infinite;
+    pointer-events: none;
+    z-index: 99999;
+    border-radius: 1px;
+}
+
+@keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* ========================================
+   첨부파일 리스트 스타일
+   ======================================== */
+
+.attachment-list-container {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 12px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* 탭 바로 아래 첨부파일 목록 - 심플 디자인 (화이트/다크 모드 지원) */
+.preview-attachment-list {
+    background: #f8f9fa;
+    border-radius: 0;
+    padding: 10px 12px;
+    margin: 0; /* 탭 바로 아래에 배치 */
+    max-height: 110px; /* 2줄 표시 (44px × 2 + gap 6px + padding 20px) */
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-top: none; /* 탭과 이음새 없이 연결 */
+}
+
+.preview-attachment-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.preview-attachment-list::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.preview-attachment-list::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 3px;
+}
+
+.preview-attachment-list::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
+}
+
+.attachment-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.attachment-header span {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.attachment-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+
+.attachment-item:hover {
+    background: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+.attachment-item .file-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eeeeee;
+    border-radius: 6px;
+}
+
+.attachment-item .file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #212121;
+    font-weight: 500;
+    font-size: 11px;
+    min-width: 0;
+}
+
+.attachment-item .file-size {
+    color: #757575;
+    font-size: 10px;
+    flex-shrink: 0;
+    background: #eeeeee;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.attachment-item .btn-preview,
+.attachment-item .btn-delete {
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attachment-item .btn-preview:hover {
+    background: #e3f2fd;
+    border-color: #90caf9;
+    opacity: 1;
+}
+
+.attachment-item .btn-delete:hover {
+    background: #ffebee;
+    border-color: #ef9a9a;
+    opacity: 1;
+}
+
+/* 반응형: 작은 화면에서 1열 */
+@media (max-width: 600px) {
+    .attachment-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 다크 모드 */
+[data-theme="dark"] .attachment-list-container,
+.dark-mode .attachment-list-container,
+body.dark .attachment-list-container {
+    background: #1e1e1e;
+    border-color: #333;
+}
+
+[data-theme="dark"] .preview-attachment-list,
+.dark-mode .preview-attachment-list,
+body.dark .preview-attachment-list {
+    background: #2d2d2d;
+    border-color: #424242;
+}
+
+[data-theme="dark"] .preview-attachment-list::-webkit-scrollbar-thumb,
+.dark-mode .preview-attachment-list::-webkit-scrollbar-thumb,
+body.dark .preview-attachment-list::-webkit-scrollbar-thumb {
+    background: #616161;
+}
+
+[data-theme="dark"] .preview-attachment-list::-webkit-scrollbar-thumb:hover,
+.dark-mode .preview-attachment-list::-webkit-scrollbar-thumb:hover,
+body.dark .preview-attachment-list::-webkit-scrollbar-thumb:hover {
+    background: #757575;
+}
+
+[data-theme="dark"] .attachment-item,
+.dark-mode .attachment-item,
+body.dark .attachment-item {
+    background: #424242;
+    border-color: #616161;
+}
+
+[data-theme="dark"] .attachment-item:hover,
+.dark-mode .attachment-item:hover,
+body.dark .attachment-item:hover {
+    background: #4a4a4a;
+    border-color: #757575;
+}
+
+[data-theme="dark"] .attachment-item .file-icon,
+.dark-mode .attachment-item .file-icon,
+body.dark .attachment-item .file-icon {
+    background: #616161;
+}
+
+[data-theme="dark"] .attachment-item .file-name,
+.dark-mode .attachment-item .file-name,
+body.dark .attachment-item .file-name {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .attachment-item .file-size,
+.dark-mode .attachment-item .file-size,
+body.dark .attachment-item .file-size {
+    color: #b3b3b3;
+    background: #616161;
+}
+
+[data-theme="dark"] .attachment-item .btn-preview:hover,
+.dark-mode .attachment-item .btn-preview:hover,
+body.dark .attachment-item .btn-preview:hover {
+    background: #1565c0;
+    border-color: #1976d2;
+}
+
+[data-theme="dark"] .attachment-item .btn-delete:hover,
+.dark-mode .attachment-item .btn-delete:hover,
+body.dark .attachment-item .btn-delete:hover {
+    background: #c62828;
+    border-color: #d32f2f;
+}
+
+/* ============================================ */
+/* 파일 첨부 버튼 - 불러오기 버튼과 동일한 스타일 */
+/* !important로 다른 CSS에 덮어씌워지지 않도록 함 */
+/* ============================================ */
+#attachFileBtn,
+.button-toolbar #attachFileBtn,
+.content .button-toolbar #attachFileBtn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;  /* 불러오기 버튼과 동일 */
+    font-family: inherit !important;
+    font-weight: normal !important;
+    padding: 5px 10px !important;  /* 불러오기 버튼과 동일 */
+    height: auto !important;  /* padding으로 자연스러운 높이 */
+    box-sizing: border-box !important;
+    background-color: transparent !important;
+    border: 1px solid #1d1d1f !important;
+    color: #1d1d1f !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    user-select: none !important;
+    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.1) !important;
+}
+
+#attachFileBtn:hover,
+.button-toolbar #attachFileBtn:hover,
+.content .button-toolbar #attachFileBtn:hover {
+    background-color: #f0f0f0 !important;
+    border-color: #000 !important;
+    color: #1d1d1f !important;
+    outline: 0.5px solid #000 !important;
+    box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.15) !important;
+}
+
+#attachFileBtn:active,
+.button-toolbar #attachFileBtn:active,
+.content .button-toolbar #attachFileBtn:active {
+    background-color: #e0e0e0 !important;
+    border-color: #000 !important;
+    box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 다크모드 - 불러오기 버튼과 동일한 스타일 */
+[data-theme="dark"] #attachFileBtn,
+[data-theme="dark"] .button-toolbar #attachFileBtn,
+[data-theme="dark"] .content .button-toolbar #attachFileBtn,
+.dark-mode #attachFileBtn,
+body.dark #attachFileBtn {
+    background-color: transparent !important;
+    border-color: #e0e0e0 !important;
+    color: #e0e0e0 !important;
+    box-shadow: 0px 2px 8px 0px rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] #attachFileBtn:hover,
+[data-theme="dark"] .button-toolbar #attachFileBtn:hover,
+[data-theme="dark"] .content .button-toolbar #attachFileBtn:hover,
+.dark-mode #attachFileBtn:hover,
+body.dark #attachFileBtn:hover {
+    background-color: #2a2a2a !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
+    outline: 0.5px solid #ffffff !important;
+    box-shadow: 0px 3px 12px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* 파일 첨부 버튼 - input 오버레이 방식 */
+.attach-file-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* 프리뷰 렌더링 오류 배너 */
+.preview-error-banner {
+  padding: 20px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.preview-error-banner h4 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.preview-error-banner p {
+  color: #856404;
+  margin-bottom: 10px;
+}
+
+.preview-error-banner summary {
+  cursor: pointer;
+  color: #856404;
+  font-weight: 600;
+}
+
+.preview-error-banner .preview-error-detail {
+  color: #721c24;
+  background: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* 프리뷰 원본 마크다운 표시 영역 */
+.preview-raw-markdown {
+  padding: 20px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* 다크 모드 */
+[data-theme="dark"] .preview-error-banner {
+  background: #332b00;
+  border-left-color: #ffc107;
+}
+
+[data-theme="dark"] .preview-error-banner h4,
+[data-theme="dark"] .preview-error-banner p,
+[data-theme="dark"] .preview-error-banner summary {
+  color: #ffc107;
+}
+
+[data-theme="dark"] .preview-error-banner .preview-error-detail {
+  color: #f8d7da;
+  background: #3b1015;
+}
+
+[data-theme="dark"] .preview-raw-markdown {
+  background: #1a1a1a;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+/* 파일 input - 더 이상 CSS 클래스 사용하지 않음 (Ralph Loop 8에서 제거)
+   inline style="display: none;" 사용
+*/

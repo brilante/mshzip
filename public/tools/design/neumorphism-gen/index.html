@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neumorphism 생성기 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="neumorphism-gen.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <!-- 헤더 -->
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">Neumorphism 생성기</h1>
+          <p class="tool-description">소프트 UI/뉴모피즘 효과 CSS 생성</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) {
+        document.querySelector('.tool-header').style.display = 'none';
+      }
+      function goBack() {
+        if (window.self !== window.top) {
+          window.parent.postMessage('tools:back', '*');
+        } else {
+          window.history.back();
+        }
+      }
+    </script>
+
+    <div class="generator-layout">
+      <!-- 컨트롤 패널 -->
+      <div class="controls-panel">
+        <div class="section-title">설정</div>
+
+        <div class="control-group">
+          <label>배경색</label>
+          <input type="color" id="bgColor" value="#e0e5ec" oninput="NeumorphismGen.update()">
+        </div>
+
+        <div class="control-group">
+          <label>크기</label>
+          <input type="range" id="size" min="50" max="300" value="150" oninput="NeumorphismGen.update()">
+          <span id="sizeValue">150px</span>
+        </div>
+
+        <div class="control-group">
+          <label>둥글기</label>
+          <input type="range" id="borderRadius" min="0" max="150" value="50" oninput="NeumorphismGen.update()">
+          <span id="borderRadiusValue">50px</span>
+        </div>
+
+        <div class="control-group">
+          <label>거리</label>
+          <input type="range" id="distance" min="1" max="50" value="20" oninput="NeumorphismGen.update()">
+          <span id="distanceValue">20px</span>
+        </div>
+
+        <div class="control-group">
+          <label>강도</label>
+          <input type="range" id="intensity" min="0" max="100" value="15" oninput="NeumorphismGen.update()">
+          <span id="intensityValue">15%</span>
+        </div>
+
+        <div class="control-group">
+          <label>블러</label>
+          <input type="range" id="blur" min="0" max="100" value="60" oninput="NeumorphismGen.update()">
+          <span id="blurValue">60px</span>
+        </div>
+
+        <div class="shape-selector">
+          <label>형태</label>
+          <div class="shape-buttons">
+            <button class="shape-btn active" data-shape="flat" onclick="NeumorphismGen.setShape('flat')" aria-label="플랫">플랫</button>
+            <button class="shape-btn" data-shape="concave" onclick="NeumorphismGen.setShape('concave')" aria-label="오목">오목</button>
+            <button class="shape-btn" data-shape="convex" onclick="NeumorphismGen.setShape('convex')" aria-label="볼록">볼록</button>
+            <button class="shape-btn" data-shape="pressed" onclick="NeumorphismGen.setShape('pressed')" aria-label="눌림">눌림</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프리뷰 패널 -->
+      <div class="preview-panel">
+        <div class="section-title">미리보기</div>
+        <div class="preview-area" id="previewArea">
+          <div class="neumorph-box" id="neumorphBox"></div>
+        </div>
+
+        <!-- CSS 코드 -->
+        <div class="code-output">
+          <div class="code-header">
+            <span>CSS 코드</span>
+            <button class="copy-btn" onclick="NeumorphismGen.copyCode()" aria-label="복사">복사</button>
+          </div>
+          <pre id="cssCode"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="neumorphism-gen.js"></script>
+</body>
+</html>

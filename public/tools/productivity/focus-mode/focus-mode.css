@@ -1,0 +1,42 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; color: white; }
+.container { max-width: 500px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; }
+header { text-align: center; margin-bottom: 40px; }
+header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+header p { opacity: 0.7; }
+.focus-setup, .focus-active, .focus-complete { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); }
+.form-group { margin-bottom: 24px; }
+.form-group label { display: block; margin-bottom: 10px; font-weight: 500; opacity: 0.9; }
+.form-group input, .form-group select { width: 100%; padding: 14px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 16px; }
+.form-group input::placeholder { color: rgba(255,255,255,0.5); }
+.time-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.time-btn { padding: 12px 20px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 14px; cursor: pointer; transition: all 0.3s; }
+.time-btn.active, .time-btn:hover { background: rgba(255,255,255,0.3); border-color: white; }
+.btn-start { width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 12px; color: white; font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+.focus-active { text-align: center; }
+.focus-task { font-size: 20px; font-weight: 500; margin-bottom: 30px; opacity: 0.9; }
+.timer-circle { position: relative; width: 250px; height: 250px; margin: 0 auto 30px; }
+.timer-circle svg { transform: rotate(-90deg); }
+.timer-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+.timer-progress { fill: none; stroke: url(#gradient); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+.timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Roboto Mono', monospace; font-size: 48px; font-weight: 700; }
+.focus-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+.btn-pause, .btn-end { padding: 14px 30px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.btn-pause { background: rgba(255,255,255,0.2); color: white; }
+.btn-end { background: #ff5252; color: white; }
+.focus-quote { font-style: italic; opacity: 0.7; font-size: 14px; }
+.focus-complete { text-align: center; }
+.complete-icon { font-size: 72px; margin-bottom: 20px; }
+.focus-complete h2 { font-size: 28px; margin-bottom: 10px; }
+.complete-time { opacity: 0.8; margin-bottom: 30px; }
+.btn-new-session { padding: 16px 40px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; }
+.stats-section { margin-top: auto; padding-top: 30px; }
+.stats-section h3 { text-align: center; margin-bottom: 16px; opacity: 0.8; font-size: 16px; }
+.stats-row { display: flex; justify-content: center; gap: 40px; }
+.stat { text-align: center; }
+.stat-value { display: block; font-size: 32px; font-weight: 700; }
+.stat-label { font-size: 14px; opacity: 0.7; }
+.hidden { display: none !important; }
+body.fullscreen-focus { background: #0a0a0f; }
+body.fullscreen-focus .container { justify-content: center; }
+body.fullscreen-focus .stats-section { display: none; }

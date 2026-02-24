@@ -1,0 +1,1964 @@
+/* ============================================
+   결제 페이지 스타일
+   ============================================ */
+
+/* 크레딧 잔액 표시 */
+.credit-balance {
+  font-size: 17px;          /* was 20px */
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+/* v6.7: 크레딧 섹션 스타일 */
+.credit-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.credit-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.credit-icon {
+  font-size: 20px;
+}
+
+.credit-type-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.credit-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.credit-detail-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.credit-detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.credit-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  margin-top: 8px;
+  border-top: 2px solid #dee2e6;
+}
+
+.credit-total-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.no-credits-message {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+.credit-free {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.credit-used {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #f57c00;
+}
+
+.credit-service {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #7b1fa2;
+}
+
+.credit-paid {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #388e3c;
+}
+
+.credit-order-info {
+  margin-top: 14px;         /* was 16px */
+  padding: 10px 14px;       /* was 12px 16px */
+  background: #e3f2fd;
+  border-radius: 7px;       /* was 8px */
+  border-left: 4px solid #1976d2;
+}
+
+.credit-order-info p {
+  margin: 0;
+  font-size: 11px;          /* was 13px */
+  color: #1565c0;
+  font-weight: 500;
+}
+
+
+/* 구독 패키지 그리드 */
+.subscription-packages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(187px, 1fr));  /* was 220px */
+  gap: 7px;                 /* was 8px */
+  margin: 17px 0;           /* was 20px 0 */
+}
+
+.package-card {
+  position: relative;
+  border: 2px solid #e0e0e0;
+  border-radius: 7px;       /* was 8px */
+  background: #ffffff;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.package-card:hover {
+  border-color: #007aff;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+}
+
+.package-card.selected {
+  border-color: #007aff;
+  background: #f0f7ff;
+}
+
+/* 이미 선택된 패키지 재클릭 시 시각적 피드백 */
+.package-card.package-pulse {
+  animation: packagePulse 0.3s ease-out;
+}
+
+@keyframes packagePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3); }
+  100% { transform: scale(1); }
+}
+
+.package-card.popular {
+  /* 기본 테두리 색상 사용 (#e0e0e0) */
+}
+
+.package-card.pro {
+  /* 기본 테두리 색상 사용 (#e0e0e0) */
+}
+
+/* 비활성화된 패키지 */
+.package-card.package-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #e0e0e0 !important;
+  background-color: #f5f5f5 !important;
+}
+
+.package-card.package-disabled:hover {
+  border-color: #e0e0e0 !important;
+  box-shadow: none !important;
+}
+
+.package-card.package-disabled .package-content {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 현재 구독 중인 패키지 - 비활성화 패키지와 동일한 회색조 */
+.package-card.package-current {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  border-color: #e0e0e0 !important;
+  background-color: #f5f5f5 !important;
+  filter: grayscale(1);
+}
+
+.package-card.package-current:hover {
+  cursor: not-allowed !important;
+  border-color: #e0e0e0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* 업그레이드 가능한 패키지 */
+.package-card.package-upgrade {
+  border-color: #3b82f6;
+}
+
+.package-card.package-upgrade:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* 패키지 상태 뱃지 */
+.package-status-badge {
+  position: absolute;
+  bottom: 7px;              /* was 8px */
+  right: 7px;               /* was 8px */
+  font-size: 9px;           /* was 11px */
+  font-weight: 600;
+  padding: 2px 7px;         /* was 2px 8px */
+  border-radius: 3px;       /* was 4px */
+  z-index: 10;
+}
+
+.package-status-badge.badge-current {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.package-status-badge.badge-blocked {
+  background-color: #6b7280;
+  color: #ffffff;
+}
+
+.package-status-badge.badge-upgrade {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* 패키지 비활성화 토스트 */
+.package-disabled-toast {
+  position: fixed;
+  bottom: 85px;             /* was 100px */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #374151;
+  color: #ffffff;
+  padding: 10px 20px;       /* was 12px 24px */
+  border-radius: 7px;       /* was 8px */
+  font-size: 12px;          /* was 14px */
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  animation: slideUp 0.3s ease;
+}
+
+.package-disabled-toast.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 최소 주문 금액 토스트 */
+.min-amount-toast {
+  position: fixed;
+  bottom: 85px;             /* was 100px */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff9500;
+  color: #ffffff;
+  padding: 10px 20px;       /* was 12px 24px */
+  border-radius: 7px;       /* was 8px */
+  font-size: 12px;          /* was 14px */
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  animation: slideUp 0.3s ease;
+}
+
+.min-amount-toast.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+/* 크레딧 구매 버튼 비활성화 스타일 */
+#purchaseCreditsBtn.btn-disabled,
+#purchaseCreditsBtn:disabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.package-card input[type="radio"] {
+  display: none;
+}
+
+.package-content {
+  display: block;
+  padding: 14px;            /* was 16px */
+  cursor: pointer;
+  min-height: 155px;        /* was 182px */
+}
+
+.package-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 17px;      /* was 20px */
+}
+
+.package-name {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.package-price {
+  font-size: 17px;          /* was 20px */
+  font-weight: 700;
+  color: #007aff;
+}
+
+.package-price small {
+  font-size: 8px;           /* was 10px */
+  font-weight: 400;
+  color: #6e6e73;
+}
+
+.package-credits {
+  font-size: 13px;          /* was 15px */
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 8px;       /* was 10px */
+}
+
+.package-credits .bonus {
+  font-size: 8px;           /* was 10px */
+  color: #ff9800;
+  background: #fff3e0;
+  padding: 2px 5px;         /* was 2px 6px */
+  border-radius: 3px;       /* was 4px */
+  margin-left: 5px;         /* was 6px */
+}
+
+/* 크레딧 breakdown 스타일 */
+.package-credits-breakdown {
+  font-size: 11px;          /* was 13px */
+  color: #555;
+  margin-bottom: 8px;       /* was 10px */
+  text-align: right;
+  padding-right: 7px;       /* was 8px */
+}
+
+.package-credits-breakdown .credit-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.package-credits-breakdown .credit-line.free {
+  color: #4CAF50;
+}
+
+.package-credits-breakdown .credit-line.base {
+  color: #2196F3;
+}
+
+.package-credits-breakdown .credit-line.bonus {
+  color: #ff9800;
+}
+
+.package-credits-breakdown .credit-divider {
+  border-top: 1px dashed #ccc;
+  margin: 3px 0;            /* was 4px 0 */
+}
+
+.package-credits-breakdown .credit-line.total {
+  font-weight: 700;
+  font-size: 12px;          /* was 14px */
+  color: #1a237e;
+  padding-top: 3px;         /* was 4px */
+}
+
+.package-desc {
+  font-size: 11px;          /* was 13px */
+  color: #6e6e73;
+}
+
+.package-badge {
+  position: absolute;
+  top: -1px;
+  right: 10px;              /* was 12px */
+  background: #ff9800;
+  color: white;
+  padding: 3px 8px;         /* was 4px 10px */
+  border-radius: 0 0 5px 5px;  /* was 0 0 6px 6px */
+  font-size: 8px;           /* was 10px */
+  font-weight: 600;
+}
+
+.subscription-actions {
+  margin-top: 17px;         /* was 20px */
+  text-align: center;
+}
+
+.subscription-note {
+  margin-top: 10px;         /* was 12px */
+  font-size: 11px;          /* was 13px */
+  color: #6e6e73;
+}
+
+/* 구독자 전용 표시 */
+.subscriber-only {
+  font-size: 8px;           /* was 10px */
+  font-weight: 400;
+  color: #ff9800;
+  margin-left: 7px;         /* was 8px */
+}
+
+/* 비구독자 안내 */
+.subscriber-notice {
+  display: flex;
+  align-items: center;
+  gap: 7px;                 /* was 8px */
+  padding: 7px;             /* was 8px */
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1px solid #ffb74d;
+  border-radius: 5px;       /* was 6px */
+  margin-bottom: 10px;      /* was 12px */
+}
+
+.subscriber-notice.hidden {
+  display: none;
+}
+
+.notice-icon {
+  font-size: 27px;          /* was 32px */
+}
+
+.notice-content {
+  flex: 1;
+}
+
+.notice-title {
+  font-size: 13px;          /* was 15px */
+  font-weight: 600;
+  color: #e65100;
+  margin: 0 0 3px 0;        /* was 0 0 4px 0 */
+}
+
+.notice-desc {
+  font-size: 11px;          /* was 13px */
+  color: #6e6e73;
+  margin: 0;
+}
+
+/* 일반 크레딧 구매 */
+.credit-purchase {
+  padding: 8px 0;           /* was 10px 0 */
+}
+
+.credit-purchase.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.purchase-input-group {
+  margin-bottom: 10px;      /* was 12px */
+}
+
+.purchase-input-group label {
+  display: block;
+  font-size: 12px;          /* was 14px */
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 2px;
+}
+
+.purchase-input-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;                 /* was 8px */
+}
+
+.currency-prefix {
+  font-size: 15px;          /* was 18px */
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.purchase-input-row input {
+  flex: 1;
+  max-width: 170px;         /* was 200px */
+  padding: 10px 14px;       /* was 12px 16px */
+  border: 2px solid #d2d2d7;
+  border-radius: 7px;       /* was 8px */
+  font-size: 15px;          /* was 18px */
+  font-weight: 600;
+  text-align: right;
+}
+
+.purchase-input-row input:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+/* 금액 입력과 빠른 선택 프리셋 컨테이너 */
+.purchase-input-with-presets {
+  display: flex;
+  align-items: center;
+  gap: 14px;                /* was 16px */
+  flex-wrap: wrap;
+}
+
+/* 빠른 금액 선택 라디오 버튼 그룹 */
+.quick-amount-presets {
+  display: flex;
+  gap: 7px;                 /* was 8px */
+}
+
+.preset-radio {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.preset-radio input[type="radio"] {
+  display: none;
+}
+
+.preset-radio .preset-label {
+  padding: 7px 12px;        /* was 8px 14px */
+  border: 2px solid #d2d2d7;
+  border-radius: 17px;      /* was 20px */
+  font-size: 11px;          /* was 13px */
+  font-weight: 600;
+  color: #666;
+  background: #fff;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.preset-radio input[type="radio"]:checked + .preset-label {
+  border-color: #1d1d1f;
+  background: transparent;
+  color: #1d1d1f;
+}
+
+.preset-radio:hover .preset-label {
+  border-color: #000;
+  color: #1d1d1f;
+}
+
+.preset-radio input[type="radio"]:disabled + .preset-label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preset-radio input[type="radio"]:disabled + .preset-label:hover {
+  border-color: #d2d2d7;
+}
+
+.preset-bonus {
+  font-size: 9px;           /* was 11px */
+  color: #34c759;
+  font-weight: 600;
+  margin-left: 3px;         /* was 4px */
+}
+
+.preset-radio input[type="radio"]:checked ~ .preset-bonus {
+  color: #007aff;
+}
+
+.preset-radio input[type="radio"]:disabled ~ .preset-bonus {
+  opacity: 0.5;
+}
+
+/* 최소 주문 버튼 스타일 */
+.preset-min-label {
+  color: #ff9500 !important;
+}
+
+.preset-radio input[type="radio"]:checked ~ .preset-min-label {
+  color: #ff9500 !important;
+}
+
+.purchase-preview {
+  background: #f5f5f7;
+  border-radius: 5px;       /* was 6px */
+  padding: 14px 17px;       /* was 16px 20px */
+  margin-bottom: 14px;      /* was 16px */
+}
+
+.preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;           /* was 8px 0 */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-item.total {
+  border-top: 2px solid #007aff;
+  margin-top: 7px;          /* was 8px */
+  padding-top: 10px;        /* was 12px */
+}
+
+.preview-label {
+  font-size: 12px;          /* was 14px */
+  color: #6e6e73;
+}
+
+.preview-value {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.preview-value.bonus {
+  color: #ff9800;
+}
+
+.preview-item.total .preview-value {
+  font-size: 17px;          /* was 20px */
+  color: #2e7d32;
+}
+
+.bonus-info {
+  margin-bottom: 10px;      /* was 12px */
+}
+
+.bonus-info p {
+  font-size: 11px;          /* was 13px */
+  color: #6e6e73;
+  text-align: center;
+}
+
+/* ============================================
+   Phase 3: 10단계 크레딧 구매 시스템 (v5.0)
+   ============================================ */
+
+/* 10단계 시스템 안내 */
+.tier-system-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 7px;       /* was 8px */
+  padding: 10px 14px;       /* was 12px 16px */
+  margin-bottom: 14px;      /* was 16px */
+  border-left: 4px solid #2196f3;
+}
+
+.tier-info-title {
+  font-size: 12px;          /* was 14px */
+  font-weight: 600;
+  color: #1565c0;
+  margin-bottom: 3px;       /* was 4px */
+}
+
+.tier-info-desc {
+  font-size: 11px;          /* was 13px */
+  color: #1976d2;
+}
+
+/* 10단계 그리드 */
+.credit-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;                 /* was 8px */
+  margin-bottom: 14px;      /* was 16px */
+}
+
+@media (max-width: 768px) {
+  .credit-tier-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 단계 카드 */
+.tier-card {
+  background: #f5f5f7;
+  border: 2px solid #e0e0e0;
+  border-radius: 7px;       /* was 8px */
+  padding: 10px 7px;        /* was 12px 8px */
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tier-card:hover {
+  border-color: #2196f3;
+  background: #e3f2fd;
+  transform: translateY(-2px);
+}
+
+.tier-card.selected {
+  border-color: #2196f3;
+  background: #e3f2fd;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.tier-card.best-value {
+  border-color: #ff9800;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+}
+
+.tier-card.best-value:hover,
+.tier-card.best-value.selected {
+  border-color: #f57c00;
+  background: linear-gradient(135deg, #ffecb3 0%, #ffe082 100%);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.best-badge {
+  position: absolute;
+  top: -7px;                /* was -8px */
+  right: -7px;              /* was -8px */
+  background: #ff9800;
+  color: white;
+  font-size: 8px;           /* was 10px */
+  font-weight: 700;
+  padding: 2px 5px;         /* was 2px 6px */
+  border-radius: 3px;       /* was 4px */
+}
+
+.tier-amount {
+  font-size: 15px;          /* was 18px */
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 3px;       /* was 4px */
+}
+
+.tier-payment {
+  font-size: 9px;           /* was 11px */
+  color: #6e6e73;
+  margin-bottom: 5px;       /* was 6px */
+}
+
+.tier-payment-value {
+  font-weight: 600;
+}
+
+.tier-credits {
+  font-size: 10px;          /* was 12px */
+  font-weight: 600;
+  color: #2196f3;
+  margin-bottom: 3px;       /* was 4px */
+}
+
+.tier-margin {
+  font-size: 8px;           /* was 10px */
+  color: #9e9e9e;
+}
+
+.tier-bonus {
+  font-size: 8px;           /* was 10px */
+  font-weight: 600;
+  color: #4caf50;
+  margin-top: 2px;
+}
+
+/* ========================================
+   슬라이더 기반 크레딧 구매 UI
+   ======================================== */
+.credit-slider-section {
+  background: #f8f9fa;
+  border-radius: 10px;      /* was 12px */
+  padding: 17px;            /* was 20px */
+  margin-bottom: 14px;      /* was 16px */
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;      /* was 16px */
+}
+
+.slider-title {
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.slider-benefit {
+  font-size: 10px;          /* was 12px */
+  color: #4caf50;
+  font-weight: 500;
+}
+
+/* 슬라이더 컨테이너 */
+.tier-slider-container {
+  flex: 1;
+  padding-top: 4px;
+}
+
+.tier-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 7px;              /* was 8px */
+  background: linear-gradient(to right, #bbdefb 0%, #2196f3 50%, #ff9800 100%);
+  border-radius: 3px;       /* was 4px */
+  outline: none;
+  cursor: pointer;
+}
+
+.tier-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;              /* was 24px */
+  height: 20px;             /* was 24px */
+  background: #fff;
+  border: 3px solid #2196f3;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.tier-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(33, 150, 243, 0.4);
+}
+
+.tier-slider::-moz-range-thumb {
+  width: 20px;              /* was 24px */
+  height: 20px;             /* was 24px */
+  background: #fff;
+  border: 3px solid #2196f3;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 슬라이더 라벨 */
+.tier-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;          /* was 8px */
+  padding: 0 2px;
+}
+
+.tier-slider-labels span {
+  font-size: 8px;           /* was 10px */
+  color: #6e6e73;
+  text-align: center;
+  width: 10%;
+}
+
+/* v7.1: 20단계 슬라이더 틱마크 */
+.tier-slider-20steps {
+  position: relative;
+}
+
+.tier-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  right: 10px;
+  pointer-events: none;
+}
+
+.tier-slider-ticks .tick {
+  width: 1px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tier-slider-ticks .tick.major {
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* v7.1: 20단계 라벨 (6개 대표값) - 레거시 */
+.tier-slider-labels-20 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0;
+}
+
+.tier-slider-labels-20 span {
+  font-size: 9px;
+  color: #6e6e73;
+  text-align: center;
+  min-width: 28px;
+  flex: 0 0 auto;
+}
+
+.tier-slider-labels-20 span:first-child {
+  text-align: left;
+}
+
+.tier-slider-labels-20 span:last-child {
+  text-align: right;
+}
+
+/* v7.2: 20단계 전체 라벨 */
+.tier-slider-labels-full {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0;
+  width: 100%;
+}
+
+.tier-slider-labels-full span {
+  font-size: 7px;
+  color: #6e6e73;
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.tier-slider-labels-full span:first-child {
+  text-align: left;
+  flex: 0 0 auto;
+}
+
+.tier-slider-labels-full span:last-child {
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+/* 금액 입력 행 (직접 입력 + 슬라이더) */
+.amount-input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;                /* was 16px */
+}
+
+/* 직접 입력 필드 */
+.manual-input-field {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #d2d2d7;
+  border-radius: 7px;       /* was 8px */
+  padding: 0 8px;           /* was 0 10px */
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.manual-input-field:focus-within {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.manual-input-field .input-prefix {
+  font-size: 14px;          /* was 16px */
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
+.manual-input-field input {
+  width: 60px;              /* was 70px */
+  border: none;
+  outline: none;
+  padding: 8px 3px;         /* was 10px 4px */
+  font-size: 14px;          /* was 16px */
+  font-weight: 600;
+  background: transparent;
+  color: #1d1d1f;
+}
+
+.manual-input-field input::placeholder {
+  color: #aaa;
+  font-weight: 400;
+}
+
+.manual-input-field input::-webkit-outer-spin-button,
+.manual-input-field input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.manual-input-field input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.input-hint {
+  text-align: center;
+  font-size: 9px;           /* was 11px */
+  color: #9e9e9e;
+  margin-top: 10px;         /* was 12px */
+}
+
+/* 선택된 단계 정보 표시 */
+.tier-info-display {
+  background: #fff;
+  border: 2px solid #2196f3;
+  border-radius: 8px;       /* was 10px */
+  padding: 14px;            /* was 16px */
+  margin-bottom: 14px;      /* was 16px */
+}
+
+.tier-info-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;                /* was 16px */
+  margin-bottom: 10px;      /* was 12px */
+  padding-bottom: 10px;     /* was 12px */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tier-info-amount,
+.tier-info-credits {
+  text-align: center;
+}
+
+.tier-info-amount .tier-label,
+.tier-info-credits .tier-label {
+  display: block;
+  font-size: 9px;           /* was 11px */
+  color: #6e6e73;
+  margin-bottom: 3px;       /* was 4px */
+}
+
+.tier-info-amount .tier-value {
+  font-size: 20px;          /* was 24px */
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.tier-info-credits .tier-value {
+  font-size: 20px;          /* was 24px */
+  font-weight: 700;
+  color: #2196f3;
+}
+
+.tier-info-credits .tier-value.highlight {
+  color: #2196f3;
+}
+
+.tier-info-arrow {
+  font-size: 17px;          /* was 20px */
+  color: #9e9e9e;
+}
+
+/* 상세 정보 */
+.tier-info-details {
+  display: flex;
+  justify-content: center;
+  gap: 20px;                /* was 24px */
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;                 /* was 4px */
+}
+
+.detail-item .detail-label {
+  font-size: 10px;          /* was 12px */
+  color: #6e6e73;
+}
+
+.detail-item .detail-value {
+  font-size: 10px;          /* was 12px */
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.detail-item.bonus .detail-value {
+  color: #4caf50;
+}
+
+/* 구매 버튼 */
+.btn-tier-purchase {
+  width: 100%;
+  padding: 12px;            /* was 14px */
+  font-size: 13px;          /* was 15px */
+  font-weight: 600;
+  border-radius: 7px;       /* was 8px */
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+/* 구매 버튼 비활성화 */
+.btn-tier-purchase:disabled,
+.btn-tier-purchase.btn-disabled {
+  background-color: #d2d2d7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .slider-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .tier-info-main {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tier-info-arrow {
+    transform: rotate(90deg);
+  }
+
+  .tier-info-details {
+    gap: 12px;
+  }
+
+  .tier-slider-labels span {
+    font-size: 8px;
+  }
+}
+
+/* 선택된 단계 정보 (레거시 - 유지) */
+.selected-tier-info {
+  background: #f5f5f7;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+.tier-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tier-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #6e6e73;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.summary-value.highlight {
+  font-size: 18px;
+  color: #2e7d32;
+}
+
+/* 유효기간 안내 */
+.tier-expire-info {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.tier-expire-info p {
+  font-size: 12px;
+  color: #6e6e73;
+}
+
+.tier-expire-info strong {
+  color: #2196f3;
+}
+
+/* ============================================
+   직접 입력 구매 섹션
+   ============================================ */
+.custom-amount-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.custom-amount-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.custom-amount-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.custom-amount-desc {
+  font-size: 12px;
+  color: #6e6e73;
+}
+
+.custom-amount-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.input-with-prefix {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d2d2d7;
+  border-radius: 8px;
+  padding: 0 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-with-prefix:focus-within {
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.input-prefix {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6e6e73;
+  margin-right: 4px;
+}
+
+.input-with-prefix input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  padding: 10px 0;
+  background: transparent;
+}
+
+.input-with-prefix input::placeholder {
+  color: #adb5bd;
+}
+
+.btn-calc {
+  padding: 10px 20px;
+  background: transparent;
+  color: #86868b;
+  border: 1px solid #d2d2d7;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-calc:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-calc:active {
+  transform: scale(0.98);
+}
+
+.custom-amount-result {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.result-row:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  font-size: 13px;
+  color: #6e6e73;
+}
+
+.result-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.result-value.highlight {
+  font-size: 18px;
+  color: #2e7d32;
+}
+
+.btn-custom-purchase {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-custom-purchase:disabled {
+  background: #d2d2d7;
+  cursor: not-allowed;
+}
+
+/* 구분선 */
+.section-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #d2d2d7;
+}
+
+.section-divider span {
+  padding: 0 16px;
+  font-size: 12px;
+  color: #6e6e73;
+  background: #fff;
+}
+
+/* ============================================
+   통화 변경 승인 모달 (업그레이드 시)
+   ============================================ */
+.currency-change-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;  /* 가장 높은 z-index - 모든 요소 위에 표시 */
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.currency-change-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.currency-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.currency-warning-icon {
+  font-size: 24px;
+}
+
+.currency-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.currency-modal-body {
+  margin-bottom: 20px;
+}
+
+.currency-modal-body p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.currency-modal-body hr {
+  border: none;
+  border-top: 1px solid #e5e5e7;
+  margin: 16px 0;
+}
+
+.currency-info-text {
+  background: #fff3cd;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.currency-modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.currency-btn-confirm {
+  background: transparent;
+  color: #86868b;
+  border: 1px solid #d2d2d7;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.currency-btn-confirm:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.currency-btn-cancel {
+  background: transparent;
+  color: #86868b;
+  border: 1px solid #d2d2d7;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.currency-btn-cancel:hover {
+  background: transparent;
+  border-color: #000;
+  color: #1d1d1f;
+}
+
+/* 반응형: 결제 페이지 */
+@media (max-width: 768px) {
+  .subscription-packages {
+    grid-template-columns: 1fr;
+  }
+
+  .package-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .purchase-input-row input {
+    max-width: 100%;
+  }
+}
+
+/* ============================================
+   다크모드 오버라이드
+   ============================================ */
+[data-theme="dark"] .credit-balance {
+  color: #66bb6a;
+}
+
+[data-theme="dark"] .credit-section {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+[data-theme="dark"] .credit-section-header {
+  border-bottom-color: #333;
+}
+
+[data-theme="dark"] .credit-type-label {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .credit-detail-label {
+  color: #aaa;
+}
+
+[data-theme="dark"] .credit-detail-value {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .credit-total-row {
+  border-top-color: #444;
+}
+
+[data-theme="dark"] .credit-total-label {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .no-credits-message {
+  color: #999;
+}
+
+[data-theme="dark"] .credit-free {
+  color: #64b5f6;
+}
+
+[data-theme="dark"] .credit-used {
+  color: #ffb74d;
+}
+
+[data-theme="dark"] .credit-service {
+  color: #ce93d8;
+}
+
+[data-theme="dark"] .credit-paid {
+  color: #81c784;
+}
+
+[data-theme="dark"] .credit-order-info {
+  background: #1a237e33;
+  border-left-color: #42a5f5;
+}
+
+[data-theme="dark"] .credit-order-info p {
+  color: #64b5f6;
+}
+
+/* 패키지 카드 */
+[data-theme="dark"] .package-card {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+[data-theme="dark"] .package-card:hover {
+  border-color: #42a5f5;
+  box-shadow: 0 4px 12px rgba(66, 165, 245, 0.2);
+}
+
+[data-theme="dark"] .package-card.selected {
+  border-color: #42a5f5;
+  background: #0d47a133;
+}
+
+[data-theme="dark"] .package-card.package-disabled {
+  background-color: #222 !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .package-card.package-current {
+  background-color: #222 !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .package-name {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .package-price small {
+  color: #999;
+}
+
+[data-theme="dark"] .package-credits .bonus {
+  background: #4a3000;
+  color: #ffb74d;
+}
+
+[data-theme="dark"] .package-credits-breakdown {
+  color: #bbb;
+}
+
+[data-theme="dark"] .package-credits-breakdown .credit-line.total {
+  color: #90caf9;
+}
+
+[data-theme="dark"] .package-credits-breakdown .credit-divider {
+  border-top-color: #444;
+}
+
+[data-theme="dark"] .package-desc {
+  color: #999;
+}
+
+/* 구독자 안내 */
+[data-theme="dark"] .subscriber-notice {
+  background: linear-gradient(135deg, #4a3000 0%, #3e2700 100%);
+  border-color: #8b6914;
+}
+
+[data-theme="dark"] .notice-title {
+  color: #ffb74d;
+}
+
+[data-theme="dark"] .notice-desc {
+  color: #bbb;
+}
+
+/* 구매 입력 */
+[data-theme="dark"] .purchase-input-group label {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .currency-prefix {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .purchase-input-row input {
+  background: #1a1a1a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .purchase-input-row input:focus {
+  border-color: #42a5f5;
+}
+
+/* 프리셋 라디오 버튼 */
+[data-theme="dark"] .preset-radio .preset-label {
+  border-color: #444;
+  color: #aaa;
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .preset-radio input[type="radio"]:checked + .preset-label {
+  border-color: #e0e0e0;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .preset-radio:hover .preset-label {
+  border-color: #ccc;
+  color: #e0e0e0;
+}
+
+/* 구매 미리보기 */
+[data-theme="dark"] .purchase-preview {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .preview-item {
+  border-bottom-color: #333;
+}
+
+[data-theme="dark"] .preview-label {
+  color: #999;
+}
+
+[data-theme="dark"] .preview-value {
+  color: #e0e0e0;
+}
+
+/* 10단계 시스템 안내 */
+[data-theme="dark"] .tier-system-info {
+  background: linear-gradient(135deg, #0d47a133 0%, #1565c033 100%);
+  border-left-color: #42a5f5;
+}
+
+[data-theme="dark"] .tier-info-title {
+  color: #64b5f6;
+}
+
+[data-theme="dark"] .tier-info-desc {
+  color: #90caf9;
+}
+
+/* 단계 카드 */
+[data-theme="dark"] .tier-card {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+[data-theme="dark"] .tier-card:hover {
+  border-color: #42a5f5;
+  background: #0d47a133;
+}
+
+[data-theme="dark"] .tier-card.selected {
+  border-color: #42a5f5;
+  background: #0d47a133;
+}
+
+[data-theme="dark"] .tier-card.best-value {
+  border-color: #f57c00;
+  background: linear-gradient(135deg, #4a3000 0%, #3e2700 100%);
+}
+
+[data-theme="dark"] .tier-card.best-value:hover,
+[data-theme="dark"] .tier-card.best-value.selected {
+  border-color: #ff9800;
+  background: linear-gradient(135deg, #5a3a00 0%, #4e3200 100%);
+}
+
+[data-theme="dark"] .tier-amount {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .tier-payment {
+  color: #999;
+}
+
+/* 슬라이더 섹션 */
+[data-theme="dark"] .credit-slider-section {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .slider-title {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .tier-slider-labels span {
+  color: #999;
+}
+
+[data-theme="dark"] .tier-slider-labels-20 span,
+[data-theme="dark"] .tier-slider-labels-full span {
+  color: #999;
+}
+
+[data-theme="dark"] .tier-slider-ticks .tick {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .tier-slider-ticks .tick.major {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 직접 입력 필드 */
+[data-theme="dark"] .manual-input-field {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+[data-theme="dark"] .manual-input-field:focus-within {
+  border-color: #42a5f5;
+  box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.2);
+}
+
+[data-theme="dark"] .manual-input-field .input-prefix {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .manual-input-field input {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .manual-input-field input::placeholder {
+  color: #666;
+}
+
+[data-theme="dark"] .input-hint {
+  color: #777;
+}
+
+/* 선택된 단계 정보 표시 */
+[data-theme="dark"] .tier-info-display {
+  background: #1a1a1a;
+  border-color: #42a5f5;
+}
+
+[data-theme="dark"] .tier-info-main {
+  border-bottom-color: #333;
+}
+
+[data-theme="dark"] .tier-info-amount .tier-label,
+[data-theme="dark"] .tier-info-credits .tier-label {
+  color: #999;
+}
+
+[data-theme="dark"] .tier-info-amount .tier-value {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .tier-info-arrow {
+  color: #666;
+}
+
+[data-theme="dark"] .detail-item .detail-label {
+  color: #999;
+}
+
+[data-theme="dark"] .detail-item .detail-value {
+  color: #e0e0e0;
+}
+
+/* 선택된 단계 정보 (레거시) */
+[data-theme="dark"] .selected-tier-info {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+[data-theme="dark"] .summary-label {
+  color: #999;
+}
+
+[data-theme="dark"] .summary-value {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .tier-expire-info p {
+  color: #999;
+}
+
+/* 직접 입력 구매 섹션 */
+[data-theme="dark"] .custom-amount-section {
+  background: linear-gradient(135deg, #1a1a1a 0%, #222 100%);
+  border-color: #444;
+}
+
+[data-theme="dark"] .custom-amount-title {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .custom-amount-desc {
+  color: #999;
+}
+
+[data-theme="dark"] .input-with-prefix {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+[data-theme="dark"] .input-with-prefix:focus-within {
+  border-color: #42a5f5;
+  box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
+}
+
+[data-theme="dark"] .input-prefix {
+  color: #999;
+}
+
+[data-theme="dark"] .input-with-prefix input {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .input-with-prefix input::placeholder {
+  color: #666;
+}
+
+[data-theme="dark"] .btn-calc {
+  color: #aaa;
+  border-color: #444;
+}
+
+[data-theme="dark"] .btn-calc:hover {
+  border-color: #ccc;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .custom-amount-result {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+[data-theme="dark"] .result-row {
+  border-bottom-color: #2a2a2a;
+}
+
+[data-theme="dark"] .result-label {
+  color: #999;
+}
+
+[data-theme="dark"] .result-value {
+  color: #e0e0e0;
+}
+
+/* 구분선 */
+[data-theme="dark"] .section-divider::before,
+[data-theme="dark"] .section-divider::after {
+  border-bottom-color: #444;
+}
+
+[data-theme="dark"] .section-divider span {
+  color: #999;
+  background: var(--bg-primary);
+}
+
+/* 통화 변경 모달 */
+[data-theme="dark"] .currency-change-modal-content {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .currency-modal-header h3 {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .currency-modal-body p {
+  color: #bbb;
+}
+
+[data-theme="dark"] .currency-modal-body hr {
+  border-top-color: #333;
+}
+
+[data-theme="dark"] .currency-info-text {
+  background: #4a3000;
+  color: #ffb74d;
+  border-left-color: #f59e0b;
+}
+
+[data-theme="dark"] .currency-btn-confirm,
+[data-theme="dark"] .currency-btn-cancel {
+  color: #aaa;
+  border-color: #444;
+}
+
+[data-theme="dark"] .currency-btn-confirm:hover,
+[data-theme="dark"] .currency-btn-cancel:hover {
+  border-color: #ccc;
+  color: #e0e0e0;
+}
+
+/* 구독 노트 */
+[data-theme="dark"] .subscription-note {
+  color: #999;
+}
+
+/* 보너스 정보 */
+[data-theme="dark"] .bonus-info p {
+  color: #999;
+}
+
+/* 비활성화된 구매 버튼 */
+[data-theme="dark"] .btn-tier-purchase:disabled,
+[data-theme="dark"] .btn-tier-purchase.btn-disabled {
+  background-color: #333;
+}
+
+[data-theme="dark"] .btn-custom-purchase:disabled {
+  background: #333;
+}

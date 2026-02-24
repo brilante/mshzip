@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구조화 데이터 테스트 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <link rel="stylesheet" href="structured-data-test.css">
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <header class="tool-header">
+      <h1 class="tool-title">구조화 데이터 테스트</h1>
+      <p class="tool-description">Schema.org 구조화 데이터(JSON-LD)를 검증합니다</p>
+    </header>
+
+    <main class="tool-content">
+      <!-- 입력 영역 -->
+      <div class="input-section">
+        <div class="input-tabs">
+          <button class="tab-btn active" data-tab="jsonld" onclick="StructuredDataTest.switchTab('jsonld')" aria-label="JSON-LD">JSON-LD</button>
+          <button class="tab-btn" data-tab="html" onclick="StructuredDataTest.switchTab('html')" aria-label="HTML에서 추출">HTML에서 추출</button>
+        </div>
+
+        <div class="tab-content active" id="jsonldTab">
+          <textarea id="jsonldInput" class="form-textarea" placeholder='JSON-LD 구조화 데이터를 입력하세요...
+
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "회사명",
+  "url": "https://example.com"
+}' rows="12"></textarea>
+        </div>
+
+        <div class="tab-content" id="htmlTab">
+          <textarea id="htmlInput" class="form-textarea" placeholder="HTML 코드를 붙여넣으면 JSON-LD 스크립트를 자동으로 추출합니다..." rows="12"></textarea>
+        </div>
+
+        <button class="analyze-btn full-width" onclick="StructuredDataTest.analyze()" aria-label="구조화 데이터 검증">구조화 데이터 검증</button>
+      </div>
+
+      <!-- 결과 영역 -->
+      <div class="result-section" id="resultSection" style="display: none;">
+        <!-- 요약 -->
+        <div class="result-summary">
+          <div class="summary-status" id="summaryStatus">
+            <span class="status-icon"></span>
+            <span class="status-text">유효한 구조화 데이터</span>
+          </div>
+          <div class="summary-stats">
+            <div class="stat-item">
+              <span class="stat-value" id="schemaCount">0</span>
+              <span class="stat-label">스키마 발견</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="errorCount">0</span>
+              <span class="stat-label">오류</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="warningCount">0</span>
+              <span class="stat-label">경고</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 발견된 스키마 -->
+        <div class="schemas-section">
+          <h3 class="section-title">발견된 스키마</h3>
+          <div class="schemas-list" id="schemasList">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 검증 결과 -->
+        <div class="validation-section" id="validationSection">
+          <h3 class="section-title">검증 결과</h3>
+          <div class="validation-list" id="validationList">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- JSON 뷰어 -->
+        <div class="json-section">
+          <h3 class="section-title">파싱된 JSON</h3>
+          <pre class="json-viewer" id="jsonViewer"></pre>
+        </div>
+      </div>
+
+      <!-- 스키마 템플릿 -->
+      <div class="templates-section">
+        <h3 class="section-title">자주 사용하는 스키마 템플릿</h3>
+        <div class="templates-grid">
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('organization')" aria-label="Organization">Organization</button>
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('product')" aria-label="Product">Product</button>
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('article')" aria-label="Article">Article</button>
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('faq')" aria-label="FAQPage">FAQPage</button>
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('breadcrumb')" aria-label="BreadcrumbList">BreadcrumbList</button>
+          <button class="template-btn" onclick="StructuredDataTest.useTemplate('localbusiness')" aria-label="LocalBusiness">LocalBusiness</button>
+        </div>
+      </div>
+
+      <!-- 도움말 -->
+      <div class="tool-help">
+        <div class="help-title">구조화 데이터란?</div>
+        <div class="help-content">
+          <ul>
+            <li><strong>Schema.org</strong>: Google, Microsoft 등이 지원하는 표준 마크업</li>
+            <li><strong>JSON-LD</strong>: 가장 권장되는 구조화 데이터 형식</li>
+            <li><strong>리치 결과</strong>: 구조화 데이터로 검색 결과에 추가 정보 표시</li>
+            <li><strong>SEO 효과</strong>: 검색 엔진이 콘텐츠를 더 잘 이해함</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="structured-data-test.js"></script>
+</body>
+</html>

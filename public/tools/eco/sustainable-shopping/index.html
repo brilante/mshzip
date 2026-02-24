@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지속가능 쇼핑 - MyMind3 도구</title>
+  <link rel="stylesheet" href="/css/tailwind-output.css">
+  <link rel="stylesheet" href="/tools/common/tools-common.css?v=20260113">
+  <style>
+    .util-container { max-width: 600px; margin: 0 auto; }
+    .util-panel { background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .score-card { background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 16px; padding: 2rem; color: white; text-align: center; margin-bottom: 1rem; }
+    .score-value { font-size: 4rem; font-weight: 700; }
+    .score-label { font-size: 0.9rem; opacity: 0.9; }
+    .checklist-category { margin-bottom: 1.5rem; }
+    .category-title { font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .checklist-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s; }
+    .checklist-item:hover { transform: translateX(4px); }
+    .checklist-item.checked { background: rgba(34, 197, 94, 0.1); }
+    .check-box { width: 24px; height: 24px; border: 2px solid var(--border-color); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .checklist-item.checked .check-box { background: #22c55e; border-color: #22c55e; color: white; }
+    .item-text { flex: 1; font-size: 0.9rem; }
+    .item-impact { font-size: 0.75rem; color: #22c55e; }
+    .tips-section { background: var(--bg-primary); padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+    .tip-item { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .alternatives-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .alternative-card { background: var(--bg-primary); border-radius: 12px; padding: 1rem; }
+    .alt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .alt-bad { color: #ef4444; font-size: 0.85rem; }
+    .alt-arrow { color: var(--text-secondary); }
+    .alt-good { color: #22c55e; font-size: 0.85rem; font-weight: 600; }
+    .alt-reason { font-size: 0.75rem; color: var(--text-secondary); }
+  
+  /* 다크모드 지원 */
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #1a1a2e; color: #eee; }
+    .tool-container { background-color: #16213e; }
+    input, textarea, select { background-color: #0f3460; color: #eee; border-color: #444; }
+    button { background-color: #e94560; }
+  }
+  [data-theme="dark"] {
+    background-color: #1a1a2e; color: #eee;
+  }
+  [data-theme="dark"] .tool-container { background-color: #16213e; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background-color: #0f3460; color: #eee; border-color: #444;
+  }
+
+
+  /* 로딩 표시 */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94560; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+</style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay" role="alert" aria-busy="true">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <div class="tool-header-left">
+        <div class="tool-icon"></div>
+        <div>
+          <h1 class="tool-title">지속가능 쇼핑</h1>
+          <p class="tool-description">친환경 소비 체크리스트</p>
+        </div>
+      </div>
+      <div class="tool-header-right">
+        <button class="tool-btn tool-btn-secondary" onclick="goBack()" aria-label="← 뒤로">← 뒤로</button>
+      </div>
+    </div>
+    <script>
+
+  // 공통 유틸리티 함수
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+  function showError(message) {
+    alert(message || '오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(message);
+  }
+  function safeExecute(fn) {
+    return async function(...args) {
+      try {
+        showLoading();
+        const result = await fn.apply(this, args);
+        return result;
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      } finally {
+        hideLoading();
+      }
+    };
+  }
+  // 다크모드 자동 감지
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+
+      if (window.self !== window.top) document.querySelector('.tool-header').style.display = 'none';
+      function goBack() { window.self !== window.top ? window.parent.postMessage('tools:back', '*') : window.history.back(); }
+    </script>
+
+    <div class="util-container">
+      <div class="score-card">
+        <div class="score-label">나의 친환경 쇼핑 점수</div>
+        <div class="score-value" id="scoreValue">0</div>
+        <div class="score-label" id="scoreText">체크리스트를 확인해보세요</div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 1rem;">쇼핑 전 체크리스트</h3>
+
+        <div class="checklist-category">
+          <div class="category-title">구매 전</div>
+          <div id="preBuyChecklist"></div>
+        </div>
+
+        <div class="checklist-category">
+          <div class="category-title">매장에서</div>
+          <div id="inStoreChecklist"></div>
+        </div>
+
+        <div class="checklist-category">
+          <div class="category-title">포장/배송</div>
+          <div id="packagingChecklist"></div>
+        </div>
+      </div>
+
+      <div class="util-panel">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">친환경 대안</h3>
+        <div class="alternatives-grid" id="alternativesList"></div>
+      </div>
+
+      <div class="util-panel tips-section">
+        <h3 style="font-weight: 600; margin-bottom: 0.75rem;">지속가능 쇼핑 팁</h3>
+        <div class="tip-item"><span>필요한 것만 구매하기 - 충동구매 줄이기</span></div>
+        <div class="tip-item"><span>재활용/재사용 가능한 제품 선택하기</span></div>
+        <div class="tip-item"><span>친환경 인증 마크 확인하기 (에코라벨, FSC 등)</span></div>
+        <div class="tip-item"><span>로컬 제품 구매로 운송 탄소 줄이기</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/tools/common/tools-common.js?v=20260113"></script>
+  <script src="sustainable-shopping.js"></script>
+</body>
+</html>
