@@ -1,0 +1,63 @@
+{
+  "aggregationDate": "2026-02-24T08:15:00Z",
+  "projectPath": "G:MyWrok2mymind3",
+  "serverUrl": "http://localhost:4949",
+  "totalPlannedTC": 22,
+  "executionSummary": {
+    "executed": 13,
+    "passed": 6,
+    "warned": 6,
+    "failed": 1,
+    "pending": 9,
+    "executionRate": "59%"
+  },
+  "layerResults": {
+    "L1": {
+      "count": 4,
+      "passed": 4,
+      "rate": "100%"
+    },
+    "L2": {
+      "count": 3,
+      "passed": 2,
+      "rate": "67%"
+    },
+    "L3": {
+      "count": 5,
+      "passed": 0,
+      "status": "INVALID"
+    },
+    "L4": {
+      "count": 7,
+      "passed": 3,
+      "rate": "43%"
+    },
+    "L5": {
+      "count": 3,
+      "passed": 1,
+      "rate": "33%"
+    }
+  },
+  "criticalIssues": [
+    {
+      "priority": "HIGH-1",
+      "title": "DOM XSS (innerHTML)",
+      "file": "public/index.html:53",
+      "severity": "HIGH",
+      "estimated_minutes": 15
+    },
+    {
+      "priority": "HIGH-2",
+      "title": "Express 보안 헤더 누락",
+      "file": "server.js",
+      "severity": "HIGH",
+      "estimated_minutes": 20
+    }
+  ],
+  "nextSteps": [
+    "HIGH 이슈 2건 즉시 수정",
+    "UI 리뷰어 재실행 (올바른 경로)",
+    "MEDIUM 이슈 5건 1주일 내 수정",
+    "통합 테스트 22/22 TC 재실행"
+  ]
+}

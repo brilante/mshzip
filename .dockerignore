@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.github/
+.claude/
+.ralph/
+testpy/
+tests/
+docs/
+save/
+*.md
+.env
+.env.*
+*.pem
+*.key
+node_modules/
