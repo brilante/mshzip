@@ -74,7 +74,7 @@ async def require_access_key(
     key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
     stmt = select(AccessKey).where(
         AccessKey.key_hash == key_hash,
-        AccessKey.is_active.is_(True),
+        AccessKey.is_active == 1,
     )
     result = await db.execute(stmt)
     key_record = result.scalar_one_or_none()
@@ -89,6 +89,7 @@ async def require_access_key(
     return {
         'key_id': key_record.id,
         'user_id': key_record.user_id,
-        'scope': key_record.scope,
-        'permissions': key_record.permissions,
+        'scope': key_record.scope or 'whitelist',
+        'permission': key_record.permission,
+        'mindmap_id': key_record.mindmap_id,
     }

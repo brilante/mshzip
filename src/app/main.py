@@ -76,11 +76,15 @@ def create_app() -> FastAPI:
     from src.app.api.v1.routers.auth import router as auth_router
     from src.app.api.v1.routers.oauth import router as oauth_router
     from src.app.api.v1.routers.twofa import router as twofa_router
+    from src.app.api.v1.routers.mindmap import router as mindmap_router
+    from src.app.api.v1.routers.skill import router as skill_router
 
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(oauth_router)
     app.include_router(twofa_router)
+    app.include_router(mindmap_router)
+    app.include_router(skill_router)
 
     # 정적 파일 서빙 (프론트엔드) - 라우터 뒤에 등록
     if PUBLIC_DIR.exists():
