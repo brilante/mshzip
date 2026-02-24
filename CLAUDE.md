@@ -331,11 +331,12 @@ Plan Mode 내 필수 산출물:
 | 순서 | Hook | matcher | 역할 | 차단 조건 |
 |------|------|---------|------|-----------|
 | 1 | `check-dangerous.js` | Bash | 위험 명령 차단/경고 | BLOCKED 11종 → exit(1), WARNED 6종 → 경고 |
-| 2 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
-| 3 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
-| 4 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
-| 5 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (15종 도구명 인식, detail 기록) |
-| 6 | `cc-check-validator.js` | * (전체) | CC체크 정합성 검증 | 세션당 1회, 차단 없음 (경고만) |
+| 2 | `command-log-enforcer.js` | Write\|Edit | 명령 이력 기록 강제 | 차단 없음 (경고만), 상태 파일 없으면 경고 |
+| 3 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
+| 4 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
+| 5 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
+| 6 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (15종 도구명 인식, detail 기록) |
+| 7 | `cc-check-validator.js` | * (전체) | CC체크 정합성 검증 | 세션당 1회, 차단 없음 (경고만) |
 
 ### Stop 이벤트
 
@@ -357,8 +358,8 @@ Plan Mode 내 필수 산출물:
 
 | # | 구성 요소 | 검증 기준 | 필수 수량 |
 |---|----------|---------|----------|
-| 1 | PreToolUse Hook Chain | settings.json 순서: Bash→Write\|Edit(3개)→* | 6개 훅 |
-| 2 | Hook 파일 | check-dangerous, protect-sensitive, validate-output, security-scan, log-action, session-summary, cc-check-validator | 7개 |
+| 1 | PreToolUse Hook Chain | settings.json 순서: Bash→Write\|Edit(4개)→* | 7개 훅 |
+| 2 | Hook 파일 | check-dangerous, command-log-enforcer, protect-sensitive, validate-output, security-scan, log-action, session-summary, cc-check-validator | 8개 |
 | 3 | Rules 파일 | general, api, security, browser-test, command-log | 5개 |
 | 4 | Skills | 기획, 팀즈, browser-test, ralph-checker, pr-review, kill-server, order-validator, 노드추출 | 8개 |
 | 5 | MCP 서버 | playwright, context7 | 2개 |
@@ -385,6 +386,7 @@ node .claude/hooks/cc-check-validator.js
 | protect-sensitive.js | 보호 대상 9종 (.env, .pem, .key, id_rsa, id_ed25519, credentials.json, .mymindmp3, .htpasswd, shadow) |
 | validate-output.js | JSON 검증 + 유니코드 이스케이프 + Edit(new_string) 검사 |
 | security-scan.js | BLOCK 3패턴(eval, SQL Injection, API키) + WARN 6패턴 |
+| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 경고만(exit 0) |
 | log-action.js | 16종 도구 인식 + 25가지 Bash 분류 |
 | session-summary.js | 3단계 fallback + SSE_PORT 격리 + 상태 파일 삭제 |
 

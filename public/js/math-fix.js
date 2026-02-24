@@ -187,7 +187,6 @@
 
         // 기존 에디터 확인
         if (!window.MyMind3Editor || !window.MyMind3Editor.editor) {
-            console.warn('[MathFix] 에디터가 없습니다. 강제 생성을 시도합니다.');
 
             // 에디터 강제 생성
             const container = document.getElementById('toastEditor');

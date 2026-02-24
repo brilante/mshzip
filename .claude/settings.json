@@ -7,6 +7,10 @@
       },
       {
         "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/command-log-enforcer.js"}]
+      },
+      {
+        "matcher": "Write|Edit",
         "hooks": [{"type": "command", "command": "node .claude/hooks/protect-sensitive.js"}]
       },
       {

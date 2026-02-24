@@ -30,6 +30,7 @@ try {
   // PreToolUse 5단계 순서 검증
   const expectedPre = [
     { matcher: 'Bash', file: 'check-dangerous.js' },
+    { matcher: 'Write|Edit', file: 'command-log-enforcer.js' },
     { matcher: 'Write|Edit', file: 'protect-sensitive.js' },
     { matcher: 'Write|Edit', file: 'validate-output.js' },
     { matcher: 'Write|Edit', file: 'security-scan.js' },
@@ -67,8 +68,8 @@ try {
 
 // 2. Hook 파일 존재 검증
 const requiredHooks = [
-  'check-dangerous.js', 'protect-sensitive.js', 'validate-output.js',
-  'security-scan.js', 'log-action.js', 'session-summary.js'
+  'check-dangerous.js', 'command-log-enforcer.js', 'protect-sensitive.js',
+  'validate-output.js', 'security-scan.js', 'log-action.js', 'session-summary.js'
 ];
 for (const hook of requiredHooks) {
   if (!fs.existsSync(path.join(CLAUDE_DIR, 'hooks', hook))) {
@@ -132,7 +133,7 @@ if (warns.length > 0) {
 }
 
 if (errors.length === 0 && warns.length === 0) {
-  console.error('[CC체크] 정합성 검증 통과 (Hook 6개, Rules 5개, Skills 8개, MCP 2개)');
+  console.error('[CC체크] 정합성 검증 통과 (Hook 7개, Rules 5개, Skills 8개, MCP 2개)');
 }
 
 // 검증 완료 기록 (세션당 1회)

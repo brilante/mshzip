@@ -19,6 +19,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // API 라우트
 app.use('/api', require('./src/api/example'));
+app.use('/api', require('./src/api/stubs'));
+
+// 클린 URL → HTML 파일 매핑
+const publicDir = path.join(__dirname, 'public');
+app.get('/login', (req, res) => res.sendFile(path.join(publicDir, 'login.html')));
+app.get('/settings', (req, res) => res.sendFile(path.join(publicDir, 'settings.html')));
+app.get('/payment-success', (req, res) => res.sendFile(path.join(publicDir, 'payment-success.html')));
 
 // 서버 시작
 app.listen(PORT, () => {
