@@ -994,6 +994,17 @@ window.i18n_ko = {
   accessKeyReadOnly: '읽기 전용',
   accessKeyExpired: '만료됨',
   accessKeyNoExpiry: '무기한',
+
+  // TODO Node ID
+  todoNodeIdTitle: 'TODO Node ID',
+  todoNodeIdDesc: '프로젝트 TODO 마인드맵의 루트 노드 ID를 등록합니다. Claude Code 명령 이력이 이 노드 하위에 자동 기록됩니다.',
+  todoNodeIdLabel: 'Node ID',
+  todoNodeIdPlaceholder: '예: BTW5XOTCJ0',
+  todoNodeIdHint: '영숫자 10자리 노드 ID를 입력하세요. 마인드맵에서 노드를 선택하면 ID를 확인할 수 있습니다.',
+  todoNodeIdRegistered: '등록됨 - Claude Code 연동 활성',
+  todoNodeIdValidationError: '영숫자 10자리 Node ID를 입력해주세요.',
+  todoNodeIdSaveFailed: 'TODO Node ID 저장에 실패했습니다.',
+
   disableBtn: '해제',
 
   // ============================================

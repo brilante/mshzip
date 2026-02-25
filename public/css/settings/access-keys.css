@@ -1172,3 +1172,41 @@
 [data-theme="dark"] .usage-code code {
   color: #c8d6e5;
 }
+
+/* ============================================
+   TODO Node ID 상태 표시
+   ============================================ */
+
+.todo-node-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.todo-node-status.success {
+  background: var(--success-bg, #d4edda);
+  color: var(--success-text, #155724);
+  border: 1px solid var(--success-border, #c3e6cb);
+}
+
+.todo-node-status.warning {
+  background: var(--warning-bg, #fff3cd);
+  color: var(--warning-text, #856404);
+  border: 1px solid var(--warning-border, #ffc107);
+}
+
+[data-theme="dark"] .todo-node-status.success {
+  background: rgba(40, 167, 69, 0.15);
+  border-color: rgba(40, 167, 69, 0.3);
+  color: #8fd19e;
+}
+
+[data-theme="dark"] .todo-node-status.warning {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}

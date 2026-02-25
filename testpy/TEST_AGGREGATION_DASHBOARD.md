@@ -2,7 +2,7 @@
 
 집계일: 2026-02-24
 대상: G:\MyWrok2\mymind3 (CC 구현 설계 프로젝트)
-환경: localhost:4949
+환경: localhost:5858
 집계 범위: 22개 TC (L1x4, L2x3, L3x5, L4x7, L5x3)
 
 ## 전체 요약

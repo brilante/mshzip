@@ -99,11 +99,14 @@ window.MyMind2NodeRenderer = {
         });
 
         // 필터 오프셋을 즉시 동기적으로 적용 (접기/펼치기 시 노드 점프 방지)
-        let filters = window.NodeFilterManager?.getFilters?.() || [];
+        // MindMapData.filters를 최우선으로 확인 (loadFromJson에서 서버 데이터로 설정됨)
+        let filters = window.MyMind3?.MindMapData?.filters || [];
         if (filters.length === 0) {
-            filters = window.MyMind3?.MindMapData?.filters || [];
+            filters = window.NodeFilterManager?.getFilters?.() || [];
         }
         if (filters.length > 0 && window.NodeFilterManager) {
+            // NodeFilterManager에도 동기화 (stale 데이터 방지)
+            window.NodeFilterManager.filters = filters;
             // 동기적으로 필터 리스트 렌더링 + 노드 오프셋 적용
             // (내부에서 moveNodesDown() 즉시 실행 → 점프 방지)
             window.NodeFilterManager.renderNodeFilterList(filters);
@@ -150,7 +153,7 @@ window.MyMind2NodeRenderer = {
 
         // 필터가 활성화되어 있으면 새 노드에도 오프셋 적용
         if (this.mindmapLayout.classList.contains('has-filters')) {
-            const filters = window.NodeFilterManager?.getFilters() || window.MyMind3?.MindMapData?.filters || [];
+            const filters = window.MyMind3?.MindMapData?.filters || window.NodeFilterManager?.getFilters() || [];
             if (filters.length > 0) {
                 // 필터 오프셋 계산 (37px = 35px 필터높이 + 2px 간격)
                 const offset = 37;
@@ -321,6 +324,10 @@ window.MyMind2NodeRenderer = {
         const nodeDiv = document.createElement('div');
         nodeDiv.classList.add('mindmap-node');
         nodeDiv.classList.add(`node-level-${node.level}`);
+        // 현재 선택된 노드면 selected 클래스 유지 (renderMindMap 후에도 선택 상태 보존)
+        if (window.selectedNodeId === node.id) {
+            nodeDiv.classList.add('selected');
+        }
         nodeDiv.setAttribute('data-id', node.id);
         nodeDiv.setAttribute('data-level', node.level);
         if (node.nodeId) {
@@ -507,7 +514,18 @@ window.MyMind2NodeRenderer = {
     },
 
     toggleNodeExpansion(nodeId) {
-        if (window.MyMind3.MindMapData.toggleNodeExpansion(nodeId)) {
+        const node = window.MyMind3.MindMapData.findNodeById(nodeId);
+        if (!node) return;
+
+        // 펼치는 경우 → 서버에서 하위 노드 동기화 후 렌더링
+        if (!node.expanded) {
+            node.expanded = true;
+            this.renderMindMap();
+            // 백그라운드로 서버 동기화 (새 하위 노드 추가될 수 있음)
+            this.syncChildrenFromServer(nodeId);
+        } else {
+            // 접는 경우 → 즉시 토글 + 렌더링
+            node.expanded = false;
             this.renderMindMap();
         }
     },
@@ -572,18 +590,26 @@ window.MyMind2NodeRenderer = {
             }));
             console.log('[selectNode] nodeSelected 이벤트 발생:', nodeId);
 
-            // 서버에서 하위 노드 동기화 (백그라운드, UI 차단 안 함)
-            this.syncChildrenFromServer(nodeId);
+            // 서버에서 하위 노드 동기화 + 접혀있으면 자동 펼침
+            this.syncChildrenFromServer(nodeId, true);
         }
     },
 
-    // 서버에서 하위 노드를 확인하여 새 노드가 있으면 메모리에 병합
-    async syncChildrenFromServer(nodeId) {
+    // 서버에서 하위 노드를 확인하여 병합 + 자동 펼침
+    // @param {number} nodeId - 노드 ID
+    // @param {boolean} autoExpand - true면 하위 노드가 있을 때 자동으로 펼침
+    async syncChildrenFromServer(nodeId, autoExpand = false) {
         const folder = window.MyMind3?.currentFolder || window.currentQAFolder || localStorage.getItem('currentFolder');
-        if (!folder) return;
+        if (!folder) {
+            console.log('[syncChildren] folder 없음 → 스킵');
+            return;
+        }
 
         const node = window.MyMind3.MindMapData.findNodeById(nodeId);
-        if (!node) return;
+        if (!node) {
+            console.log('[syncChildren] 노드 못찾음:', nodeId);
+            return;
+        }
 
         // 서버 조회에 사용할 ID (문자열 nodeId 우선)
         const queryId = node.nodeId || String(node.id);
@@ -593,10 +619,26 @@ window.MyMind2NodeRenderer = {
                 `/api/mindmap/children?folder=${encodeURIComponent(folder)}&nodeId=${encodeURIComponent(queryId)}`,
                 { credentials: 'include' }
             );
-            if (!response.ok) return;
+            if (!response.ok) {
+                console.log(`[syncChildren] API 응답 실패: ${response.status}`);
+                // API 실패해도 로컬 children이 있으면 펼침
+                if (autoExpand && node.children && node.children.length > 0 && !node.expanded) {
+                    node.expanded = true;
+                    this.renderMindMap();
+                }
+                return;
+            }
 
             const data = await response.json();
-            if (!data.success || !data.children || data.children.length === 0) return;
+
+            // 서버에 children이 없는 경우 → 로컬 children이라도 있으면 펼침
+            if (!data.success || !data.children || data.children.length === 0) {
+                if (autoExpand && node.children && node.children.length > 0 && !node.expanded) {
+                    node.expanded = true;
+                    this.renderMindMap();
+                }
+                return;
+            }
 
             // 메모리에 있는 children ID 수집
             const memoryIds = new Set();
@@ -617,15 +659,32 @@ window.MyMind2NodeRenderer = {
                 return !inMemory && !isDeleted;
             });
 
+            let needRender = false;
+
             if (newChildren.length > 0) {
                 console.log(`[syncChildren] ${newChildren.length}개 새 하위 노드 발견:`, newChildren.map(c => c.title));
                 if (!node.children) node.children = [];
                 node.children.push(...newChildren);
                 node.expanded = true;
+                needRender = true;
+            }
+
+            // autoExpand: 서버에 children이 있고, 현재 접혀있으면 펼침
+            if (autoExpand && !node.expanded && (node.children && node.children.length > 0)) {
+                node.expanded = true;
+                needRender = true;
+            }
+
+            if (needRender) {
                 this.renderMindMap();
             }
         } catch (e) {
-            console.warn('[syncChildrenFromServer] 서버 동기화 실패 (무시):', e.message);
+            console.warn('[syncChildrenFromServer] 서버 동기화 실패:', e.message);
+            // 에러 발생해도 로컬 children이 있으면 펼침
+            if (autoExpand && node.children && node.children.length > 0 && !node.expanded) {
+                node.expanded = true;
+                this.renderMindMap();
+            }
         }
     },
 

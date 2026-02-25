@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - '4949:4949'
+      - '5858:5858'
     env_file:
       - .env
     depends_on:

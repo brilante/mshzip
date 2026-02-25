@@ -2609,7 +2609,8 @@
 
         // 코드 블록 변환 (나머지 HTML 태그 제거 전에 처리)
         // 1. 언어 지정 코드 블록: <pre><code class="language-xxx">...</code></pre>
-        markdown = markdown.replace(/<pre[^>]*><code[^>]*class="language-([^"]+)"[^>]*>([\s\S]*?)<\/code><\/pre>/gi, (match, lang, code) => {
+        // 큰따옴표/작은따옴표 모두 지원 (HTML 양식 호환)
+        markdown = markdown.replace(/<pre[^>]*><code[^>]*class=["']language-([^"']+)["'][^>]*>([\s\S]*?)<\/code><\/pre>/gi, (match, lang, code) => {
             // HTML 엔티티 디코딩
             const decodedCode = code
                 .replace(/&lt;/g, '<')

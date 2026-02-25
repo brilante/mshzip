@@ -1235,7 +1235,7 @@ window.i18n_ru = {
   skillApiTestTitle: 'Тестирование API навыков',
   skillApiTestDesc: 'Протестируйте подключение к серверу навыков',
   serverAddressLabel: 'Адрес сервера',
-  serverUrlHint: 'Пример: http://localhost:4848',
+  serverUrlHint: 'Измените адрес сервера при доступе с другого компьютера.',
   keyFilePathLabel: 'Путь к файлу ключа',
   keyFilePathPlaceholder: 'Выберите путь к файлу ключа',
   keyFilePathHint: 'Путь к файлу ключа доступа',

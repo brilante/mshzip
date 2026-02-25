@@ -1282,7 +1282,7 @@ window.i18n_es = {
   skillApiTestTitle: 'Prueba de API de habilidades',
   skillApiTestDesc: 'Pruebe la conexión con el servidor de habilidades',
   serverAddressLabel: 'Dirección del servidor',
-  serverUrlHint: 'Ejemplo: http://localhost:4848',
+  serverUrlHint: 'Cambie la dirección del servidor al acceder desde otro ordenador.',
   keyFilePathLabel: 'Ruta del archivo de clave',
   keyFilePathPlaceholder: 'Seleccione la ruta del archivo de clave',
   keyFilePathHint: 'Ruta al archivo de clave de acceso',

@@ -4,6 +4,11 @@
 const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
+
+// .env에서 PORT 읽기
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const PORT = parseInt(process.env.PORT) || 5858;
 
 const key = fs.readFileSync('G:\\USER\\brilante33\\.mymindmp3', 'utf-8').trim();
 const hash = crypto.createHash('sha256').update(key).digest('hex');
@@ -14,7 +19,7 @@ function putNode(nodeId, htmlContent) {
     const body = JSON.stringify({ content: htmlContent });
     const opts = {
       hostname: 'localhost',
-      port: 4848,
+      port: PORT,
       path: `/api/skill/node/${mindmapId}/${nodeId}`,
       method: 'PUT',
       headers: {
@@ -129,7 +134,7 @@ const contents = {
 
 ### 마인드맵 연동 설정
 - **마인드맵 ID**: "개발자가 AI 길들이는 데 6개월 걸린 이유 (시행착오 전부 공개)_1"
-- **서버**: http://localhost:4848
+- **서버**: http://localhost:{PORT} (.env PORT 참조)
 - **인증**: X-Access-Key-Hash (sha256)
 - **규칙 노드**: [규칙 노드 ID] ← 프로젝트별 동적 규칙이 저장된 노드
 - **이력 노드**: [이력 노드 ID] ← 명령 이력이 기록될 노드
@@ -450,7 +455,7 @@ CLAUDE.md 읽기 (자동)
 <h4>제약 사항</h4>
 <ol>
 <li><b>사용자 텍스트 자동 캡처 불가</b>: CC Hook은 도구 호출에만 트리거되므로 사용자 입력 원문 자동 캡처는 불가. AI 규칙으로 우회.</li>
-<li><b>마인드맵 서버 의존</b>: localhost:4848 서버가 실행 중이어야 동작. 서버 미실행 시 동적 규칙 로딩 실패.</li>
+<li><b>마인드맵 서버 의존</b>: 서버(.env PORT)가 실행 중이어야 동작. 서버 미실행 시 동적 규칙 로딩 실패.</li>
 <li><b>AI 규칙 준수율</b>: CLAUDE.md 규칙은 100% 강제가 아닌 "높은 확률 준수". Hook과 달리 물리적 게이트가 아님.</li>
 <li><b>컨텍스트 윈도우 소비</b>: 세션 시작 시 마인드맵 규칙 로딩이 컨텍스트를 소비. 규칙이 많으면 압축 주기가 빨라짐.</li>
 </ol>

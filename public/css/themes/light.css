@@ -18,8 +18,7 @@ html[data-theme="light"] .layer-popup,
 html[data-theme="light"] .modal-content,
 html[data-theme="light"] .popup-content,
 html[data-theme="light"] #settingsLayerPopup,
-html[data-theme="light"] #settingsLayerContent,
-html[data-theme="light"] #loginPopup {
+html[data-theme="light"] #settingsLayerContent {
   background-color: var(--bg-elevated, #ffffff) !important;
   color: var(--text-primary, #1d1d1f) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);

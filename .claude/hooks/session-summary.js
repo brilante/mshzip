@@ -1,17 +1,23 @@
 /**
  * Phase4→CC: 세션 요약 생성 Hook
  * Stop 이벤트 시 세션 전체 행동 요약 생성
- * + 프로젝트 TODO 마인드맵(BTW5XOTCJ0)에 세션 요약 기록
+ * + 프로젝트 TODO 마인드맵에 세션 요약 기록
+ * todoRootNodeId는 user_settings DB에서 동적 조회
  */
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const crypto = require('crypto');
 
+// .env에서 PORT 읽기 (독립 프로세스 실행 대응)
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+const PORT = parseInt(process.env.PORT) || 5858;
+
 // 마인드맵 API 설정
 const ACCESS_KEY_PATH = 'G:/USER/brilante33/.mymindmp3';
 const TODO_MM_ID = '프로젝트 TODO';
-const TODO_ROOT = 'BTW5XOTCJ0';
+const DEFAULT_TODO_ROOT = 'BTW5XOTCJ0';
+let TODO_ROOT = DEFAULT_TODO_ROOT; // API에서 동적으로 갱신됨
 
 function getHash() {
   if (!fs.existsSync(ACCESS_KEY_PATH)) return null;
@@ -26,7 +32,7 @@ function mmRequest(method, mmId, apiPath, body) {
       if (!hash) { resolve(null); return; }
       const bodyStr = body ? JSON.stringify(body) : null;
       const opts = {
-        hostname: 'localhost', port: 4848,
+        hostname: 'localhost', port: PORT,
         path: apiPath,
         method,
         headers: {
@@ -108,8 +114,43 @@ async function findOrCreateDateNode(today) {
   return dayNodeId;
 }
 
+/**
+ * user_settings DB에서 todoRootNodeId 조회 (Access Key 인증)
+ */
+async function fetchTodoRoot() {
+  return new Promise((resolve) => {
+    try {
+      const hash = getHash();
+      if (!hash) { resolve(DEFAULT_TODO_ROOT); return; }
+      const opts = {
+        hostname: 'localhost', port: PORT,
+        path: '/api/user/settings',
+        method: 'GET',
+        headers: { 'X-Access-Key-Hash': hash },
+        timeout: 3000
+      };
+      const req = http.request(opts, (res) => {
+        let data = '';
+        res.on('data', c => data += c);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            resolve(json?.data?.todoRootNodeId || DEFAULT_TODO_ROOT);
+          } catch { resolve(DEFAULT_TODO_ROOT); }
+        });
+      });
+      req.on('error', () => resolve(DEFAULT_TODO_ROOT));
+      req.on('timeout', () => { req.destroy(); resolve(DEFAULT_TODO_ROOT); });
+      req.end();
+    } catch { resolve(DEFAULT_TODO_ROOT); }
+  });
+}
+
 async function main() {
   try {
+    // DB에서 사용자의 todoRootNodeId 조회
+    TODO_ROOT = await fetchTodoRoot();
+
     const logDir = path.join(__dirname, '..', 'logs');
     const today = new Date().toISOString().split('T')[0];
     const logFile = path.join(logDir, `session-${today}.log`);
@@ -194,7 +235,7 @@ async function main() {
 
     if (targetNodeId) {
       const summaryContent = `<h3>세션 요약</h3><ul><li>시간: ${timestamp}</li><li>총 액션: ${logs.length}회</li><li>도구별: ${toolSummary}</li></ul>`;
-      await addChild(TODO_MM_ID, targetNodeId, `세션 요약 ${timestamp.split('T')[1].substring(0, 5)}`, summaryContent);
+      await addChild(TODO_MM_ID, targetNodeId, '세션 요약', summaryContent);
     }
 
     // 세션 종료: 세션별 상태 파일 정리

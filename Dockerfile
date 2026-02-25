@@ -23,13 +23,13 @@ COPY alembic.ini ./
 
 # 환경 변수
 ENV APP_ENV=production
-ENV PORT=4949
+ENV PORT=5858
 
-EXPOSE 4949
+EXPOSE 5858
 
 # 헬스체크
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD curl -f http://localhost:4949/api/health || exit 1
+    CMD curl -f http://localhost:5858/api/health || exit 1
 
 # 실행
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "4949"]
+CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "5858"]

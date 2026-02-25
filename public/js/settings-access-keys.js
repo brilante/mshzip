@@ -25,6 +25,11 @@
   let serverUrlInput;
   let btnSaveServerUrl;
 
+  // TODO Node ID DOM 요소
+  let todoNodeIdInput;
+  let btnSaveTodoNodeId;
+  let todoNodeIdStatus;
+
   // 상태
   let currentDeleteKeyId = null;
   let loadedKeys = []; // 로드된 키 목록 저장
@@ -53,6 +58,14 @@
     pathRequiredNotice = document.getElementById('pathRequiredNotice');
     serverUrlInput = document.getElementById('serverUrl');
     btnSaveServerUrl = document.getElementById('btnSaveServerUrl');
+
+    // TODO Node ID DOM 요소 캐싱
+    todoNodeIdInput = document.getElementById('todoNodeId');
+    btnSaveTodoNodeId = document.getElementById('btnSaveTodoNodeId');
+    todoNodeIdStatus = document.getElementById('todoNodeIdStatus');
+
+    // TODO Node ID 로드 (Access Key 존재 여부와 무관)
+    loadTodoNodeId();
 
     if (!accessKeysList) return;
 
@@ -121,6 +134,11 @@
     // 서버 주소 저장 버튼
     if (btnSaveServerUrl) {
       btnSaveServerUrl.addEventListener('click', saveServerUrl);
+    }
+
+    // TODO Node ID 저장 버튼
+    if (btnSaveTodoNodeId) {
+      btnSaveTodoNodeId.addEventListener('click', saveTodoNodeId);
     }
   }
 
@@ -544,12 +562,8 @@
     return `${year}-${month}-${day}`;
   }
 
-  // DOM 로드 후 초기화
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // 전역 초기화 함수 노출 (initSettingsAll에서 호출)
+  window.initAccessKeys = init;
 
   /**
    * 연결 테스트 UI 업데이트
@@ -868,6 +882,90 @@
     }
 
     connectionTestResult.className = 'connection-test-result ' + (success ? 'success' : 'error');
+  }
+
+  /**
+   * TODO Node ID 로드 (DB에서)
+   */
+  async function loadTodoNodeId() {
+    if (!todoNodeIdInput) return;
+
+    try {
+      const response = await fetch('/api/user/settings', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.todoRootNodeId) {
+          todoNodeIdInput.value = data.data.todoRootNodeId;
+          if (btnSaveTodoNodeId) {
+            btnSaveTodoNodeId.innerHTML = mmIcon('check-circle', 14) + ' ' + t('saved', '저장됨');
+          }
+          showTodoNodeIdStatus(true, t('todoNodeIdRegistered', '등록됨 - Claude Code 연동 활성'));
+        }
+      }
+    } catch (error) {
+      console.error('[AccessKeys] TODO Node ID 로드 실패:', error);
+    }
+  }
+
+  /**
+   * TODO Node ID 저장
+   */
+  async function saveTodoNodeId() {
+    const nodeId = todoNodeIdInput?.value?.trim();
+
+    // 유효성 검사: 영숫자 10자리
+    if (!nodeId || !/^[A-Za-z0-9]{10}$/.test(nodeId)) {
+      alert(t('todoNodeIdValidationError', '영숫자 10자리 Node ID를 입력해주세요.'));
+      todoNodeIdInput?.focus();
+      return;
+    }
+
+    try {
+      if (btnSaveTodoNodeId) {
+        btnSaveTodoNodeId.disabled = true;
+        btnSaveTodoNodeId.textContent = t('saving', '저장 중...');
+      }
+
+      const response = await csrfUtils.secureFetch('/api/user/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ todoRootNodeId: nodeId })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (btnSaveTodoNodeId) {
+          btnSaveTodoNodeId.innerHTML = mmIcon('check-circle', 14) + ' ' + t('saved', '저장됨');
+        }
+        showTodoNodeIdStatus(true, t('todoNodeIdRegistered', '등록됨 - Claude Code 연동 활성'));
+      } else {
+        alert(t('saveFailed', '저장 실패') + ': ' + (data.message || t('unknownError', '알 수 없는 오류')));
+      }
+    } catch (error) {
+      console.error('[AccessKeys] TODO Node ID 저장 실패:', error);
+      alert(t('todoNodeIdSaveFailed', 'TODO Node ID 저장에 실패했습니다.'));
+    } finally {
+      if (btnSaveTodoNodeId) {
+        btnSaveTodoNodeId.disabled = false;
+        if (btnSaveTodoNodeId.textContent === t('saving', '저장 중...')) {
+          btnSaveTodoNodeId.textContent = t('saveBtn', '저장');
+        }
+      }
+    }
+  }
+
+  /**
+   * TODO Node ID 등록 상태 표시
+   */
+  function showTodoNodeIdStatus(success, text) {
+    if (!todoNodeIdStatus) return;
+    todoNodeIdStatus.style.display = 'flex';
+    const iconEl = todoNodeIdStatus.querySelector('.status-icon');
+    const textEl = todoNodeIdStatus.querySelector('.status-text');
+    if (iconEl) iconEl.innerHTML = success ? mmIcon('check-circle', 14) : mmIcon('alert-triangle', 14);
+    if (textEl) textEl.textContent = text;
+    todoNodeIdStatus.className = 'todo-node-status ' + (success ? 'success' : 'warning');
   }
 
   // 전역 접근용 (디버깅)

@@ -1,5 +1,10 @@
 'use strict';
 const http = require('http');
+const path = require('path');
+
+// .env에서 PORT 읽기
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const PORT = parseInt(process.env.PORT) || 5858;
 
 const HASH = 'a70dfada14ebb1ef9617b5b7ee508718546abbcfb32ce583ccd183402c5e46d2';
 const MM = '개발자가 AI 길들이는 데 6개월 걸린 이유 (시행착오 전부 공개)_1';
@@ -8,7 +13,7 @@ function putNode(nodeId, content) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ content });
     const options = {
-      hostname: 'localhost', port: 4848,
+      hostname: 'localhost', port: PORT,
       path: '/api/skill/node/' + encodeURIComponent(MM) + '/' + nodeId,
       method: 'PUT',
       headers: {

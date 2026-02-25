@@ -12,7 +12,7 @@ router.get('/info', (req, res) => {
   res.json({
     success: true,
     config: {
-      port: parseInt(process.env.PORT) || 4949,
+      port: parseInt(process.env.PORT) || 5858,
       environment: 'local',
       savePath: './save'
     }
@@ -23,7 +23,7 @@ router.get('/info', (req, res) => {
  * GET /api/config/auth-token - 인증 토큰 (스텁)
  */
 router.get('/auth-token', (req, res) => {
-  const port = parseInt(process.env.PORT) || 4949;
+  const port = parseInt(process.env.PORT) || 5858;
   res.json({
     success: true,
     token: 'dev-stub-token-' + port,

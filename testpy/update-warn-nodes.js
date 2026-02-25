@@ -4,6 +4,11 @@
 const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
+
+// .env에서 PORT 읽기
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const PORT = parseInt(process.env.PORT) || 5858;
 
 const key = fs.readFileSync('G:/USER/brilante33/.mymindmp3', 'utf-8').trim();
 const hash = crypto.createHash('sha256').update(key).digest('hex');
@@ -14,7 +19,7 @@ function putNode(nodeId, htmlContent) {
     const body = JSON.stringify({ content: htmlContent });
     const opts = {
       hostname: 'localhost',
-      port: 4848,
+      port: PORT,
       path: `/api/skill/node/${mindmapId}/${nodeId}`,
       method: 'PUT',
       headers: {

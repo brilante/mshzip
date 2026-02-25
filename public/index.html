@@ -1930,6 +1930,7 @@
           title="중간 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
         <button id="toggleResponse" class="panel-toggle-btn" data-i18n-title="toggleRightPanel"
           title="오른쪽 패널 토글"><svg class="mm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+        <span id="readOnlyLockIcon" style="display:none; align-items:center; cursor:default;" title="읽기 전용 모드"></span>
         <button id="addMainTitleBtn" data-i18n="addMainBtn">메인 추가</button>
         <button id="saveMapBtn" data-i18n="saveMapBtn" disabled>저장</button>
         <button id="loadMapBtn" data-i18n="loadMapBtn">불러오기</button>
@@ -2671,25 +2672,7 @@
 
   <!-- API Key Setup Popup - 제거됨: Settings 페이지에서 API 키 관리 -->
 
-  <!-- Login Popup -->
-  <div id="loginPopup"
-    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:30px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3); z-index:99999; width:400px; color:#000;">
-    <button id="loginPopupCloseBtn"
-      style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
-    <div data-i18n="loginTitle" style="font-size:20px; font-weight:bold; margin-bottom:20px; color:#000;">로그인</div>
-    <input type="text" id="loginUsername" data-i18n-placeholder="loginUsernamePlaceholder" placeholder="아이디 입력" value="" dir="auto"
-      style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #90caf9; border-radius:6px; font-size:14px; box-sizing:border-box;" />
-    <input type="password" id="loginPassword" data-i18n-placeholder="loginPasswordPlaceholder" placeholder="비밀번호 입력" value="" dir="auto"
-      style="width:100%; padding:12px; margin-bottom:15px; border:2px solid #90caf9; border-radius:6px; font-size:14px; box-sizing:border-box;" />
-    <div id="loginErrorMsg" style="color:#f44336; margin-bottom:15px; font-size:13px; min-height:20px;"></div>
-    <div style="text-align:right;">
-      <button id="loginConfirmBtn" data-i18n="loginBtn"
-        style="padding:10px 20px; background:#e3f2fd; color:#333; border:1px solid #2196F3; border-radius:6px; cursor:pointer; font-weight:bold;">로그인</button>
-    </div>
-  </div>
-  <div id="loginOverlay"
-    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99998;">
-  </div>
+  <!-- Login Popup 삭제됨: /login 페이지 사용 -->
 
   <!-- Settings Layer Popup (iframe 사용 금지 - AJAX로 콘텐츠 로드) -->
   <!-- 스타일은 head의 <style> 태그에서 반응형으로 정의됨 -->
@@ -2845,7 +2828,7 @@
 
   <!-- 인증 모듈 -->
   <script src="/js/modules/auth/session.js?v=20260117"></script>
-  <script src="/js/modules/auth/login-popup.js?v=20260117"></script>
+  <!-- login-popup.js 삭제됨: /login 페이지 사용 -->
   <script src="/js/modules/auth/settings-popup.js?v=20260217"></script>
 
   <!-- 기능 모듈 (defer 로드) -->
@@ -2853,7 +2836,7 @@
   <script defer src="/js/modules/features/youtube-extract.js?v=20260117"></script>
 
   <!-- 통합 아이콘 시스템 -->
-  <script src="/js/mm-icons.js?v=20260217"></script>
+  <script src="/js/mm-icons.js?v=20260225"></script>
 
   <!-- Initialize Application (외부 파일로 분리됨) -->
   <script src="/js/app-init.js?v=20260217"></script>

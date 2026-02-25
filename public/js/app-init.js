@@ -9471,80 +9471,9 @@ const response = await fetch('/api/templates', { credentials: 'include' });
       });
     }
 
-    // 로그인 팝업 표시
+    // 미인증 시 /login 페이지로 리다이렉트
     function showLoginPopup() {
-      document.getElementById('loginPopup').style.display = 'block';
-      document.getElementById('loginOverlay').style.display = 'block';
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
-      document.getElementById('loginErrorMsg').textContent = '';
-    }
-
-    // 로그인 팝업 닫기
-    function hideLoginPopup() {
-      document.getElementById('loginPopup').style.display = 'none';
-      document.getElementById('loginOverlay').style.display = 'none';
-    }
-
-    // 로그인 처리
-    async function handleLogin() {
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const errorMsg = document.getElementById('loginErrorMsg');
-
-      if (!username) {
-        errorMsg.textContent = t('enterIdRequired', '아이디를 입력해주세요.');
-        return;
-      }
-
-      if (!password) {
-        errorMsg.textContent = t('enterPwRequired', '비밀번호를 입력해주세요.');
-        return;
-      }
-
-      try {
-        const csrfHeaders = window.csrfUtils ? await window.csrfUtils.getCsrfHeaders() : {};
-const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...csrfHeaders },
-          credentials: 'include',
-          body: JSON.stringify({ username, password })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          currentUser = username;
-          updateLoginUI(true, username);
-          hideLoginPopup();
-
-          // _xt를 sessionStorage에 저장 (Settings 열 때 admin-check API 호출 최소화)
-          if (data._xt) {
-            sessionStorage.setItem('_xt', data._xt);
-            console.log('[Auth] Session token saved');
-          }
-
-          showToast(window.i18n?.toastLoginSuccess || '로그인 성공', 'success');
-
-          // 로그인 성공 후 CSRF 토큰 갱신 (세션 재생성으로 기존 토큰 무효)
-          if (window.csrfUtils) {
-            window.csrfUtils.clearCsrfToken();
-            window.csrfUtils.fetchCsrfToken().catch(() => {});
-          }
-
-          // 로그인 성공 후 로컬 API 키 헬스 체크 (백그라운드)
-          if (window.verifyLocalApiKeys) {
-            window.verifyLocalApiKeys().catch(err => {
-              console.error('[API Keys] 헬스 체크 실패:', err);
-            });
-          }
-        } else {
-          errorMsg.textContent = data.message || (window.i18n?.loginFailed || '로그인 실패');
-        }
-      } catch (error) {
-        console.error('로그인 오류:', error);
-        errorMsg.textContent = window.i18n?.loginError || '로그인 중 오류가 발생했습니다.';
-      }
+      window.location.href = '/login';
     }
 
     // 로그아웃 처리
@@ -9633,38 +9562,7 @@ const response = await fetch('/api/auth/login', {
       });
     }
 
-    const loginPopupCloseBtn = document.getElementById('loginPopupCloseBtn');
-    if (loginPopupCloseBtn) {
-      loginPopupCloseBtn.addEventListener('click', hideLoginPopup);
-    }
-
-    // Login popup event propagation blocking
-    const loginPopup = document.getElementById('loginPopup');
-    const loginOverlay = document.getElementById('loginOverlay');
-
-    if (loginPopup) {
-      loginPopup.addEventListener('click', function (e) {
-        e.stopPropagation();
-        // Allow clicks within popup to work normally
-      });
-    }
-
-    if (loginOverlay) {
-      loginOverlay.addEventListener('click', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        // Do nothing - just block the click from reaching other elements
-      });
-    }
-
-    document.getElementById('loginConfirmBtn').addEventListener('click', handleLogin);
-
-    // Enter 키로 로그인
-    document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        handleLogin();
-      }
-    });
+    // 로그인 팝업 삭제됨: /login 페이지 사용
 
     // 페이지 로드 시 세션 확인 - auth-check.js에서 처리 (중복 호출 제거)
     // checkSession();

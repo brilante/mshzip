@@ -1068,6 +1068,15 @@ function renderAIModelSettings(data) {
 
   let html = '';
 
+  // 서비스별 브랜드 아이콘 매핑
+  const serviceIconMap = {
+    gpt: mmIcon('openai', 18),
+    claude: mmIcon('claude', 18),
+    gemini: mmIcon('gemini', 18),
+    grok: mmIcon('grok', 18),
+    local: mmIcon('monitor', 16)
+  };
+
   // 서비스별 렌더링 (Local AI는 항상 마지막에 표시)
   const serviceEntries = Object.entries(data.services).sort((a, b) => {
     if (a[0] === 'local') return 1;
@@ -1086,7 +1095,7 @@ function renderAIModelSettings(data) {
                    id="service-${service}"
                    data-service="${service}"
                    ${isServiceEnabled ? 'checked' : ''}>
-            <span class="ai-service-icon">${serviceInfo.icon || mmIcon('info', 16)}</span>
+            <span class="ai-service-icon">${serviceIconMap[service] || mmIcon('info', 16)}</span>
             <span class="ai-service-name">${serviceInfo.name}</span>
           </div>
           <div class="ai-service-header-right">
@@ -2380,7 +2389,7 @@ window.showSyncLogDetail = function(index) {
   // 팝업 제목 및 헤더 색상 변경
   const titleEl = document.getElementById('syncLogDetailTitle');
   const headerEl = document.getElementById('syncLogDetailHeader');
-  if (titleEl) titleEl.textContent = `${config.icon} ${config.name} ${t('adminDetail', '상세')}`;
+  if (titleEl) titleEl.innerHTML = `${config.icon} ${config.name} ${t('adminDetail', '상세')}`;
   if (headerEl) headerEl.style.background = config.gradient;
 
   // 기본 정보 채우기

@@ -61,6 +61,11 @@ window.initSettingsAll = async function() {
     window.initBoardUI();
   }
 
+  // 7-1. Access Keys & TODO Node ID 초기화 (settings-access-keys.js)
+  if (typeof window.initAccessKeys === 'function') {
+    window.initAccessKeys();
+  }
+
   // 8. 관리자 여부 확인 및 메뉴 초기화
   await checkAndInitAdminStatus();
 

@@ -1,7 +1,7 @@
 {
   "aggregationDate": "2026-02-24T08:15:00Z",
   "projectPath": "G:MyWrok2mymind3",
-  "serverUrl": "http://localhost:4949",
+  "serverUrl": "http://localhost:5858",
   "totalPlannedTC": 22,
   "executionSummary": {
     "executed": 13,

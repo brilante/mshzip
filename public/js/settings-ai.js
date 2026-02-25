@@ -84,6 +84,12 @@
   // 현재 AI 설정
   let currentAISettings = { ...DEFAULT_AI_SETTINGS };
 
+  // DB에서 로드한 서비스별 모델값 보존 (초기화 경쟁 조건 방지)
+  let _loadedServiceModels = {};
+
+  // 초기화 중복 실행 방지 플래그
+  let _aiInitInProgress = false;
+
   // 모델 목록 캐시
   let modelListCache = null;
 
@@ -375,39 +381,50 @@
    * AI 설정 초기화
    */
   async function initAISettings() {
-    // 저장된 설정 로드 (DB API 우선)
-    await loadAISettings();
+    // 동시 초기화 방지 (삼중 호출 경쟁 조건 해결)
+    if (_aiInitInProgress) {
+      console.log('[AI Settings] 초기화 진행 중, 중복 호출 스킵');
+      return;
+    }
+    _aiInitInProgress = true;
 
-    // 모델 목록 로드
-    await loadModelList();
+    try {
+      // 저장된 설정 로드 (DB API 우선)
+      await loadAISettings();
 
-    // AI 추천 정보 로드
-    await loadAIRecommendations();
+      // 모델 목록 로드
+      await loadModelList();
 
-    // UI에 설정 적용
-    applyAISettingsToUI();
+      // AI 추천 정보 로드
+      await loadAIRecommendations();
 
-    // 이벤트 리스너 등록
-    setupAIEventListeners();
+      // UI에 설정 적용
+      applyAISettingsToUI();
 
-    // 크레딧 잔액 로드
-    loadCreditBalance();
+      // 이벤트 리스너 등록
+      setupAIEventListeners();
 
-    // 사용자 크레딧 잔액 로드 (결제 옵션 상태 업데이트용)
-    await loadUserCreditBalance();
+      // 크레딧 잔액 로드
+      loadCreditBalance();
 
-    // 사용량 통계 로드
-    loadUsageStats();
+      // 사용자 크레딧 잔액 로드 (결제 옵션 상태 업데이트용)
+      await loadUserCreditBalance();
 
-    // Phase 6: 사용 내역 모달 이벤트 리스너 설정
-    setupUsageHistoryModalListeners();
+      // 사용량 통계 로드
+      loadUsageStats();
 
-    // 초기 결제 옵션 상태 업데이트
-    updateAllPaymentOptionStates();
+      // Phase 6: 사용 내역 모달 이벤트 리스너 설정
+      setupUsageHistoryModalListeners();
 
-    // DB에서 AI 서비스 상태 로드 및 버튼 이벤트 설정
-    await loadAIServiceStatusFromDB();
-    setupAIServiceStatusButtons();
+      // 초기 결제 옵션 상태 업데이트
+      updateAllPaymentOptionStates();
+
+      // DB에서 AI 서비스 상태 로드 및 버튼 이벤트 설정
+      await loadAIServiceStatusFromDB();
+      setupAIServiceStatusButtons();
+    } finally {
+      _aiInitInProgress = false;
+    }
   }
 
   /**
@@ -514,6 +531,20 @@
         if (model.is_default) option.selected = true;
         select.appendChild(option);
       });
+
+      // 사용자 저장 모델 복원 (DB 로드값 우선, is_default보다 우선)
+      const savedModel = _loadedServiceModels[service] || currentAISettings.services[service]?.model;
+      if (savedModel) {
+        const hasOption = Array.from(select.options).some(o => o.value === savedModel);
+        if (hasOption) {
+          select.value = savedModel;
+          // currentAISettings도 동기화 (자동 저장 시 올바른 값 보장)
+          if (currentAISettings.services[service]) {
+            currentAISettings.services[service].model = savedModel;
+          }
+        }
+      }
+
       autoResizeSelect(select);
     } else {
       // 미사용: 모델 목록 비우기
@@ -810,6 +841,14 @@
                 console.warn('[AI Settings] aiServices 파싱 실패:', e);
               }
             }
+            // DB에서 로드한 서비스별 모델값 보존 (초기화 경쟁 조건 방지)
+            _loadedServiceModels = {};
+            for (const [svc, info] of Object.entries(currentAISettings.services)) {
+              if (info && info.model) {
+                _loadedServiceModels[svc] = info.model;
+              }
+            }
+
             console.log('[AI Settings] DB에서 설정 로드 완료 (source=' + result.source + ')');
 
             // localStorage 동기화 (오프라인 폴백용)
@@ -831,6 +870,16 @@
    */
   async function saveAISettings() {
     try {
+      // 초기화 중에는 DB 로드값으로 서비스 모델 복원 (경쟁 조건 방지)
+      if (_aiInitInProgress && Object.keys(_loadedServiceModels).length > 0) {
+        for (const [svc, model] of Object.entries(_loadedServiceModels)) {
+          if (currentAISettings.services[svc] && currentAISettings.services[svc].model !== model) {
+            console.log(`[AI Settings] 초기화 중 모델 복원: ${svc} ${currentAISettings.services[svc].model} → ${model}`);
+            currentAISettings.services[svc].model = model;
+          }
+        }
+      }
+
       // localStorage에 저장 (오프라인 폴백용)
       localStorage.setItem(STORAGE_KEYS.AI_SETTINGS, JSON.stringify(currentAISettings));
 
@@ -990,9 +1039,9 @@
       // 기존 옵션 제거
       select.innerHTML = '';
 
-      // 서비스 상태 버튼에서 활성화 상태 확인
-      const statusBtn = document.getElementById(`${service}StatusBtn`);
-      const isEnabled = statusBtn ? statusBtn.dataset.enabled === 'true' : true;
+      // currentAISettings 기반으로 활성화 상태 확인 (HTML data-enabled 대신)
+      const serviceSettings = currentAISettings.services[service];
+      const isEnabled = serviceSettings ? serviceSettings.enabled : false;
 
       // 미사용 상태면 모델 목록 비우기
       if (!isEnabled) {
@@ -1018,6 +1067,19 @@
         if (model.is_default) option.selected = true;
         select.appendChild(option);
       });
+
+      // 사용자 저장 모델 복원 (DB 로드값 우선, is_default보다 우선)
+      const savedModel = _loadedServiceModels[service] || serviceSettings?.model;
+      if (savedModel) {
+        const hasOption = Array.from(select.options).some(o => o.value === savedModel);
+        if (hasOption) {
+          select.value = savedModel;
+          // currentAISettings도 동기화 (자동 저장 시 올바른 값 보장)
+          if (serviceSettings) {
+            serviceSettings.model = savedModel;
+          }
+        }
+      }
 
       // 셀렉트 박스 너비를 최대 텍스트 길이에 맞게 조절
       autoResizeSelect(select);
@@ -2688,21 +2750,8 @@
     await initSubscriptionPrices();
   }
 
-  // DOM 로드 완료 시 초기화
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (!window.settingsInitialized) {
-        await initAllAISettings();
-      }
-    });
-  } else {
-    if (!window.settingsInitialized) {
-      (async () => {
-        await initAllAISettings();
-      })();
-    }
-  }
-
   // 외부에서 호출 가능한 AI 설정 초기화 함수 (레이어 팝업용)
+  // 주의: 자체 초기화(DOMContentLoaded)를 제거함 - initSettingsAll()이 처리
+  // settings-popup.js → initSettingsAll() → initSettingsAI() 경로만 사용
   window.initSettingsAI = initAllAISettings;
 })();

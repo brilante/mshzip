@@ -131,11 +131,7 @@
   z-index: var(--z-legacy-modal, 1050);
 }
 
-/* ===== 로그인 팝업 레이어 ===== */
-#loginPopup,
-.login-popup {
-  z-index: var(--z-legacy-modal, 1050);
-}
+/* 로그인 팝업 삭제됨: /login 페이지 사용 */
 
 /* ===== 확인 대화상자 ===== */
 .confirm-dialog,

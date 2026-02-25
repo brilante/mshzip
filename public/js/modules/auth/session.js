@@ -7,7 +7,7 @@
  * - getCreditBalance: 크레딧 잔액 조회 함수
  * - updateCreditBalanceUI: 크레딧 UI 업데이트 함수
  * - showSettingsLayerPopup: 설정 팝업 표시 함수
- * - showLoginPopup: 로그인 팝업 표시 함수
+ * - /login 페이지로 리다이렉트 (미인증 시)
  * - verifyLocalApiKeys: 로컬 API 키 검증 함수
  * - csrfUtils: CSRF 유틸리티 객체
  */
@@ -31,7 +31,7 @@
 
       if (!response.ok) {
         updateLoginUI(false);
-        showLoginPopup();
+        redirectToLogin();
         return;
       }
 
@@ -56,12 +56,12 @@
       } else {
         updateLoginUI(false);
         sessionStorage.removeItem('_xt');
-        showLoginPopup();
+        redirectToLogin();
       }
     } catch (error) {
       console.error('세션 확인 실패:', error);
       updateLoginUI(false);
-      showLoginPopup();
+      redirectToLogin();
     }
   }
 
@@ -157,15 +157,10 @@
   }
 
   /**
-   * 로그인 팝업 표시 헬퍼 함수
-   * window.showLoginPopup이 없는 경우를 대비한 안전한 호출
+   * 미인증 시 로그인 페이지로 리다이렉트
    */
-  function showLoginPopup() {
-    if (typeof window.showLoginPopup === 'function') {
-      window.showLoginPopup();
-    } else {
-      console.warn('[Session] showLoginPopup 함수를 찾을 수 없습니다');
-    }
+  function redirectToLogin() {
+    window.location.href = '/login';
   }
 
   /**

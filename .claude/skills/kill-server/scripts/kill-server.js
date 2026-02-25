@@ -16,7 +16,7 @@ const path = require('path');
 const os = require('os');
 
 class ServerKiller {
-  static ALLOWED_PORTS = [4848, 3999, 5858];
+  static ALLOWED_PORTS = [5858, 3999];
   static PID_FILE_NAME = '.server.pid';
 
   constructor(projectRoot) {
@@ -72,7 +72,6 @@ class ServerKiller {
         // 무시
       }
     }
-    ports.push(4848);
     ports.push(3999);
     return [...new Set(ports)];
   }

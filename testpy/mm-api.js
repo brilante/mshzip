@@ -22,8 +22,11 @@
 const http = require('http');
 const fs = require('fs');
 const crypto = require('crypto');
-
 const path = require('path');
+
+// .env에서 PORT 읽기 (독립 프로세스 실행 대응)
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const PORT = parseInt(process.env.PORT) || 5858;
 
 const ACCESS_KEY = fs.readFileSync('G:/USER/brilante33/.mymindmp3', 'utf-8').trim();
 const HASH = crypto.createHash('sha256').update(ACCESS_KEY).digest('hex');
@@ -49,7 +52,7 @@ function request(method, path, body) {
   return new Promise((resolve, reject) => {
     const bodyStr = body ? JSON.stringify(body) : null;
     const opts = {
-      hostname: 'localhost', port: 4848,
+      hostname: 'localhost', port: PORT,
       path, method,
       headers: {
         'X-Access-Key-Hash': HASH,

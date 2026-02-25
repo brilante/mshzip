@@ -57,6 +57,8 @@ window.MyMind3.MindMapData = {
     _nodeIndex: new Map(),
     // 현재 세션에서 삭제된 노드 ID Set (sync 시 재추가 방지)
     _deletedNodeIds: new Set(),
+    // 필터 목록 (노드 필터 관리)
+    filters: [],
 
     /**
      * Initialize the data module
@@ -69,6 +71,7 @@ window.MyMind3.MindMapData = {
         this.currentEditingNodeId = null;
         this._nodeIndex = new Map();
         this._deletedNodeIds = new Set();
+        this.filters = [];
         console.log('MyMind3.MindMapData module initialized');
 
         // 마인드맵 초기화 이벤트 발생 (새 트리 버튼 비활성화용)

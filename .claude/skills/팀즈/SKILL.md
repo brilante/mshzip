@@ -98,7 +98,7 @@ Task(
   prompt="
     대상: {target}
     관련 파일: {files}
-    서버: http://localhost:4848
+    서버: http://localhost:{PORT} (.env PORT 참조)
 
     이 페이지/모듈을 분석하여 다음을 기획하세요:
     1. 필요한 테스트 종류 (API/보안/UI)
@@ -129,7 +129,7 @@ Task(
 ```
 대상: {target}
 관련 파일: {files}
-서버: http://localhost:4848
+서버: http://localhost:{PORT} (.env PORT 참조)
 테스트 계정: bril / 1
 
 [테스트 기획서]

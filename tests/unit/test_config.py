@@ -17,7 +17,7 @@ def test_settings_defaults():
     _env_file=None,
   )
   assert settings.APP_ENV == 'local'
-  assert settings.PORT == 4949
+  assert settings.PORT == 5858
   assert settings.DEBUG is False
 
 
@@ -28,8 +28,8 @@ def test_settings_cors_origins():
   settings = Settings(
     DATABASE_URL='sqlite+aiosqlite:///test.db',
     SESSION_SECRET='test',
-    CORS_ORIGINS=['http://localhost:3000', 'http://localhost:4949'],
+    CORS_ORIGINS=['http://localhost:3000', 'http://localhost:5858'],
     _env_file=None,
   )
   assert 'http://localhost:3000' in settings.CORS_ORIGINS
-  assert 'http://localhost:4949' in settings.CORS_ORIGINS
+  assert 'http://localhost:5858' in settings.CORS_ORIGINS

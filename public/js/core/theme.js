@@ -41,10 +41,16 @@ const ThemeManager = {
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data && result.data.theme) {
+          // source가 'default'이면 사용자가 아직 DB에 저장한 적 없음 → localStorage 우선
+          if (result.source === 'default') {
+            console.log('[ThemeManager] DB에 저장된 테마 없음 → localStorage 유지');
+            return;
+          }
+
           const dbTheme = result.data.theme;
           const currentTheme = this.getTheme();
 
-          // DB 테마가 현재 테마와 다르면 DB 테마로 변경 (DB가 우선)
+          // DB에 실제 저장된 테마가 현재 테마와 다르면 DB 테마로 변경
           if (dbTheme !== currentTheme) {
             console.log(`[ThemeManager] DB 테마로 동기화: ${currentTheme} → ${dbTheme}`);
             this.setTheme(dbTheme, true); // DB 저장 스킵 (이미 DB에 있음)

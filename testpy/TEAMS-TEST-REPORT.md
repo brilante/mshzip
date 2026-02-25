@@ -3,7 +3,7 @@
 ## 환경
 - **대상**: G:\MyWrok2\mymind3 (CC 구현 설계)
 - **실행일**: 2026-02-24
-- **서버**: http://localhost:4949 (Express)
+- **서버**: http://localhost:5858 (Express)
 - **에이전트**: 5개 (기획1 + 검사3 + 적대적1 + 집계1)
 
 ## 적대적 검증 신뢰도: MEDIUM

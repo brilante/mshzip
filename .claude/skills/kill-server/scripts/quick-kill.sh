@@ -3,7 +3,7 @@
 # 프로젝트 웹서버를 찾아 종료하는 스크립트
 
 # 기본 포트
-PORTS=(4848 3999)
+PORTS=(5858 3999)
 
 # 스크립트 디렉토리
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

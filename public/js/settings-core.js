@@ -7,13 +7,13 @@
  * 이 스크립트는 index.html에서 레이어 팝업으로 settings.html을 로드한 후
  * initSettingsAll() 함수가 호출되어야만 정상 작동합니다.
  *
- * 직접 URL 접근 (예: http://localhost:4848/settings.html) 시:
+ * 직접 URL 접근 (예: http://localhost:{PORT}/settings.html) 시:
  * - initSettingsAll()이 호출되지 않음
  * - 버튼 이벤트 리스너가 등록되지 않음
  * - 구독 버튼, 크레딧 구매 버튼 등이 작동하지 않음
  *
  * 올바른 접근 방법:
- * 1. index.html 접속 (http://localhost:4848/)
+ * 1. index.html 접속 (http://localhost:{PORT}/)
  * 2. 설정 버튼 클릭 → Settings 레이어 팝업 표시
  * 3. 팝업에서 initSettingsAll() 자동 호출
  *

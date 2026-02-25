@@ -7,10 +7,10 @@
 
 | 항목 | 값 |
 |------|-----|
-| **URL** | `http://localhost:4949/` (`.env` PORT 확인) |
+| **URL** | `http://localhost:5858/` (`.env` PORT 확인) |
 | **계정 (Admin, OAuth)** | `.env` TEST_ADMIN_USERNAME / TEST_ADMIN_PASSWORD |
 | **계정 (Playwright)** | `bril` / `1` (로컬 로그인, email: brilante33@gmail.com) |
-| **관리자 비밀번호** | `1` (관리자 인증 팝업 자동 입력) |
+| **관리자 비밀번호** | `1` (관리자 인증 팝업 → 입력값 `1` 입력 후 확인) |
 | **테스트 카드** | `testpy/md5/테스트 카드 정보.md` 참조 |
 
 ## 프로젝트 개요
@@ -18,6 +18,7 @@
 - **MyMind3**: AI 마인드맵 웹앱
 - **기술**: Node.js, Express, PostgreSQL, Vanilla JS
 - **AI**: OpenAI, Claude, Gemini, Grok
+- **읽기 전용 참고소스**: `G:\MyWrok\mymind3` (MyMind3 본체, 수정 금지)
 
 ## 마인드맵 연동 설정
 
@@ -26,7 +27,7 @@
 | 항목 | 값 |
 |------|-----|
 | **마인드맵 ID** | `개발자가 AI 길들이는 데 6개월 걸린 이유 (시행착오 전부 공개)_1` |
-| **서버** | `http://localhost:4848` |
+| **서버** | `http://localhost:{PORT}` (`.env` PORT 값 사용, 기본 5858) |
 | **인증** | `X-Access-Key-Hash` (sha256, 키 파일: `G:/USER/brilante33/.mymindmp3`) |
 | **규칙 노드 ID** | `ZCMJPYR5R4` (동적 규칙 저장소) |
 | **종합 CC 노드** | `8QIA56Z3PS` |
@@ -42,30 +43,34 @@
 
 ### 세션 시작 규칙
 
-1. 마인드맵 서버(`localhost:4848`) 접근 가능 여부 확인
-2. **규칙 노드 읽기**: `/기획 R ZCMJPYR5R4` → 현재 Sprint 규칙, 임시 제약사항, 특수 코딩 규칙 로드
-3. **오늘 날짜 노드 확인**: `BTW5XOTCJ0` → `yyyy` → `yyyyMM` → `yyyyMMdd` 3단계 경로 탐색 → 없는 단계는 순서대로 생성
+> **필수 순서**: 명령 접수 → ① TODO 이력 기록 → ② CC체크 (규칙 로드)
+
+1. 마인드맵 서버(`localhost:{PORT}`, `.env` PORT 참조) 접근 가능 여부 확인
+2. **[TODO] 명령 노드 등록**: `BTW5XOTCJ0` → `yyyy` → `yyyyMM` → `yyyyMMdd` 경로 탐색/생성 → `--set-current`로 명령 노드 생성
+   - command-log-enforcer 차단이 해제되는 시점 (상태파일 생성)
+   - 명령 노드 제목: 사용자 실제 명령 요약 (범용 제목 금지)
+3. **[CC체크] 규칙 노드 읽기**: `/기획 R ZCMJPYR5R4` → 현재 Sprint 규칙, 임시 제약사항, 특수 코딩 규칙 로드
+   - cc-check-validator가 TODO 상태파일 확인 후 자동 실행 (세션당 1회)
 4. **최근 이력 확인**: 오늘 날짜 노드의 마지막 명령 번호 확인 (다음 번호 결정)
 5. 서버 미실행 시 → 정적 규칙(`.claude/rules/`)만으로 동작, 경고 출력
 
 ### 명령 이력 기록 규칙 (프로젝트 TODO)
 
-**구조**: `BTW5XOTCJ0` → `yyyy` (년도) → `yyyyMM` (년월) → `yyyyMMdd` (년월일) → `N. 명령내용` (순번) → 하위 상세 노드들
+**구조**: `BTW5XOTCJ0` → `yyyy` (년도) → `yyyyMM` (년월) → `yyyyMMdd` (년월일) → `N. 명령내용` (순번) → 3-노드 구조
 
 ```
 BTW5XOTCJ0 (프로젝트 TODO)
 ├── 2026 (년도)
 │   └── 202602 (년월)
-│       ├── 20260223 (년월일)
-│       │   ├── 1. step 1
-│       │   ├── 2. Stemp 2
-│       │   └── 7. 결제 검증로직
-│       └── 20260224
-│           ├── 1. 하위 노드 토글
-│           │   ├── 구현 완료
-│           │   ├── 테스트 결과 (9/9 PASS)
-│           │   └── 테스트 시나리오 상세
-│           └── 2. 자동화 플로우 조사
+│       └── 20260225 (년월일)
+│           ├── 1. 이력 형식 고도화
+│           │   ├── 명령 수행 계획수립
+│           │   ├── 수행 및 테스트 결과
+│           │   └── 세션 요약
+│           └── 2. 다크모드 버그 수정
+│               ├── 명령 수행 계획수립
+│               ├── 수행 및 테스트 결과
+│               └── 세션 요약
 └── 2027 (다음 년도 → 자동 생성)
     └── 202701
         └── 20270101
@@ -76,11 +81,10 @@ BTW5XOTCJ0 (프로젝트 TODO)
 
 | 단계 | 시점 | 동작 |
 |------|------|------|
-| 1. 명령 접수 | 사용자 명령 수신 직후 | 날짜 노드 확인/생성 → `--set-current`로 명령 노드 생성 |
-| 2. 수행 중 | 주요 단계 완료 시 | 하위 노드 추가 (구현, 수정 파일, 중간 결과) |
-| 3. 검증 | 수행 완료 후 | 하위 노드 추가 (테스트 결과, 검증 내용) |
-| 4. 요약 | 모든 작업 완료 | 명령 노드의 content에 전체 요약 작성 |
-| 5. 세션 종료 | Stop Hook 자동 | `session-summary.js`가 활성 노드 하위에 세션 요약 추가 |
+| 1. 명령 접수 | 사용자 명령 수신 직후 | 날짜 노드 확인/생성 → `--set-current`로 명령 노드 생성 (content: 원본 명령, 덮어쓰기 금지) |
+| 2-a. 계획 수립 | 구현 시작 전 | "명령 수행 계획수립" 하위 노드 추가 (분석+계획+Mermaid 플로우차트) |
+| 2-b. 수행 완료 | 구현+테스트 완료 시 | "수행 및 테스트 결과" 하위 노드 추가 (결과 통합) |
+| 3. 세션 종료 | Stop Hook 자동 | `session-summary.js`가 "세션 요약" 하위 노드 추가 |
 
 **`--set-current` 필수**: 명령 노드 생성 시 반드시 `--set-current`를 붙여야 세션 종료 시 해당 노드 하위에 세션 요약이 기록됨. 상태 파일: `.claude/current-command-node-{SSE_PORT}` (세션별 고유, `CLAUDE_CODE_SSE_PORT` 환경변수 기반)
 
@@ -99,37 +103,26 @@ node testpy/mm-api.js --mm todo add-child <년월노드ID> "20260225"
 # 명령 노드 생성 (--set-current 필수, 명령 원문 content 필수)
 node testpy/mm-api.js --mm todo --set-current add-child <년월일노드ID> "3. 새 기능 구현" "사용자 명령 원문"
 
-# 하위 상세 노드 생성
-node testpy/mm-api.js --mm todo add-child <명령노드ID> "구현 완료" "<p>상세 내용</p>"
+# 명령 수행 계획수립 노드 생성 (구현 시작 전)
+node testpy/mm-api.js --mm todo add-child <명령노드ID> "명령 수행 계획수립" "<계획 HTML content>"
 
-# 명령 노드에 요약 작성
-node testpy/mm-api.js --mm todo write <명령노드ID> "요약 내용"
+# 수행 및 테스트 결과 노드 생성 (구현+테스트 완료 시)
+node testpy/mm-api.js --mm todo add-child <명령노드ID> "수행 및 테스트 결과" "<결과 HTML content>"
 ```
 
-**명령 노드 content (요약) 형식**:
-```
-## 명령: 사용자 명령 원문
-### 수행 요약
-- 주요 액션 1
-- 주요 액션 2
-### 결과: ✅ 성공 / ❌ 실패
-### 수정 파일
-- file1.js (변경 내용)
-- file2.js (변경 내용)
-```
+**명령 노드 content (원본 보존 원칙)**: 명령 노드의 content에는 사용자의 원본 명령을 그대로 저장한다. 완료 후 `write` 덮어쓰기는 금지. 요약 정보는 "수행 및 테스트 결과" 하위 노드에 기록.
 
-**하위 노드 유형**:
+**하위 노드 유형 (3-노드 구조)**:
 
-| 하위 노드 제목 패턴 | 용도 |
-|---------------------|------|
-| `구현 완료` | 코드 변경 상세 |
-| `테스트 결과 (N/M PASS)` | 테스트 수행 결과 |
-| `테스트 시나리오 상세` | 테스트 케이스 목록 |
-| `수정 파일 목록` | 변경된 파일과 변경 사유 |
-| `에러 및 해결` | 발생한 에러와 해결 방법 |
-| `검증 결과` | 수행 후 검증 내용 |
+| 하위 노드 제목 | 생성 시점 | 용도 |
+|---------------|----------|------|
+| `명령 수행 계획수립` | 구현 시작 전 | 명령 분석, 영향 범위, 구현 단계, 검증 기준, Mermaid 플로우차트 |
+| `수행 및 테스트 결과` | 구현+테스트 완료 시 | 수정 파일, 구현 상세, 테스트 항목/결과 (table), 에러 해결 |
+| `세션 요약` | 세션 종료 시 (자동) | session-summary.js가 도구별 사용 횟수 집계하여 자동 생성 |
 
 **기록 제외**: 단순 파일 읽기, 검색, 질문 응답 (코드 변경이 없는 작업)
+
+**금지 제목**: "세션 작업", "세션 자동 등록" 등 범용/무의미한 제목의 명령 노드 생성 금지. 반드시 사용자 실제 명령을 요약한 제목 사용
 
 ## Phase0 → 목표 수립 자동화
 
@@ -204,7 +197,6 @@ Plan Mode 내 필수 산출물:
 | /팀즈 | 팀 테스트 관리 | `/팀즈 "검증 대상"` |
 | /pr-review | PR 코드 리뷰 | `/pr-review` |
 | /kill-server | 웹서버 강제 종료 | `/kill-server` |
-| /order-validator | 명령 충돌 검사 | 명령 시작 시 자동 |
 | /노드추출 | UI→마인드맵 변환 | `/노드추출` |
 
 ## Phase2 → 컨텍스트 관리
@@ -288,6 +280,7 @@ Plan Mode 내 필수 산출물:
 | API 중복 생성 금지 | 동일 기능은 하나의 API만 |
 | 노드 접근 API 필수 | 노드ID로 읽기/쓰기/하위 생성 등 모든 노드 조작은 반드시 `/기획` 스킬 또는 API(`/api/skill/node/...`) 경유 |
 | 노드ID 패턴 자동 인식 | 영숫자 10자리 패턴(예: `YU23DJ8GJQ`)은 노드ID → `/기획` 스킬 자동 사용 |
+| **참고소스 동등 구현 필수** | 참고소스(`G:\MyWrok\mymind3`)를 확인하고 구현할 때 간소화/축약 금지. 참고소스와 동등한 수준으로 완전 구현 |
 
 ### SVG 아이콘 단색 원칙
 
@@ -331,12 +324,13 @@ Plan Mode 내 필수 산출물:
 | 순서 | Hook | matcher | 역할 | 차단 조건 |
 |------|------|---------|------|-----------|
 | 1 | `check-dangerous.js` | Bash | 위험 명령 차단/경고 | BLOCKED 11종 → exit(1), WARNED 6종 → 경고 |
-| 2 | `command-log-enforcer.js` | Write\|Edit | 명령 이력 자동 등록 | 차단 없음, 상태 파일 없으면 날짜 경로 탐색/생성 후 명령 노드 자동 생성 |
-| 3 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
-| 4 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
-| 5 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
-| 6 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (15종 도구명 인식, detail 기록) |
-| 7 | `cc-check-validator.js` | * (전체) | CC체크 정합성 검증 | 세션당 1회, 차단 없음 (경고만) |
+| 2 | `command-log-enforcer.js` | Bash | **[TODO] 명령 이력 차단** | 서버 정상 + 상태 파일 없음 → **exit(1) 차단** (mm-api.js 등 예외 통과). 날짜 경로 자동 생성 후 차단 |
+| 3 | `command-log-enforcer.js` | Write\|Edit | **[TODO] 명령 이력 차단** | 상태 파일 없음 → exit(1) 차단. 서버 미실행 시만 통과 |
+| 4 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
+| 5 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
+| 6 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
+| 7 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (15종 도구명 인식, detail 기록) |
+| 8 | `cc-check-validator.js` | * (전체) | **[CC체크] 정합성 검증** | TODO 상태파일 없으면 건너뜀. 상태파일 있으면 세션당 1회 실행, 차단 없음 (경고만) |
 
 ### Stop 이벤트
 
@@ -349,7 +343,7 @@ Plan Mode 내 필수 산출물:
 | 이벤트 | 동작 |
 |--------|------|
 | SessionStart | 환경 점검, 미완료 작업 복구 |
-| PreToolUse | 6단계 체인: 차단 → 보호 → 검증 → 탐지 → 로깅 → CC체크 |
+| PreToolUse | **8단계 체인**: 위험차단 → **[TODO]차단** → 보호 → 검증 → 탐지 → 로깅 → **[CC체크]** |
 | Stop | 세션 요약 생성 |
 
 ## CC체크 자동 검증 (EUDC5SXHH7 기획 기반)
@@ -358,10 +352,10 @@ Plan Mode 내 필수 산출물:
 
 | # | 구성 요소 | 검증 기준 | 필수 수량 |
 |---|----------|---------|----------|
-| 1 | PreToolUse Hook Chain | settings.json 순서: Bash→Write\|Edit(4개)→* | 7개 훅 |
+| 1 | PreToolUse Hook Chain | settings.json 순서: Bash(2개)→Write\|Edit(4개)→*(2개) | 8개 훅 |
 | 2 | Hook 파일 | check-dangerous, command-log-enforcer, protect-sensitive, validate-output, security-scan, log-action, session-summary, cc-check-validator | 8개 |
 | 3 | Rules 파일 | general, api, security, browser-test, command-log | 5개 |
-| 4 | Skills | 기획, 팀즈, browser-test, ralph-checker, pr-review, kill-server, order-validator, 노드추출 | 8개 |
+| 4 | Skills | 기획, 팀즈, browser-test, ralph-checker, pr-review, kill-server, 노드추출 | 7개 |
 | 5 | MCP 서버 | playwright, context7 | 2개 |
 | 6 | Stop Hook | session-summary.js | 1개 |
 
@@ -386,7 +380,7 @@ node .claude/hooks/cc-check-validator.js
 | protect-sensitive.js | 보호 대상 9종 (.env, .pem, .key, id_rsa, id_ed25519, credentials.json, .mymindmp3, .htpasswd, shadow) |
 | validate-output.js | JSON 검증 + 유니코드 이스케이프 + Edit(new_string) 검사 |
 | security-scan.js | BLOCK 3패턴(eval, SQL Injection, API키) + WARN 6패턴 |
-| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 서버 접속 확인 + 날짜 경로 자동 생성 + 명령 노드 자동 등록(exit 0) |
+| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 서버 접속 확인 + 날짜 경로만 자동 생성 + **차단(exit 1)** (서버 미실행 시만 exit 0) |
 | log-action.js | 16종 도구 인식 + 25가지 Bash 분류 |
 | session-summary.js | 3단계 fallback + SSE_PORT 격리 + 상태 파일 삭제 |
 

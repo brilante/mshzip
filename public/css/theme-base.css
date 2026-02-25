@@ -42,7 +42,6 @@ html[data-theme="dark"] .modal-content,
 html[data-theme="dark"] .popup-content,
 html[data-theme="dark"] #settingsLayerPopup,
 html[data-theme="dark"] #settingsLayerContent,
-html[data-theme="dark"] #loginPopup,
 html[data-theme="dark"] #saveFolderPopup,
 html[data-theme="dark"] #loadFolderPopup,
 html[data-theme="dark"] #documentPopup,
@@ -57,7 +56,6 @@ html[data-theme="dark"] #pdfProgressModal .progress-modal {
 html[data-theme="dark"] .modal-backdrop,
 html[data-theme="dark"] .layer-overlay,
 html[data-theme="dark"] #settingsLayerOverlay,
-html[data-theme="dark"] #loginOverlay,
 html[data-theme="dark"] #saveFolderOverlay,
 html[data-theme="dark"] #loadFolderOverlay,
 html[data-theme="dark"] #documentPopupOverlay,
@@ -235,40 +233,6 @@ html[data-theme="dark"] #loadFolderList li:hover {
 html[data-theme="dark"] #loadFolderPopup,
 html[data-theme="dark"] #loadFolderPopup ul,
 html[data-theme="dark"] #loadFolderPopup button {
-  color: #ffffff !important;
-}
-
-/* ===== 로그인 팝업 다크모드 하위 요소 ===== */
-html[data-theme="dark"] #loginPopup input[type="text"],
-html[data-theme="dark"] #loginPopup input[type="password"] {
-  background-color: #2a2a2a !important;
-  color: #ffffff !important;
-  border-color: #3a3a3a !important;
-}
-
-html[data-theme="dark"] #loginPopup input::placeholder {
-  color: #888888 !important;
-}
-
-html[data-theme="dark"] #loginPopup button#loginPopupCloseBtn {
-  color: #888888 !important;
-}
-
-html[data-theme="dark"] #loginPopup button#loginPopupCloseBtn:hover {
-  color: #ffffff !important;
-}
-
-html[data-theme="dark"] #loginPopup button#loginConfirmBtn {
-  background-color: #3b82f6 !important;
-  color: #ffffff !important;
-  border-color: #3b82f6 !important;
-}
-
-html[data-theme="dark"] #loginPopup #loginErrorMsg {
-  color: #ef4444 !important;
-}
-
-html[data-theme="dark"] #loginPopup [data-i18n="loginTitle"] {
   color: #ffffff !important;
 }
 

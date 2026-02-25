@@ -6,6 +6,10 @@
         "hooks": [{"type": "command", "command": "node .claude/hooks/check-dangerous.js"}]
       },
       {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "node .claude/hooks/command-log-enforcer.js"}]
+      },
+      {
         "matcher": "Write|Edit",
         "hooks": [{"type": "command", "command": "node .claude/hooks/command-log-enforcer.js"}]
       },
@@ -40,7 +44,7 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest", "--browser", "chrome"]
     },
     "context7": {
       "command": "npx",

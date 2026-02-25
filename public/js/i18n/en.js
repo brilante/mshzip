@@ -1225,6 +1225,17 @@ window.i18n_en = {
   accessKeyReadOnly: 'Read Only',
   accessKeyExpired: 'Expired',
   accessKeyNoExpiry: 'No Expiry',
+
+  // TODO Node ID
+  todoNodeIdTitle: 'TODO Node ID',
+  todoNodeIdDesc: 'Register the root node ID of the project TODO mindmap. Claude Code command history will be automatically recorded under this node.',
+  todoNodeIdLabel: 'Node ID',
+  todoNodeIdPlaceholder: 'e.g. BTW5XOTCJ0',
+  todoNodeIdHint: 'Enter a 10-character alphanumeric node ID. You can find the ID by selecting a node in the mindmap.',
+  todoNodeIdRegistered: 'Registered - Claude Code integration active',
+  todoNodeIdValidationError: 'Please enter a 10-character alphanumeric Node ID.',
+  todoNodeIdSaveFailed: 'Failed to save TODO Node ID.',
+
   disableBtn: 'Disable',
 
   // Login inline script messages

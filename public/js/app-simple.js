@@ -1124,6 +1124,12 @@ const response = await fetch('/api/save', {
           adjustXCoordinates(mindMapData);
         }
 
+        // 렌더링 전 NodeFilterManager에 필터 동기화 (로드된 필터가 즉시 렌더링되도록)
+        if (window.NodeFilterManager && window.MyMind3.MindMapData.filters) {
+          window.NodeFilterManager.filters = window.MyMind3.MindMapData.filters;
+          console.log('[loadFromFolder] NodeFilterManager 필터 동기화:', window.MyMind3.MindMapData.filters.length, '개');
+        }
+
         if (window.MyMind3.NodeRenderer) {
           window.MyMind3.NodeRenderer.renderMindMap();
 
@@ -1688,20 +1694,24 @@ document.addEventListener('DOMContentLoaded', function() {
 // 읽기 전용 모드 UI 업데이트 함수
 window.MyMind3.updateReadOnlyUI = function() {
   const isReadOnly = window.MyMind3.isReadOnly;
-  let banner = document.getElementById('readOnlyBanner');
 
-  if (isReadOnly) {
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = 'readOnlyBanner';
-      banner.style.cssText = 'position:fixed; top:0; left:50%; transform:translateX(-50%); background:#e6a700; color:#000; padding:4px 20px; border-radius:0 0 8px 8px; font-size:13px; font-weight:bold; z-index:3000; display:flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-      banner.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-        + '<span>' + (typeof t === 'function' ? t('readOnlyMode', '읽기 전용 모드') : '읽기 전용 모드') + '</span>';
-      document.body.appendChild(banner);
+  // 기존 배너 제거 (이전 버전 호환)
+  const oldBanner = document.getElementById('readOnlyBanner');
+  if (oldBanner) oldBanner.remove();
+
+  // 메인 추가 버튼 왼쪽 잠금 아이콘
+  const lockIcon = document.getElementById('readOnlyLockIcon');
+  if (lockIcon) {
+    if (isReadOnly) {
+      if (!lockIcon.innerHTML) {
+        lockIcon.innerHTML = typeof window.mmIcon === 'function'
+          ? window.mmIcon('lock-keyhole', 16)
+          : '<svg class="mm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2" ry="2"/><path d="M8 10V6.5a4 4 0 0 1 8 0V10"/><circle cx="12" cy="14.5" r="1.5"/><path d="M12 16v2"/></svg>';
+      }
+      lockIcon.style.display = 'inline-flex';
+    } else {
+      lockIcon.style.display = 'none';
     }
-    banner.style.display = 'flex';
-  } else {
-    if (banner) banner.style.display = 'none';
   }
 
   // 저장 버튼 비활성화/활성화
