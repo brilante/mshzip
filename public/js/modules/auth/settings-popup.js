@@ -190,6 +190,11 @@
             const menuName = clickedItem.getAttribute('data-menu');
             if (!menuName) return;
 
+            // 환경 선택기 표시/숨김 업데이트
+            if (window.SettingsEnv && typeof window.SettingsEnv.setCurrentMenu === 'function') {
+              window.SettingsEnv.setCurrentMenu(menuName);
+            }
+
             // 모든 nav-item에서 active 제거
             content.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
             clickedItem.classList.add('active');
@@ -199,6 +204,22 @@
             const targetSection = content.querySelector(`#content-${menuName}`);
             if (targetSection) {
               targetSection.classList.add('active');
+            }
+
+            // 탭 전환 시 데이터 초기화 (settings-core.js handleMenuClick과 동일)
+            if (menuName === 'ai-model-admin' && typeof window.initAIModelAdmin === 'function') {
+              window.initAIModelAdmin();
+            } else if (menuName === 'payment' && typeof window.initSettingsPayment === 'function') {
+              window.initSettingsPayment();
+            } else if (menuName === 'ai' && typeof window.initSettingsAI === 'function') {
+              window.initSettingsAI();
+            } else if (menuName === 'model-sync-logs' && typeof window.initModelSyncLogs === 'function') {
+              window.initModelSyncLogs();
+            } else if (menuName === 'security' && typeof window.loadTwoFactorStatus === 'function') {
+              window.loadTwoFactorStatus();
+            } else if (menuName === 'agent-skills') {
+              if (typeof window.reloadTodoNodeId === 'function') window.reloadTodoNodeId();
+              if (typeof window.reloadAccessKeys === 'function') window.reloadAccessKeys();
             }
           });
         });

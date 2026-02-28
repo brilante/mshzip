@@ -5,6 +5,8 @@
  *
  * 검증 대상 6개 카테고리:
  * 1. PreToolUse Hook Chain (7개 훅, 순서 검증)
+ *    - *(1) → Bash(1) → Write|Edit(3) → *(2) = 총 7개
+ *    - 전체 훅 합계: PreToolUse 7개 + Stop 1개 = 8개
  * 2. Hook 파일 존재 (8개)
  * 3. Rules 파일 존재 (5개)
  * 4. Skills 존재 (7개)
@@ -22,6 +24,17 @@ const STATE_FILE = path.join(CLAUDE_DIR, 'cc-check-validated');
 
 // ── 순서 강제: 명령 > TODO > CC체크 ──
 // TODO 상태파일(current-command-node)이 없으면 아직 TODO 기록 전 → CC체크 건너뜀
+
+// stdin에서 session_id 읽기 (v2.1.9+ 공식 지원)
+let sessionId = '';
+try {
+  const raw = fs.readFileSync(0, 'utf-8').trim();
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    sessionId = parsed.session_id || '';
+  }
+} catch { /* stdin 없거나 파싱 실패 */ }
+
 const ssePort = process.env.CLAUDE_CODE_SSE_PORT || '';
 const todoStateFile = ssePort
   ? path.join(CLAUDE_DIR, `current-command-node-${ssePort}`)
@@ -33,9 +46,14 @@ if (!todoRegistered) {
   process.exit(0);
 }
 
-// 세션당 1회만 실행 (날짜+SSE_PORT 기반)
+// 세션당 1회만 실행
+// 우선순위: session_id (v2.1.9+) > SSE_PORT > 날짜
 const today = new Date().toISOString().split('T')[0];
-const sessionKey = ssePort ? `${today}-${ssePort}` : today;
+const sessionKey = sessionId
+  ? `${today}-sid-${sessionId.substring(0, 8)}`  // session_id 앞 8자 사용
+  : ssePort
+  ? `${today}-${ssePort}`
+  : today;
 if (fs.existsSync(STATE_FILE)) {
   const lastCheck = fs.readFileSync(STATE_FILE, 'utf-8').trim();
   if (lastCheck === sessionKey) process.exit(0); // 이 세션에서 이미 검증 완료
@@ -65,20 +83,27 @@ try {
   const pre = hooks.PreToolUse || [];
   const stop = hooks.Stop || [];
 
-  // PreToolUse 8단계 순서 검증 (cc-check-validator 자기 자신 포함)
+  // PreToolUse 7단계 순서 검증 (*(1) → Bash(1) → Write|Edit(3) → *(2))
+  // [0] * → command-log-enforcer (TODO 게이트, 모든 도구 차단)
+  // [1] Bash → check-dangerous
+  // [2] Write|Edit → protect-sensitive
+  // [3] Write|Edit → validate-output
+  // [4] Write|Edit → security-scan
+  // [5] * → log-action
+  // [6] * → cc-check-validator
+  // [전체 합계] PreToolUse 7개 + Stop 1개 = 8개
   const expectedPre = [
-    { matcher: 'Bash', file: 'check-dangerous.js' },
-    { matcher: 'Bash', file: 'command-log-enforcer.js' },
-    { matcher: 'Write|Edit', file: 'command-log-enforcer.js' },
+    { matcher: '*',          file: 'command-log-enforcer.js' },
+    { matcher: 'Bash',       file: 'check-dangerous.js' },
     { matcher: 'Write|Edit', file: 'protect-sensitive.js' },
     { matcher: 'Write|Edit', file: 'validate-output.js' },
     { matcher: 'Write|Edit', file: 'security-scan.js' },
-    { matcher: '*', file: 'log-action.js' },
-    { matcher: '*', file: 'cc-check-validator.js' }
+    { matcher: '*',          file: 'log-action.js' },
+    { matcher: '*',          file: 'cc-check-validator.js' }
   ];
 
   if (pre.length < expectedPre.length) {
-    errors.push(`PreToolUse 훅 ${pre.length}개 (기대: ${expectedPre.length}개)`);
+    errors.push(`PreToolUse 훅 ${pre.length}개 (기대: ${expectedPre.length}개 / PreToolUse 7 + Stop 1 = 전체 8개)`);
   } else {
     for (let i = 0; i < expectedPre.length; i++) {
       const actual = pre[i];
@@ -252,6 +277,10 @@ try {
   if (!src.includes('process.env.PORT') && !src.includes('dotenv')) {
     warns.push('command-log-enforcer.js: .env PORT 참조 없음 (하드코딩 의심)');
   }
+  // fallback 통과 시 노드 ID 유효성 검증 (STUB_ENV 차단 로직)
+  if (!src.includes('STUB_ENV') && !src.includes('[A-Za-z0-9]')) {
+    warns.push('command-log-enforcer.js: fallback 상태파일 내용 검증 로직 없음 (STUB_ENV 우회 가능)');
+  }
 } catch (e) { /* 무시 */ }
 
 // ═══════════════════════════════════════════════════════════════
@@ -301,6 +330,16 @@ try {
   if (!src.includes('.mymindmp3')) {
     warns.push('session-summary.js: Access Key 파일(.mymindmp3) 참조 없음');
   }
+
+  // lok_ 토큰 만료 검증 로직 (버그 수정 항목)
+  // getHash();에서 checkLokToken() 또는 만료 판단 로직이 있어야 함
+  if (!src.includes('checkLokToken') && !src.includes('payload.e * 1000')) {
+    warns.push('session-summary.js: lok_ 토큰 만료 검증 로직 없음 (getHash 버그 미수정 의심)');
+  }
+  // fallback-generic 삭제 로직 (STUB_ENV 잔류 방지)
+  if (!src.includes('fallback-generic') || !src.includes('unlinkSync')) {
+    warns.push('session-summary.js: fallback-generic 상태파일 삭제 로직 없음 (STUB_ENV 문제 재발 가능)');
+  }
 } catch (e) { /* 무시 */ }
 
 // ═══════════════════════════════════════════════════════════════
@@ -318,7 +357,7 @@ if (warns.length > 0) {
 }
 
 if (errors.length === 0 && warns.length === 0) {
-  console.error('[CC체크] 정합성 검증 통과 (Hook 8개, Rules 5개, Skills 7개, MCP 2개)');
+  console.error('[CC체크] 정합성 검증 통과 (PreToolUse훅 7개 + Stop훅 1개 = 8개, Rules 5개, Skills 7개, MCP 2개)');
 }
 
 // 검증 완료 기록 (세션당 1회)

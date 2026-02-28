@@ -580,7 +580,13 @@
       }
 
       if (data.success) {
-        showToast(t('backupCompleted', '백업이 완료되었습니다'), 'success');
+        if (data.driveFailed) {
+          showToast(t('backupDriveFailed', '드라이브 업로드 실패 — 서버에 백업되었습니다.') + ' ' + (data.driveError || ''), 'warning');
+        } else if (data.backupLocation === 'drive') {
+          showToast(t('backupCompletedDrive', '구글 드라이브에 백업되었습니다'), 'success');
+        } else {
+          showToast(t('backupCompleted', '백업이 완료되었습니다'), 'success');
+        }
         await loadBackupStatus();
         setBackupCooldown(btn);
         return;

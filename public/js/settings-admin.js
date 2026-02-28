@@ -40,72 +40,6 @@ const adminState = {
   logs: []
 };
 
-// AI 추천 정보 캐시 (관리자용)
-let adminAIRecommendations = null;
-
-// 서비스명 매핑 (UI 서비스명 -> 추천 JSON 키)
-const ADMIN_SERVICE_NAME_MAP = {
-  gpt: 'openai',
-  grok: 'xai',
-  gemini: 'google',
-  claude: 'anthropic'
-};
-
-/**
- * AI 추천 정보 로드 (관리자용)
- */
-async function loadAdminAIRecommendations() {
-  try {
-    // ApiCache 사용 (중복 호출 방지)
-    const response = window.ApiCache
-      ? await window.ApiCache.fetch('/api/ai/recommendations')
-      : await fetch('/api/ai/recommendations');
-    const data = await response.json();
-
-    if (data.success && data.data && data.data.recommendations) {
-      adminAIRecommendations = data.data.recommendations;
-      console.log('[Settings-Admin] AI 추천 정보 로드 완료:', Object.keys(adminAIRecommendations));
-    } else {
-      adminAIRecommendations = null;
-    }
-  } catch (error) {
-    console.warn('[Settings-Admin] AI 추천 정보 로드 실패:', error.message);
-    adminAIRecommendations = null;
-  }
-}
-
-/**
- * 모델이 추천 모델인지 확인 (관리자용)
- */
-function isAdminModelRecommended(service, modelName) {
-  if (!adminAIRecommendations || !modelName) return null;
-
-  const mappedService = ADMIN_SERVICE_NAME_MAP[service];
-  if (!mappedService || !adminAIRecommendations[mappedService]) return null;
-
-  const rec = adminAIRecommendations[mappedService];
-
-  // 최고 성능 모델 확인 (모델명 부분 일치)
-  if (rec.best_performance?.model) {
-    const bestPerfModel = rec.best_performance.model.toLowerCase();
-    const checkModel = modelName.toLowerCase();
-    if (checkModel.includes(bestPerfModel) || bestPerfModel.includes(checkModel)) {
-      return { type: t('adminBestPerformance', '최고성능'), badge: 'best-perf' };
-    }
-  }
-
-  // 가성비 모델 확인 (모델명 부분 일치)
-  if (rec.best_value?.model) {
-    const bestValueModel = rec.best_value.model.toLowerCase();
-    const checkModel = modelName.toLowerCase();
-    if (checkModel.includes(bestValueModel) || bestValueModel.includes(checkModel)) {
-      return { type: t('adminBestValue', '가성비'), badge: 'best-value' };
-    }
-  }
-
-  return null;
-}
-
 /**
  * 관리자 설정 초기화
  */
@@ -970,14 +904,14 @@ async function loadAIModelSettings(environment = null) {
   const listEl = document.getElementById('aiModelList');
   const loadingEl = document.getElementById('aiModelLoading');
 
-  if (!listEl) return;
+  if (!listEl) {
+    console.warn('[AI-Model-Admin] #aiModelList 요소를 찾을 수 없음');
+    return;
+  }
 
   // 로딩 표시
   if (loadingEl) loadingEl.style.display = 'block';
   listEl.innerHTML = '';
-
-  // AI 추천 정보 로드 (병렬)
-  await loadAdminAIRecommendations();
 
   try {
     // 환경 파라미터: 명시적 지정 시 해당 환경, 없으면 서버가 자동 결정
@@ -988,6 +922,13 @@ async function loadAIModelSettings(environment = null) {
 
     if (!result.success) {
       throw new Error(result.message || 'Failed to load AI model settings');
+    }
+
+    // 비동기 fetch 후 DOM 유효성 재확인 (팝업이 닫힌 경우 방지)
+    const currentListEl = document.getElementById('aiModelList');
+    if (!currentListEl) {
+      console.warn('[AI-Model-Admin] fetch 완료 후 DOM 요소 사라짐 (팝업 닫힘)');
+      return;
     }
 
     // 환경 목록 업데이트 (API에서 제공하는 경우)
@@ -1048,11 +989,18 @@ async function loadAIModelSettings(environment = null) {
     // 동기화 버튼 표시/숨김 업데이트
     updateSyncButtonVisibility();
 
+    console.log(`[AI-Model-Admin] 로드 완료: ${Object.values(result.data.models).flat().length}개 모델`);
+
   } catch (error) {
     console.error('[AI-Model-Admin] 로드 실패:', error);
-    listEl.innerHTML = `<div class="ai-model-error">${getAdminI18n('aiModelLoadError', { error: error.message })}</div>`;
+    // DOM 재확인 후 에러 표시
+    const errorListEl = document.getElementById('aiModelList');
+    if (errorListEl) {
+      errorListEl.innerHTML = `<div class="ai-model-error">${getAdminI18n('aiModelLoadError', { error: error.message })}</div>`;
+    }
   } finally {
-    if (loadingEl) loadingEl.style.display = 'none';
+    const finalLoadingEl = document.getElementById('aiModelLoading');
+    if (finalLoadingEl) finalLoadingEl.style.display = 'none';
   }
 }
 
@@ -1201,15 +1149,8 @@ function renderAIModelSettings(data) {
         sortOptions += `<option value="${i}" ${sortOrder === i ? 'selected' : ''}>${i}</option>`;
       }
 
-      // 추천 모델 여부 확인
-      const recommended = isAdminModelRecommended(service, modelInfo.model);
-      const recommendedClass = recommended ? 'recommended' : '';
-      const recommendedBadge = recommended
-        ? `<span class="recommendation-badge ${recommended.badge}">${recommended.type}</span>`
-        : '';
-
       html += `
-        <div class="ai-model-item ${!isServiceEnabled ? 'disabled' : ''} ${recommendedClass}" data-model="${modelInfo.model}">
+        <div class="ai-model-item ${!isServiceEnabled ? 'disabled' : ''}" data-model="${modelInfo.model}">
           <div class="ai-model-item-header">
             <input type="checkbox" class="ai-model-checkbox"
                    id="model-${service}-${modelInfo.model}"
@@ -1220,7 +1161,7 @@ function renderAIModelSettings(data) {
                    ${hasNoPricing ? 'data-no-pricing="true"' : ''}
                    aria-label="${modelInfo.model}${hasNoPricing ? ' - ' + getAdminI18n('aiModelPricingMissing') : ''}"
                    title="${hasNoPricing ? getAdminI18n('aiModelPricingMissing') : ''}">
-            <label for="model-${service}-${modelInfo.model}" class="ai-model-name">${modelInfo.model}${recommendedBadge}</label>
+            <label for="model-${service}-${modelInfo.model}" class="ai-model-name">${modelInfo.model}</label>
             <select class="ai-model-sort-order"
                     data-service="${service}"
                     data-model="${modelInfo.model}"

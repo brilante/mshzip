@@ -1559,7 +1559,7 @@ body.dark-mode .input-area.drag-over {
 
 /* 검색 입력란 */
 .mindmap-search-input {
-  width: 140px;
+  width: 220px;
   height: 28px;
   padding: 4px 8px;
   border: none;
@@ -1653,13 +1653,55 @@ body.dark-mode .input-area.drag-over {
   }
 }
 
+/* 노드ID로 매칭된 노드 (파란색 테두리) */
+.mindmap-node.search-highlight.match-node-id {
+  border: 3px solid #2196F3 !important;
+  box-shadow: 0 0 12px rgba(33, 150, 243, 0.5) !important;
+  animation: searchNodeIdPulse 1.5s ease-in-out infinite;
+}
+
+/* 노드ID 매칭 표시 아이콘 (#) */
+.mindmap-node.search-highlight.match-node-id::after {
+  content: '#';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #2196F3;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+/* 노드ID + 제목/콘텐츠 동시 매칭 시 파란색 우선 */
+.mindmap-node.search-highlight.match-node-id.match-title::after,
+.mindmap-node.search-highlight.match-node-id.match-content::after {
+  content: '#';
+  background: #2196F3;
+}
+
+@keyframes searchNodeIdPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(33, 150, 243, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.8);
+  }
+}
+
 /* 콘텐츠에서 매칭된 노드 (점선 테두리 추가) */
-.mindmap-node.search-highlight.match-content:not(.match-title) {
+.mindmap-node.search-highlight.match-content:not(.match-title):not(.match-node-id) {
   border-style: dashed !important;
 }
 
-/* 콘텐츠 매칭 표시 아이콘 */
-.mindmap-node.search-highlight.match-content::after {
+/* 콘텐츠 매칭 표시 아이콘 (노드ID 매칭이 아닌 경우만) */
+.mindmap-node.search-highlight.match-content:not(.match-node-id)::after {
   content: '\25CB';
   position: absolute;
   top: -8px;
@@ -1671,8 +1713,8 @@ body.dark-mode .input-area.drag-over {
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* 제목+콘텐츠 모두 매칭 */
-.mindmap-node.search-highlight.match-title.match-content::after {
+/* 제목+콘텐츠 모두 매칭 (노드ID 매칭이 아닌 경우만) */
+.mindmap-node.search-highlight.match-title.match-content:not(.match-node-id)::after {
   content: '\270E';
 }
 

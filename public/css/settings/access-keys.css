@@ -144,9 +144,16 @@
   background-color: var(--bg-hover, rgba(0, 0, 0, 0.05));
 }
 
+.btn-icon.btn-delete {
+  color: var(--danger-color, #dc3545);
+  border-color: var(--danger-color, #dc3545);
+  opacity: 0.7;
+}
+
 .btn-icon.btn-delete:hover {
   background-color: var(--danger-bg, #fff0f0);
   border-color: var(--danger-color, #dc3545);
+  opacity: 1;
 }
 
 .btn-icon.btn-copy-hash {
@@ -689,9 +696,17 @@
   background-color: rgba(255, 255, 255, 0.08);
 }
 
+[data-theme="dark"] .btn-icon.btn-delete {
+  color: #e85d6a;
+  border-color: #e85d6a;
+  opacity: 0.7;
+}
+
 [data-theme="dark"] .btn-icon.btn-delete:hover {
   background-color: rgba(220, 53, 69, 0.2);
   border-color: #dc3545;
+  color: #ff6b7a;
+  opacity: 1;
 }
 
 [data-theme="dark"] .form-input,

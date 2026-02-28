@@ -68,6 +68,8 @@
       bonusUsage: def.bonusUsage,
       totalUsage: def.totalUsage,
       autopayBonusRate: def.autopayBonusRate ?? 0,
+      // 크레딧 분리 (구독크레딧 = baseUsage, 보너스크레딧 = bonusUsage)
+      serviceCredits: def.baseUsage,
       // 하위 호환성
       paidCredits: def.baseUsage,
       totalCredits: def.totalUsage,
@@ -324,6 +326,8 @@
 
   // 통화 변경 이벤트 리스너 등록 여부 플래그
   let paymentCurrencyListenerInitialized = false;
+  // 구독 중 결제 통화 (null = 미구독/자유변경)
+  let _activeSubscriptionCurrency = null;
 
   /**
    * 결제 통화 변경 이벤트 리스너 설정
@@ -378,6 +382,117 @@
 
     paymentCurrencyListenerInitialized = true;
     console.log('[Settings-Payment] 통화 변경 이벤트 리스너 등록 완료');
+  }
+
+  /**
+   * 구독 통화 고정/해제
+   * 구독 중(active)이면 결제 통화를 기존 통화로 고정하고 드롭다운 비활성화.
+   * 미구독/취소 시 드롭다운 활성화.
+   * @param {string|null} currency - 고정할 통화 (null = 해제)
+   */
+  function updateSubscriptionCurrencyLock(currency) {
+    _activeSubscriptionCurrency = currency;
+    const currencySelect = document.getElementById('paymentCurrency');
+    const lockNotice = document.getElementById('currencyLockNotice');
+    const lockText = document.getElementById('currencyLockText');
+
+    if (currency && currencySelect) {
+      // 구독 중: 기존 통화로 설정 + disabled
+      currencySelect.value = currency;
+      currencySelect.disabled = true;
+      // 환율 업데이트 트리거
+      currencySelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+      if (lockNotice && lockText) {
+        const name = CURRENCY_NAMES[currency] || currency;
+        lockText.textContent = t('currencyLockedForSubscription',
+          `구독 중 결제 통화: ${name} (고정)`);
+        lockNotice.style.display = 'flex';
+      }
+      console.log('[Settings-Payment] 구독 통화 고정:', currency);
+    } else {
+      // 미구독: 해제
+      if (currencySelect) currencySelect.disabled = false;
+      if (lockNotice) lockNotice.style.display = 'none';
+      console.log('[Settings-Payment] 구독 통화 잠금 해제');
+    }
+  }
+
+  /**
+   * 일반 크레딧 구매 모드: 통화 잠금 임시 해제
+   * 구독 중이어도 일반 크레딧 구매 시에는 통화 자유 변경 가능
+   */
+  function unlockCurrencyForCreditPurchase() {
+    if (!_activeSubscriptionCurrency) return; // 미구독이면 이미 잠금 해제
+
+    const currencySelect = document.getElementById('paymentCurrency');
+    const lockNotice = document.getElementById('currencyLockNotice');
+    const lockText = document.getElementById('currencyLockText');
+
+    if (currencySelect) {
+      currencySelect.disabled = false;
+    }
+    if (lockNotice && lockText) {
+      lockText.textContent = t('currencyUnlockedForCredit',
+        '일반 크레딧 구매: 통화 변경 가능');
+      lockNotice.style.display = 'flex';
+      lockNotice.classList.add('credit-mode');
+    }
+    console.log('[Settings-Payment] 일반 크레딧 구매 → 통화 잠금 임시 해제');
+  }
+
+  /**
+   * 구독 모드로 복귀: 통화 잠금 복원
+   */
+  function relockCurrencyForSubscription() {
+    if (!_activeSubscriptionCurrency) return; // 미구독이면 잠금 불필요
+
+    const currencySelect = document.getElementById('paymentCurrency');
+    const lockNotice = document.getElementById('currencyLockNotice');
+    const lockText = document.getElementById('currencyLockText');
+
+    if (currencySelect) {
+      currencySelect.value = _activeSubscriptionCurrency;
+      currencySelect.disabled = true;
+      currencySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    if (lockNotice && lockText) {
+      const name = CURRENCY_NAMES[_activeSubscriptionCurrency] || _activeSubscriptionCurrency;
+      lockText.textContent = t('currencyLockedForSubscription',
+        `구독 중 결제 통화: ${name} (고정)`);
+      lockNotice.style.display = 'flex';
+      lockNotice.classList.remove('credit-mode');
+    }
+    console.log('[Settings-Payment] 구독 모드 → 통화 잠금 복원:', _activeSubscriptionCurrency);
+  }
+
+  /**
+   * 구독/크레딧 섹션 전환 시 통화 잠금 이벤트 바인딩
+   */
+  function setupCurrencyLockSectionListeners() {
+    // 일반 크레딧 구매 섹션 클릭 시 통화 잠금 해제
+    const creditSection = document.getElementById('creditPurchaseSection');
+    if (creditSection) {
+      creditSection.addEventListener('click', () => {
+        unlockCurrencyForCreditPurchase();
+      });
+    }
+
+    // 구독 패키지 카드 클릭 시 통화 잠금 복원
+    const packageCards = document.querySelectorAll('.package-card');
+    packageCards.forEach(card => {
+      card.addEventListener('click', () => {
+        relockCurrencyForSubscription();
+      });
+    });
+
+    // 구독 버튼 클릭 시에도 잠금 복원 (안전장치)
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    if (subscribeBtn) {
+      subscribeBtn.addEventListener('click', () => {
+        relockCurrencyForSubscription();
+      }, true); // capture phase로 먼저 실행
+    }
   }
 
   /**
@@ -475,131 +590,22 @@
    * @param {Object} options - 통화 정보
    * @returns {Promise<string>} 'current' (현재 선택 통화로 진행), 'original' (기존 통화로 변경), 'cancel' (취소)
    */
+  /**
+   * 다중 통화 결제 안내 모달 (비활성화)
+   * 구독 통화 고정 정책으로 더 이상 사용하지 않음.
+   * 호출부 안전성을 위해 함수 시그니처 유지.
+   */
   function showCurrencyChangeConfirmModal(options) {
-    return new Promise((resolve) => {
-      // 기존 모달이 있으면 제거
-      const existingModal = document.querySelector('.currency-change-modal');
-      if (existingModal) {
-        existingModal.remove();
-      }
-
-      const modal = document.createElement('div');
-      modal.className = 'currency-change-modal';
-      modal.innerHTML = `
-        <div class="currency-change-modal-content">
-          <div class="currency-modal-header">
-            <span class="currency-warning-icon">${mmIcon('dollar-sign', 16)}</span>
-            <h3>다중 통화 결제 안내</h3>
-          </div>
-          <div class="currency-modal-body">
-            <p><strong>현재 선택한 통화:</strong> ${options.currentCurrencyName}</p>
-            <p><strong>기존 구독 결제 통화:</strong> ${options.originalCurrencyName}</p>
-            <hr>
-            <p class="currency-info-text">
-              기존 구독과 다른 통화로 업그레이드할 수 있습니다.<br>
-              <small>• 모든 결제 금액은 USD 기준으로 계산됩니다.</small><br>
-              <small>• 환불 시 각 결제의 원래 통화로 환불됩니다.</small>
-            </p>
-            <p style="margin-top: 12px;"><strong>어떻게 진행하시겠습니까?</strong></p>
-          </div>
-          <div class="currency-modal-footer" style="flex-direction: column; gap: 8px;">
-            <button class="currency-btn-confirm" id="proceedCurrentCurrency" style="width: 100%;">
-              ${options.currentCurrencyName}로 결제 진행
-            </button>
-            <button class="currency-btn-secondary" id="changeToOriginalCurrency" style="width: 100%; background: #f0f0f0; color: #333;">
-              ${options.originalCurrencyName}로 변경 후 진행
-            </button>
-            <button class="currency-btn-cancel" id="cancelCurrencyChange" style="width: 100%;">
-              취소
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      // 버튼 이벤트 바인딩
-      document.getElementById('proceedCurrentCurrency').addEventListener('click', () => {
-        modal.remove();
-        resolve('current');  // 현재 선택 통화로 진행
-      });
-
-      document.getElementById('changeToOriginalCurrency').addEventListener('click', () => {
-        modal.remove();
-        resolve('original');  // 기존 통화로 변경
-      });
-
-      document.getElementById('cancelCurrencyChange').addEventListener('click', () => {
-        modal.remove();
-        resolve('cancel'); // 취소
-      });
-
-      // 모달 외부 클릭 시 취소
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-          resolve('cancel');
-        }
-      });
-    });
+    return Promise.resolve('current');
   }
 
   /**
-   * 업그레이드 시 통화 검사 및 사용자 승인 요청 (다중 통화 결제 지원)
-   * @returns {Promise<boolean>} true: 승인됨, false: 취소됨
+   * 업그레이드 시 통화 검증 (간소화)
+   * 구독 중이면 통화가 드롭다운에서 이미 고정되어 있으므로 항상 true 반환.
+   * @returns {Promise<boolean>} 항상 true
    */
   async function validateAndApplyUpgradeCurrency() {
-    const subscription = JSON.parse(localStorage.getItem('mymind3_subscription') || '{}');
-
-    // 신규 구독이면 통화 제한 없음
-    if (!subscription.isSubscribed) {
-      return true;
-    }
-
-    // 기존 구독 통화 조회
-    const originalCurrency = getOriginalSubscriptionCurrency();
-    const currentCurrency = getPaymentCurrency(); // 현재 선택된 통화
-
-    // 통화가 동일하면 바로 진행
-    if (!originalCurrency || originalCurrency === currentCurrency) {
-      return true;
-    }
-
-    // 통화가 다르면 사용자에게 선택 요청 (다중 통화 결제 허용)
-    const userChoice = await showCurrencyChangeConfirmModal({
-      currentCurrency: currentCurrency,
-      originalCurrency: originalCurrency,
-      currentCurrencyName: CURRENCY_NAMES[currentCurrency] || currentCurrency,
-      originalCurrencyName: CURRENCY_NAMES[originalCurrency] || originalCurrency
-    });
-
-    if (userChoice === 'current') {
-      // 현재 선택한 통화로 결제 진행 (다중 통화 결제)
-      console.log('[Settings] 다중 통화 결제 진행:', {
-        originalCurrency,
-        currentCurrency,
-        message: '기존 구독과 다른 통화로 업그레이드'
-      });
-      showToast('info', `${CURRENCY_NAMES[currentCurrency] || currentCurrency}${t('paymentProceedWith', '로 결제를 진행합니다.')}`);
-      return true;
-    } else if (userChoice === 'original') {
-      // 기존 구독 통화로 변경 후 진행
-      const currencySelect = document.getElementById('paymentCurrency');
-      if (currencySelect) {
-        currencySelect.value = originalCurrency;
-        currencySelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-
-      // 패키지 가격 업데이트를 위해 약간의 대기
-      await new Promise(r => setTimeout(r, 500));
-
-      showToast('info', `${t('paymentCurrencyChanged', '결제 통화가')} ${CURRENCY_NAMES[originalCurrency] || originalCurrency}${t('paymentCurrencyChangedTo', '로 변경되었습니다.')}`);
-      return true;
-    } else {
-      // 사용자가 취소함
-      showToast('warning', t('paymentUpgradeCancelled', '업그레이드가 취소되었습니다.'));
-      return false;
-    }
+    return true;
   }
 
   // ========== 업그레이드 통화 처리 함수 끝 ==========
@@ -2699,15 +2705,10 @@ const response = await fetch('/api/credits/create-credit-checkout', {
     updateCancelPaidCreditsButton(credits.paid || 0);
   }
 
-  // 개발자 권한 확인
-  const DEVELOPER_IDS = ['brilante33', 'admin', 'developer'];
-
+  // 개발자 권한 확인 (role 기반, 하드코딩 ID 금지)
   function isDeveloper() {
-    const userId = localStorage.getItem('userId') || '';
     const userRole = localStorage.getItem('mymind3_user_role') || '';
-    return DEVELOPER_IDS.includes(userId.toLowerCase()) ||
-           userRole === 'admin' ||
-           userRole === 'developer';
+    return userRole === 'admin' || userRole === 'developer';
   }
 
   // 최근 30일간 취소 횟수 계산
@@ -3029,7 +3030,8 @@ const response = await fetch('/api/credits/create-credit-checkout', {
         localStorage.setItem('mymind3_subscription', JSON.stringify(sub));
       } catch (e) { /* localStorage 동기화 실패 무시 */ }
 
-      document.getElementById('totalSubscriptions').textContent = subscriptions.length;
+      const totalPurchasesEl = document.getElementById('totalPurchases');
+      if (totalPurchasesEl) totalPurchasesEl.textContent = subscriptions.length;
       document.getElementById('totalCancellations').textContent = cancellations.length;
       document.getElementById('last30DaysCancellations').innerHTML = `${last30DaysCancels}<span style="font-size: 14px;">/7</span>`;
 
@@ -3044,7 +3046,8 @@ const response = await fetch('/api/credits/create-credit-checkout', {
       const cancellations = history.filter(h => h.type === 'cancellation');
       const last30DaysCancels = getCancellationCountLast30Days();
 
-      document.getElementById('totalSubscriptions').textContent = subscriptions.length;
+      const totalPurchasesElFb = document.getElementById('totalPurchases');
+      if (totalPurchasesElFb) totalPurchasesElFb.textContent = subscriptions.length;
       document.getElementById('totalCancellations').textContent = cancellations.length;
       document.getElementById('last30DaysCancellations').innerHTML = `${last30DaysCancels}<span style="font-size: 14px;">/7</span>`;
 
@@ -4010,6 +4013,9 @@ const response = await fetch('/api/credits/create-credit-checkout', {
       currentUserInfo.subscriptionStatus = 'cancelled';
       localStorage.setItem('userInfo', JSON.stringify(currentUserInfo));
 
+      // 구독 취소 → 통화 잠금 해제
+      updateSubscriptionCurrencyLock(null);
+
       // 모달 닫기
       const cancelModal = document.getElementById('cancelSubscriptionModal');
       if (cancelModal) {
@@ -4321,9 +4327,15 @@ const response = await fetch('/api/credits/create-credit-checkout', {
         return;
       }
 
-    // 총 크레딧 계산 (2025-12-10: 무료 크레딧 제거됨, serviceCredits만 사용)
-    const serviceCredits = packageInfo.serviceCredits;
-    const totalCredits = serviceCredits;  // baseCredits + bonusCredits
+    // 크레딧 분리 계산: 구독크레딧(service) + 보너스크레딧(free) 분리
+    const serviceCredits = packageInfo.serviceCredits;  // 구독 기본 크레딧 (baseUsage)
+    const bonusCredits = packageInfo.bonusUsage;  // 기본 보너스 크레딧
+    // 자동결제 보너스 확인
+    const autopayCheckboxForCredits = document.getElementById('autopayCheckbox');
+    const isAutopayForCredits = autopayCheckboxForCredits && autopayCheckboxForCredits.checked;
+    const autopayBonus = isAutopayForCredits ? Math.floor(serviceCredits * (packageInfo.autopayBonusRate || 0)) : 0;
+    const totalBonusCredits = bonusCredits + autopayBonus;  // 총 보너스 크레딧
+    const totalCredits = serviceCredits + totalBonusCredits;  // 전체 합계
 
     // 현재 날짜
     const today = new Date();
@@ -4384,7 +4396,8 @@ const response = await fetch('/api/credits/create-credit-checkout', {
             package_type: packageType,
             userId: userId,
             currency: apiCurrency,
-            exchange_rate: apiExchangeRate
+            exchange_rate: apiExchangeRate,
+            is_autopay: isAutopayForCredits  // 자동결제 보너스 적용 여부
           })
         });
       }
@@ -4477,6 +4490,9 @@ const response = await fetch('/api/credits/create-credit-checkout', {
         exchangeRate: exchangeRate,  // 결제 시점 환율
         exchangeRateDate: new Date().toISOString(),  // 환율 적용 일시
         credits: totalCredits,
+        serviceCredits: serviceCredits,  // 구독 기본 크레딧
+        bonusCredits: bonusCredits,  // 기본 보너스
+        autopayBonus: autopayBonus,  // 자동결제 보너스
         status: 'test_completed'
       });
     }
@@ -4509,13 +4525,14 @@ const response = await fetch('/api/credits/create-credit-checkout', {
         total: creditsData.total
       });
     } else {
-      // 신규 구독: 새 패키지 크레딧으로 초기화
-      // 2025-12-10: 무료 크레딧 제거됨
+      // 신규 구독: 구독크레딧(service)과 보너스크레딧(free) 분리 저장
       creditsData = {
-        free: 0,  // 무료 크레딧 제거
-        service: serviceCredits,
+        free: totalBonusCredits,  // 보너스 크레딧 (기본 보너스 + 자동결제 보너스)
+        service: serviceCredits,  // 구독 기본 크레딧
         paid: existingSubscription.credits?.paid || 0,
         total: totalCredits + (existingSubscription.credits?.paid || 0),
+        bonusCredits: bonusCredits,  // 기본 보너스 상세
+        autopayBonus: autopayBonus,  // 자동결제 보너스 상세
         serviceCreditsGrantedDate: startDate
       };
       displayCredits = totalCredits;
@@ -4978,6 +4995,7 @@ const response = await fetch('/api/credits/create-credit-checkout', {
       // 서버에서 구독이 활성화되어 있는데 localStorage가 비어있거나 다른 경우 동기화
       const serverStatus = serverData.subscription?.status || 'inactive';
       const serverPackage = serverData.subscription?.package;
+      const serverSubCurrency = serverData.subscription?.paymentCurrency || null;
       const localStatus = existingSubscription.subscriptionStatus;
       const localPackage = existingSubscription.subscriptionType;
 
@@ -4997,6 +5015,7 @@ const response = await fetch('/api/credits/create-credit-checkout', {
           isSubscribed: true,
           subscriptionStatus: serverStatus,
           subscriptionType: serverData.subscription?.package,
+          payment_currency: serverSubCurrency,
           subscriptionStartDate: serverData.subscription?.startDate,
           subscriptionEndDate: serverData.subscription?.endDate,
           credits: {
@@ -5020,16 +5039,34 @@ const response = await fetch('/api/credits/create-credit-checkout', {
         };
         localStorage.setItem('userInfo', JSON.stringify(syncedUserInfo));
         console.log('[syncSubscription] userInfo 동기화 완료:', syncedUserInfo);
+
+        // 구독 통화 고정 설정
+        updateSubscriptionCurrencyLock(serverStatus === 'active' ? serverSubCurrency : null);
       } else if ((serverStatus === 'inactive' || serverStatus === 'cancelled' || serverStatus === 'canceled') &&
                  (existingSubscription.isSubscribed || existingUserInfo.subscriptionStatus === 'active' || existingSubscription.subscriptionType)) {
         // 서버에서 비활성/취소이지만 로컬에 활성 흔적이 남아있는 경우 (구독 만료/취소 등)
         console.log('[syncSubscription] 서버에서 구독 비활성/취소 확인, 로컬 데이터 업데이트:', serverStatus);
         existingSubscription.subscriptionStatus = serverStatus;
         existingSubscription.isSubscribed = false;
+        // 크레딧도 서버 값(0)으로 동기화 (이전 캐시값 잔류 방지)
+        existingSubscription.credits = {
+          free: serverData.credits?.free || 0,
+          service: serverData.credits?.service || 0,
+          paid: serverData.credits?.paid || 0,
+          total: serverData.credits?.total || 0
+        };
         localStorage.setItem('mymind3_subscription', JSON.stringify(existingSubscription));
 
         existingUserInfo.subscriptionStatus = serverStatus;
         localStorage.setItem('userInfo', JSON.stringify(existingUserInfo));
+
+        // 구독 비활성/취소 → 통화 잠금 해제
+        updateSubscriptionCurrencyLock(null);
+      } else {
+        // needsSync가 아닌 경우에도 구독 active이면 통화 고정 적용
+        if (serverStatus === 'active' && serverSubCurrency) {
+          updateSubscriptionCurrencyLock(serverSubCurrency);
+        }
       }
 
     } catch (error) {
@@ -5046,6 +5083,7 @@ const response = await fetch('/api/credits/create-credit-checkout', {
     paymentHistoryModalInitialized = false;
     cancelSubscriptionModalInitialized = false;
     paymentCurrencyListenerInitialized = false;  // 통화 변경 리스너도 리셋
+    _activeSubscriptionCurrency = null;  // 구독 통화 고정 리셋
 
     // v7.1: API에서 패키지 정보 로드 대기
     if (window.MyMind3 && window.MyMind3.waitForPackages) {
@@ -5119,6 +5157,9 @@ const response = await fetch('/api/credits/create-credit-checkout', {
     initSubscriptionModal();  // 구독 모달 초기화 (취소 모달 포함)
     initPaymentButtons();
 
+    // 구독/크레딧 섹션 전환 시 통화 잠금 이벤트
+    setupCurrencyLockSectionListeners();
+
     // Phase 3: 10단계 크레딧 그리드 초기화
     initCreditTierGrid();
 
@@ -5146,7 +5187,7 @@ const response = await fetch('/api/credits/create-credit-checkout', {
     try {
       const res = await fetch('/api/credits/payment-alerts', { credentials: 'include' });
       const data = await res.json();
-      if (!data.success || !data.data || data.data.length === 0) return;
+      if (!data.success || !Array.isArray(data.data) || data.data.length === 0) return;
 
       data.data.forEach((alert, idx) => {
         setTimeout(() => showPaymentAlertToast(alert), idx * 500);

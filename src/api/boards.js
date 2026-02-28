@@ -43,27 +43,8 @@ function requireAuth(req, res, next) {
 }
 
 /**
- * 관리자 여부 확인 (DB 조회 + 세션 fallback)
- * DB에 admin_users 레코드가 있으면 DB 기준, 없으면 세션 기반 판단
- * @param {string} userId - 사용자 ID
- * @param {Object} session - Express 세션 객체
- * @returns {Promise<boolean>} 관리자 여부
- */
-async function checkIsAdmin(userId, session) {
-  try {
-    const adminRecord = await AdminUser.findByUserId(userId);
-    if (adminRecord && adminRecord.is_active === 1) return true;
-    // DB에 레코드 없음 → 스텁 환경 → 세션 기반 fallback
-    return adminRecord === null && session?.adminVerified === true;
-  } catch (err) {
-    return session?.adminVerified === true;
-  }
-}
-
-/**
  * 관리자 인증 미들웨어
  * 2026-01-02: AdminUser.isAdmin()이 async이므로 미들웨어도 async로 변경
- * 2026-02-25: DB + 세션 fallback 방식으로 변경 (스텁 환경 호환)
  */
 async function requireAdminAuth(req, res, next) {
   if (!req.session || !req.session.userId) {
@@ -75,7 +56,8 @@ async function requireAdminAuth(req, res, next) {
 
   const userId = req.session.userId;
 
-  const isAdmin = await checkIsAdmin(userId, req.session);
+  // isAdmin은 async 함수이므로 await 필요
+  const isAdmin = await AdminUser.isAdmin(userId);
   if (!isAdmin) {
     return res.status(403).json({
       success: false,
@@ -169,7 +151,7 @@ router.get('/:boardKey', async (req, res) => {
 
     // 읽기 권한 확인
     const userId = req.session?.userId;
-    const isAdmin = userId && await checkIsAdmin(userId, req.session);
+    const isAdmin = userId && await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canRead(boardKey, userId, isAdmin)) {
       return res.status(403).json({
@@ -570,7 +552,7 @@ router.get('/:boardKey/posts', async (req, res) => {
     }
 
     const userId = req.session?.userId;
-    const isAdmin = userId && await checkIsAdmin(userId, req.session);
+    const isAdmin = userId && await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canRead(boardKey, userId, isAdmin)) {
       return res.status(403).json({
@@ -614,7 +596,7 @@ router.get('/:boardKey/posts/:postId', async (req, res) => {
 
     // 게시판 권한 확인
     const userId = req.session?.userId;
-    const isAdmin = userId && await checkIsAdmin(userId, req.session);
+    const isAdmin = userId && await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canRead(boardKey, userId, isAdmin)) {
       return res.status(403).json({
@@ -669,7 +651,7 @@ router.post('/:boardKey/posts', requireAuth, async (req, res) => {
 
     // 글쓰기 권한 확인
     const userId = req.session.userId;
-    const isAdmin = await checkIsAdmin(userId, req.session);
+    const isAdmin = await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canWrite(boardKey, userId, isAdmin)) {
       return res.status(403).json({
@@ -728,7 +710,7 @@ router.put('/:boardKey/posts/:postId', requireAuth, async (req, res) => {
     const { postId } = req.params;
     const postData = req.body;
     const userId = req.session.userId;
-    const isAdmin = await checkIsAdmin(userId, req.session);
+    const isAdmin = await AdminUser.isAdmin(userId);
 
     const result = await PostService.updatePost(postId, postData, userId, isAdmin);
 
@@ -759,7 +741,7 @@ router.delete('/:boardKey/posts/:postId', requireAuth, async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.session.userId;
-    const isAdmin = await checkIsAdmin(userId, req.session);
+    const isAdmin = await AdminUser.isAdmin(userId);
 
     const result = await PostService.deletePost(postId, userId, isAdmin);
 
@@ -871,7 +853,7 @@ router.post('/:boardKey/posts/:postId/files', requireAuth, upload.array('files',
     }
 
     const userId = req.session.userId;
-    const isAdmin = await checkIsAdmin(userId, req.session);
+    const isAdmin = await AdminUser.isAdmin(userId);
 
     // 작성자 또는 관리자만 파일 추가 가능
     if (post.author_id !== userId && !isAdmin) {
@@ -947,7 +929,7 @@ router.get('/files/:fileId', async (req, res) => {
 
     // 읽기 권한 확인
     const userId = req.session?.userId;
-    const isAdmin = userId && await checkIsAdmin(userId, req.session);
+    const isAdmin = userId && await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canRead(file.board_key, userId, isAdmin)) {
       return res.status(403).json({
@@ -1038,7 +1020,7 @@ router.delete('/files/:fileId', requireAuth, async (req, res) => {
   try {
     const { fileId } = req.params;
     const userId = req.session.userId;
-    const isAdmin = await checkIsAdmin(userId, req.session);
+    const isAdmin = await AdminUser.isAdmin(userId);
 
     const result = FileService.deleteFile(fileId, userId, isAdmin);
 
@@ -1072,7 +1054,7 @@ router.get('/:boardKey/posts/:postId/files', async (req, res) => {
 
     // 읽기 권한 확인
     const userId = req.session?.userId;
-    const isAdmin = userId && await checkIsAdmin(userId, req.session);
+    const isAdmin = userId && await AdminUser.isAdmin(userId);
 
     if (!await BoardService.canRead(boardKey, userId, isAdmin)) {
       return res.status(403).json({

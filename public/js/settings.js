@@ -21,9 +21,9 @@
 window.initSettingsAll = async function() {
   window.settingsInitialized = true;
 
-  // 1. 기본 설정 초기화 (settings-core.js)
+  // 1. 기본 설정 초기화 (settings-core.js) - await로 loadSettings 완료 대기
   if (typeof window.initSettings === 'function') {
-    window.initSettings();
+    await window.initSettings();
   }
 
   // 2. 결제 관련 기능 초기화 (settings-payment.js)
@@ -63,7 +63,12 @@ window.initSettingsAll = async function() {
 
   // 7-1. Access Keys & TODO Node ID 초기화 (settings-access-keys.js)
   if (typeof window.initAccessKeys === 'function') {
-    window.initAccessKeys();
+    await window.initAccessKeys();
+  }
+
+  // 7-2. 2FA(TOTP) 설정 초기화 (settings-2fa.js)
+  if (typeof window.initTwoFactorSettings === 'function') {
+    window.initTwoFactorSettings();
   }
 
   // 8. 관리자 여부 확인 및 메뉴 초기화

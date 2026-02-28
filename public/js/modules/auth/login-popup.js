@@ -124,9 +124,14 @@
         window.currentUser = null;
         updateLoginUI(false);
 
-        // 세션 토큰 제거
+        // 세션 토큰 및 구독/크레딧 캐시 제거
         sessionStorage.removeItem('_xt');
-        console.log('[Auth] Session token removed');
+        localStorage.removeItem('mymind3_subscription');
+        localStorage.removeItem('aiSettings');
+        if (window.ApiCache) {
+          window.ApiCache.invalidate('/api/credits/balance');
+        }
+        console.log('[Auth] Session token and subscription cache removed');
 
         showToast(window.i18n?.toastLogoutSuccess || '로그아웃 되었습니다.', 'info');
 

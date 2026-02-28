@@ -106,7 +106,7 @@ const ToolCategory = {
              is_premium as "isPremium", is_active as "isActive"
       FROM tool_categories
       WHERE is_active = 1
-      ORDER BY sort_order ASC
+      ORDER BY is_premium DESC, sort_order ASC
     `);
   },
 

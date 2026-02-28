@@ -475,6 +475,44 @@
     }
 
     /**
+     * 단일 행 Mermaid 코드를 자동 줄바꿈 (CLI 경유 content 개행 누락 보정)
+     * Bash 셸에서 mm-api.js add-child 호출 시 개행이 누락되어
+     * Mermaid 파서가 구문 오류를 발생시키는 문제 해결
+     * @param {string} code - Mermaid 코드 텍스트
+     * @returns {string} 줄바꿈이 삽입된 코드
+     */
+    function autoSplitMermaidCode(code) {
+        var result = code;
+
+        // 1. 그래프 선언부 이후 줄바꿈
+        result = result
+            .replace(/((?:flowchart|graph)\s+(?:TD|TB|BT|LR|RL))\s+/i, '$1\n')
+            .replace(/(sequenceDiagram)\s+/i, '$1\n')
+            .replace(/(classDiagram)\s+/i, '$1\n')
+            .replace(/(erDiagram)\s+/i, '$1\n')
+            .replace(/(gitGraph)\s+/i, '$1\n')
+            .replace(/(pie(?:\s+title\s+[^\n]+)?)\s+(?=")/i, '$1\n');
+
+        // 2. flowchart/graph: 닫는 괄호(]}>)) 뒤 새 엣지 문장 시작 시 줄바꿈
+        //    패턴: ] A --> 또는 } B -- 또는 ) C == (새 문장의 노드ID + 화살표)
+        result = result.replace(/([\]}>)])\s+([A-Za-z_]\w*\s*(?:--|==|-\.|~~))/g, '$1\n$2');
+
+        // 3. subgraph / end 키워드 앞 줄바꿈
+        result = result.replace(/\s+(subgraph\s)/gi, '\n$1');
+        result = result.replace(/\s+(end\b)/gi, '\n$1');
+
+        // 4. sequenceDiagram: 참여자/메시지 키워드 앞 줄바꿈
+        result = result.replace(/\s+((?:participant|actor|Note\s+(?:over|left|right))\s)/gi, '\n$1');
+        result = result.replace(/([^\n])\s+([A-Za-z_]\w*\s*->>)/g, '$1\n$2');
+        result = result.replace(/([^\n])\s+([A-Za-z_]\w*\s*-->>)/g, '$1\n$2');
+
+        // 5. erDiagram: 엔티티 관계 줄바꿈
+        result = result.replace(/(["}\s])\s+([A-Z_]+\s+[|o{])/g, '$1\n$2');
+
+        return result;
+    }
+
+    /**
      * 프리뷰 컨테이너 내 mermaid 코드블록을 SVG 다이어그램으로 렌더링
      * - pre code.language-mermaid 감지
      * - CDN 실패 시 폴백 메시지 표시
@@ -509,7 +547,13 @@
             // 교체 대상은 wrapper div가 있으면 그것, 없으면 pre
             const replaceTarget = (preEl.parentElement && preEl.parentElement.classList.contains('toastui-editor-ww-code-block'))
                 ? preEl.parentElement : preEl;
-            const code = codeEl.textContent.trim();
+            // CLI 경유 content에서 리터럴 \n이 실제 줄바꿈 대신 저장되는 문제 보정
+            let code = codeEl.textContent.trim().replace(/\\n/g, '\n');
+
+            // 단일 행 Mermaid 코드 자동 줄바꿈 (Bash 셸에서 개행 누락 시)
+            if (code.split('\n').length <= 2) {
+                code = autoSplitMermaidCode(code);
+            }
 
             try {
                 // 고유 ID: Date.now + index + random (밀리초 충돌 방지)

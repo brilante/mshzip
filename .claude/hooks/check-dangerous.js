@@ -6,6 +6,8 @@
  * - BLOCKED: 절대 차단 (exit 1) - 복구 불가능한 파괴적 명령
  * - WARNED: 경고 출력 (exit 0) - 위험하지만 사용자가 의도할 수 있는 명령
  */
+const fs = require('fs');
+
 const BLOCKED_COMMANDS = [
   'rm -rf /',
   'DROP TABLE',
@@ -29,8 +31,22 @@ const WARNED_COMMANDS = [
   'docker rmi'
 ];
 
+// stdin 읽기 (Claude Code는 tool input을 stdin으로 전달)
+function readInput() {
+  try {
+    const raw = fs.readFileSync(0, 'utf-8').trim();
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // {tool_name, tool_input: {command}} 또는 {tool_name, input: {command}} 형식 대응
+      return parsed.tool_input || parsed.input || parsed;
+    }
+  } catch { /* stdin 없거나 파싱 실패 */ }
+  // fallback: 환경변수
+  try { return JSON.parse(process.env.CLAUDE_TOOL_INPUT || '{}'); } catch { return {}; }
+}
+
 try {
-  const input = JSON.parse(process.env.CLAUDE_TOOL_INPUT || '{}');
+  const input = readInput();
   // 공백/탭 정규화: 다중 공백/탭으로 패턴 우회 방지
   const cmd = (input.command || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
@@ -40,8 +56,16 @@ try {
     if (cmd.includes(pattern)) {
       // git push --force-with-lease는 안전한 명령이므로 제외
       if (pattern === 'git push --force' && cmd.includes('--force-with-lease')) continue;
-      console.error(`[보안] 차단: 위험 명령 "${blocked}" 감지. 이 명령은 실행할 수 없습니다.`);
-      process.exit(1);
+      const reason = `[보안] 차단: 위험 명령 "${blocked}" 감지. 이 명령은 실행할 수 없습니다.`;
+      console.error(reason);
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'deny',
+          permissionDecisionReason: reason
+        }
+      }));
+      process.exit(2);
     }
   }
 
@@ -55,8 +79,16 @@ try {
 
   // API 키 직접 노출 감지 → 절대 차단
   if (/sk-[a-zA-Z0-9]{20,}/.test(cmd) || /Bearer\s+[a-zA-Z0-9_-]{30,}/.test(cmd)) {
-    console.error('[보안] 차단: API 키/토큰이 명령에 직접 포함됨. 환경 변수를 사용하세요.');
-    process.exit(1);
+    const reason = '[보안] 차단: API 키/토큰이 명령에 직접 포함됨. 환경 변수를 사용하세요.';
+    console.error(reason);
+    process.stdout.write(JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: reason
+      }
+    }));
+    process.exit(2);
   }
 } catch (e) {
   // 파싱 실패 시 통과 (차단하지 않음)

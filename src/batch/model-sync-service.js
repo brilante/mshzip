@@ -70,9 +70,10 @@ async function addNewModel(aiService, model, client) {
     (ai_service, model_name, api_model_id, display_name,
      cost_per_1m_input, cost_per_1m_output, credits_per_1m_input, credits_per_1m_output,
      cost_per_image, credits_per_image,
+     billing_type, cost_per_1m_image_input, cost_per_1m_image_output, cost_per_second,
      is_active, is_default, api_available, needs_pricing, last_api_check,
      owned_by, model_created_at, input_token_limit, output_token_limit)
-    VALUES (?, ?, ?, ?, 0, 0, 0, 0, NULL, NULL, 1, 0, 1, 1, CURRENT_TIMESTAMP,
+    VALUES (?, ?, ?, ?, 0, 0, 0, 0, NULL, NULL, 'token', 0, 0, 0, 1, 0, 1, 1, CURRENT_TIMESTAMP,
             ?, ?, ?, ?)
     ON CONFLICT(ai_service, model_name) DO NOTHING
   `, [

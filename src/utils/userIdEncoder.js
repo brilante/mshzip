@@ -160,9 +160,13 @@ class UserIdEncoder {
   static _findByUserMarker(userId, saveDir) {
     try {
       const entries = fs.readdirSync(saveDir, { withFileTypes: true });
+
+      // 1. save/ 직접 하위 탐색 (기존 레거시 경로)
       for (const entry of entries) {
         if (!entry.isDirectory()) continue;
         if (entry.name.startsWith('_')) continue;
+        // 날짜 디렉토리(yyyy)는 별도 처리
+        if (/^\d{4}$/.test(entry.name)) continue;
 
         const markerPath = path.join(saveDir, entry.name, '.userid');
         try {
@@ -170,6 +174,53 @@ class UserIdEncoder {
           if (stored === userId) return entry.name;
         } catch (e) {
           // 마커 파일 없음 - 무시
+        }
+      }
+
+      // 2. save/{yyyy}/{yyyyMM}/{yyyyMMdd}/ 날짜 디렉토리 하위 탐색
+      for (const yearEntry of entries) {
+        if (!yearEntry.isDirectory()) continue;
+        if (!/^\d{4}$/.test(yearEntry.name)) continue;
+
+        const yearPath = path.join(saveDir, yearEntry.name);
+        let monthEntries;
+        try { monthEntries = fs.readdirSync(yearPath, { withFileTypes: true }); }
+        catch { continue; }
+
+        for (const monthEntry of monthEntries) {
+          if (!monthEntry.isDirectory()) continue;
+          if (!/^\d{6}$/.test(monthEntry.name)) continue;
+
+          const monthPath = path.join(yearPath, monthEntry.name);
+          let dayEntries;
+          try { dayEntries = fs.readdirSync(monthPath, { withFileTypes: true }); }
+          catch { continue; }
+
+          for (const dayEntry of dayEntries) {
+            if (!dayEntry.isDirectory()) continue;
+            if (!/^\d{8}$/.test(dayEntry.name)) continue;
+
+            const dayPath = path.join(monthPath, dayEntry.name);
+            let folderEntries;
+            try { folderEntries = fs.readdirSync(dayPath, { withFileTypes: true }); }
+            catch { continue; }
+
+            for (const folderEntry of folderEntries) {
+              if (!folderEntry.isDirectory()) continue;
+              if (folderEntry.name.startsWith('_')) continue;
+
+              const markerPath = path.join(dayPath, folderEntry.name, '.userid');
+              try {
+                const stored = fs.readFileSync(markerPath, 'utf8').trim();
+                if (stored === userId) {
+                  // 상대 경로 반환: yyyy/yyyyMM/yyyyMMdd/{폴더명}
+                  return path.join(yearEntry.name, monthEntry.name, dayEntry.name, folderEntry.name);
+                }
+              } catch (e) {
+                // 마커 파일 없음 - 무시
+              }
+            }
+          }
         }
       }
     } catch (e) {
@@ -338,6 +389,136 @@ class UserIdEncoder {
   }
 
   /**
+   * 폴더명으로 사용자 ID 조회 (DB 매핑 테이블 사용)
+   * @param {string} folderName - 폴더명 (해시)
+   * @returns {Promise<string|null>} - 사용자 ID 또는 null
+   */
+  static async getUserIdFromFolder(folderName) {
+    if (!folderName) return null;
+
+    // 캐시 확인
+    if (idMappingCache.has(folderName)) {
+      return idMappingCache.get(folderName);
+    }
+
+    try {
+      // DB에서 조회
+      const UserIdMapping = require('../db/models/UserIdMapping');
+      const mapping = await UserIdMapping.findByHash(folderName);
+      if (mapping) {
+        idMappingCache.set(folderName, mapping.user_id);
+        return mapping.user_id;
+      }
+    } catch (error) {
+      console.warn('[UserIdEncoder] 매핑 조회 실패:', error.message);
+    }
+
+    return null;
+  }
+
+  /**
+   * 사용자 ID 매핑 등록
+   * @param {string} userId - 사용자 ID
+   * @returns {Promise<string>} - 해시된 폴더명
+   */
+  static async registerMapping(userId) {
+    if (!userId) return null;
+
+    const hash = this.encode(userId);
+    const legacyFolder = this.encodeLegacy(userId);
+
+    try {
+      // DB에 매핑 저장
+      const UserIdMapping = require('../db/models/UserIdMapping');
+      await UserIdMapping.create(userId, hash, legacyFolder);
+      idMappingCache.set(hash, userId);
+    } catch (error) {
+      // 중복 등록은 무시
+      if (!error.message.includes('UNIQUE') && !error.message.includes('duplicate')) {
+        console.warn('[UserIdEncoder] 매핑 등록 실패:', error.message);
+      }
+    }
+
+    return hash;
+  }
+
+  /**
+   * V2 형식 검증
+   * @param {string} folderName - 폴더명
+   * @returns {boolean}
+   */
+  static isV2Format(folderName) {
+    return EncryptionService.isV2Format(folderName);
+  }
+
+  /**
+   * 날짜 기반 저장소 경로 생성 (KST = UTC+9)
+   *
+   * 회원가입 시 등록 날짜(created_at)를 KST 기준으로 계산하여
+   * 'yyyy/yyyyMM/yyyyMMdd' 형식의 상대 경로를 반환합니다.
+   *
+   * @param {Date|string|null} date - 기준 날짜 (미입력 시 현재 시각)
+   *   - Date 객체, ISO 문자열 ('2026-02-28T...'), 또는 null/undefined
+   * @returns {string} - 'yyyy/yyyyMM/yyyyMMdd' 형식 (예: '2026/202602/20260228')
+   */
+  static calculateDatePath(date = null) {
+    // UTC → KST (+9시간) 변환
+    const utc = date ? new Date(date) : new Date();
+    const kst = new Date(utc.getTime() + 9 * 60 * 60 * 1000);
+    const yyyy = String(kst.getUTCFullYear());
+    const mm   = String(kst.getUTCMonth() + 1).padStart(2, '0');
+    const dd   = String(kst.getUTCDate()).padStart(2, '0');
+    return `${yyyy}/${yyyy}${mm}/${yyyy}${mm}${dd}`;
+  }
+
+  /**
+   * DB 매핑 기반 사용자 저장소 상대 경로 해석 (비동기, DB 전용)
+   *
+   * ★ 설계 원칙:
+   *   - 경로는 오직 DB(user_id_mapping)에서만 읽는다
+   *   - 파일시스템 스캔 / .userid 마커 파일 일절 사용하지 않음
+   *   - date_path 있으면 → '{yyyy/yyyyMM/yyyyMMdd}/{hash}'
+   *   - date_path 없으면 → '{hash}' (레거시 사용자)
+   *   - DB 조회 실패 시 → encode(userId) 폴백 (안전한 기본값)
+   *
+   * @param {string} userId - 사용자 ID
+   * @param {string} _saveDir - 미사용 (하위호환 시그니처 유지)
+   * @returns {Promise<string>} - save/ 기준 상대 경로 (포워드 슬래시)
+   */
+  static async resolveUserPath(userId, _saveDir) {
+    if (!userId) return this.encode(userId);
+
+    const cacheKey = `resolve_${userId}`;
+    if (_folderCache.has(cacheKey)) {
+      return _folderCache.get(cacheKey);
+    }
+
+    try {
+      const UserIdMapping = require('../db/models/UserIdMapping');
+      const mapping = await UserIdMapping.findByUserId(userId);
+
+      if (mapping) {
+        const hash = mapping.user_id_hash;
+        // 포워드 슬래시 정규화 (Windows path.join 역슬래시 방지)
+        const relativePath = mapping.date_path
+          ? `${mapping.date_path.replace(/\\/g, '/')}/${hash}`
+          : hash;
+        _folderCache.set(cacheKey, relativePath);
+        _folderCache.set(String(userId), relativePath);
+        return relativePath;
+      }
+    } catch (e) {
+      console.warn('[UserIdEncoder] resolveUserPath DB 조회 실패, encode 폴백:', e.message);
+    }
+
+    // DB 매핑 없음 → encode 기본값 (파일시스템 스캔 없음)
+    const fallback = this.encode(userId);
+    _folderCache.set(cacheKey, fallback);
+    _folderCache.set(String(userId), fallback);
+    return fallback;
+  }
+
+  /**
    * 캐시 초기화
    */
   static clearCache() {
@@ -353,5 +534,9 @@ class UserIdEncoder {
     return idMappingCache.size;
   }
 }
+
+// 외부에서 캐시에 직접 주입할 수 있도록 정적 프로퍼티로 노출
+// (server.js 세션 미들웨어에서 사용)
+UserIdEncoder._folderCache = _folderCache;
 
 module.exports = UserIdEncoder;

@@ -411,7 +411,7 @@ window.i18n_ja = {
   pageTitle: 'マインドマップ',
 
   // マインドマップ検索
-  searchPlaceholder: 'ノード検索...',
+  searchPlaceholder: 'ノード検索 (タイトル, 内容, id:ノードID)...',
   searchButton: '検索',
   searchResultCount: '{count}件発見',
   searchNoResults: '結果なし',
@@ -1268,7 +1268,7 @@ window.i18n_ja = {
   menuSecurity: 'セキュリティ',
   menuToolSettings: 'ツール設定',
   agentSkillsLabel: 'Agent Skills使用',
-  agentSkillsDesc: 'Claude Code Skill使用設定',
+  agentSkillsDesc: 'Claude Code Agent Skills使用設定',
   agentSkillsTitle: 'Agent Skills接続',
   agentSkillsDescription: 'Claude Code Agent Skillsと連携してノードドキュメントに直接アクセスします。',
   securityTitle: 'セキュリティ',
@@ -1364,7 +1364,7 @@ window.i18n_ja = {
   saveBtn: '保存',
   serverUrlHint: '別のPCからアクセスする場合、サーバーアドレスを変更してください。',
   keyFilePathLabel: 'キーファイルパス',
-  keyFilePathPlaceholder: '例: C:\\Users\\bril\\.mymindmp3',
+  keyFilePathPlaceholder: '例: C:\\Users\\{username}\\.mymindmp3',
   keyFilePathHint: 'ダウンロードした.mymindmp3ファイルの保存パスを設定してください。',
   selectKeyPlaceholder: 'テストするキーを選択...',
   connectionTestBtn: '接続テスト',

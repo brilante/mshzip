@@ -18,6 +18,7 @@ const ALLOWED_KEYS = [
   'defaultNodeExpanded',
   'confirmDelete',
   'agentSkillsEnabled',
+  'autoCreateEnabled',
   'editorFontSize',
   // AI Settings (AI 설정)
   'defaultService',

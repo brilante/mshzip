@@ -12,7 +12,7 @@
 
 ## 네이밍
 ```javascript
-const userName = 'bril';       // 변수: camelCase
+const userName = 'testUser';    // 변수: camelCase
 function getUserData() {}      // 함수: camelCase
 class UserController {}        // 클래스: PascalCase
 const MAX_RETRY = 3;           // 상수: UPPER_SNAKE_CASE

@@ -48,6 +48,7 @@
 
 .board-admin-table code {
   background: var(--code-bg, #f3f4f6);
+  color: var(--text-primary, #374151);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
@@ -514,6 +515,11 @@
 [data-theme="dark"] .board-posts-table td {
   color: var(--text-secondary-dark, #d1d5db);
   border-color: var(--border-color-dark, #374151);
+}
+
+[data-theme="dark"] .board-admin-table code {
+  background: var(--code-bg-dark, #374151);
+  color: var(--text-primary-dark, #e5e7eb);
 }
 
 [data-theme="dark"] .board-admin-table tbody tr:hover,

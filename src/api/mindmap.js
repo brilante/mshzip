@@ -63,12 +63,20 @@ function validateNodeId(nodeId) {
  * @returns {string} - 사용자 ID
  */
 function getUserId(req) {
-  // 세션에서 userId 우선 사용
-  if (req.session && req.session.passport && req.session.passport.user) {
-    return req.session.passport.user.username;
-  }
+  // 1. 직접 설정된 세션 userId (ID/PW 로그인, Google OAuth 콜백 모두 설정)
   if (req.session && req.session.userId) {
     return req.session.userId;
+  }
+  // 2. Passport 세션 (serializeUser가 문자열 저장)
+  if (req.session && req.session.passport && req.session.passport.user) {
+    const passportUser = req.session.passport.user;
+    // serializeUser가 username 문자열을 저장하므로 타입 확인
+    if (typeof passportUser === 'string') return passportUser;
+    if (passportUser.username) return passportUser.username;
+  }
+  // 3. Passport가 deserialize한 req.user
+  if (req.user && req.user.username) {
+    return req.user.username;
   }
   // 로컬 개발용 기본값
   return 'dev';
@@ -610,13 +618,9 @@ router.get('/loadnode', async (req, res) => {
 // POST /api/deletenode - 노드 및 관련 파일 삭제
 // ══════════════════════════════════════════════════════
 
-router.post('/deletenode', express.json(), (req, res) => {
+router.post('/deletenode', express.json(), async (req, res) => {
   const { folder, nodeId, nodeData } = req.body;
   const userId = getUserId(req);
-  const encodedUserId = UserIdEncoder.findUserFolderSync(
-    userId,
-    path.resolve(__dirname, '../../save')
-  );
   const nodeIdStr = String(nodeId);
 
   if (!folder || !nodeId) {
@@ -633,8 +637,10 @@ router.post('/deletenode', express.json(), (req, res) => {
     return res.status(400).json({ error: 'Invalid nodeId' });
   }
 
-  const projectRoot = path.resolve(__dirname, '../..');
-  const folderPath = path.join(projectRoot, 'save', encodedUserId, folder);
+  // ★ DB 기반 경로 조회 (날짜 경로 포함)
+  const SAVE_PATH = path.resolve(__dirname, '../../save');
+  const relativePath = await UserIdEncoder.resolveUserPath(userId, SAVE_PATH);
+  const folderPath = path.join(SAVE_PATH, relativePath, folder);
   const deletedFiles = [];
 
   const collectAllNodeFiles = (node) => {

@@ -77,21 +77,7 @@ function classifyBashAction(cmd) {
   return null;
 }
 
-// stdin에서 데이터 읽기 시도 (non-blocking)
-function readStdin() {
-  return new Promise((resolve) => {
-    let data = '';
-    const timeout = setTimeout(() => resolve(''), 100);
-    process.stdin.setEncoding('utf-8');
-    process.stdin.on('data', chunk => { data += chunk; });
-    process.stdin.on('end', () => { clearTimeout(timeout); resolve(data); });
-    process.stdin.on('error', () => { clearTimeout(timeout); resolve(''); });
-    // stdin이 TTY이면 즉시 반환
-    if (process.stdin.isTTY) { clearTimeout(timeout); resolve(''); }
-  });
-}
-
-async function main() {
+function main() {
   try {
     const timestamp = new Date().toISOString();
     let resolvedName = '';
@@ -103,15 +89,15 @@ async function main() {
       resolvedName = envToolName;
     }
 
-    // 2순위: stdin에서 읽기
+    // 2순위: stdin 동기 읽기 (다른 훅과 동일한 방식)
     if (!resolvedName) {
       try {
-        const stdinData = await readStdin();
+        const stdinData = fs.readFileSync(0, 'utf-8').trim();
         if (stdinData) {
           const parsed = JSON.parse(stdinData);
           if (parsed.tool_name) resolvedName = parsed.tool_name;
           else if (parsed.tool) resolvedName = parsed.tool;
-          if (!resolvedName) resolvedName = inferToolName(parsed.input || parsed);
+          if (!resolvedName) resolvedName = inferToolName(parsed.tool_input || parsed.input || parsed);
         }
       } catch (e) { /* stdin 파싱 실패는 무시 */ }
     }

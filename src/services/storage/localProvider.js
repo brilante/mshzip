@@ -4,7 +4,11 @@
  * 로컬 파일 시스템 저장소 프로바이더
  * 참고: mymind3 본체의 LocalStorageProvider와 동일 구조
  *
- * save/{encodedUserId}/{마인드맵폴더}/ 기반 파일 I/O
+ * 경로 구조 (신규): save/{yyyy}/{yyyyMM}/{yyyyMMdd}/{userHash}/
+ * 경로 구조 (레거시): save/{userHash}/
+ *
+ * DB user_id_mapping.date_path 값을 읽어 경로를 결정합니다.
+ * date_path 없으면 findUserFolderSync 폴백으로 기존 폴더를 탐색합니다.
  */
 
 const fs = require('fs').promises;
@@ -16,22 +20,28 @@ const logger = require('../../utils/logger');
 class LocalStorageProvider {
   constructor() {
     this.basePath = path.resolve(__dirname, '../../../save');
-    // userId → 절대 경로 캐시
+    // userId → 절대 경로 캐시 (비동기 조회 결과 재사용)
     this._pathCache = new Map();
   }
 
   /**
-   * 사용자별 저장 경로 생성 (기존 폴더 우선 탐색)
+   * 사용자별 저장 경로 확인 (DB 기반 date_path 우선)
+   *
+   * 1순위: DB user_id_mapping.date_path + user_id_hash
+   *   → save/{yyyy}/{yyyyMM}/{yyyyMMdd}/{hash}
+   * 2순위: 기존 .userid 마커 탐색 (findUserFolderSync 폴백)
+   *
    * @param {string} userId - 사용자 ID
-   * @returns {string} - 절대 경로
+   * @returns {Promise<string>} - 절대 경로
    */
-  _getUserPath(userId) {
+  async _getUserPath(userId) {
     const key = String(userId);
     if (this._pathCache.has(key)) {
       return this._pathCache.get(key);
     }
-    const folder = UserIdEncoder.findUserFolderSync(userId, this.basePath);
-    const userPath = path.join(this.basePath, folder);
+    // DB에서 date_path 포함 상대경로 조회
+    const relativePath = await UserIdEncoder.resolveUserPath(userId, this.basePath);
+    const userPath = path.join(this.basePath, relativePath);
     this._pathCache.set(key, userPath);
     return userPath;
   }
@@ -44,13 +54,12 @@ class LocalStorageProvider {
    * @returns {Promise<{success: boolean, path: string}>}
    */
   async saveFile(userId, filePath, content) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     const dir = path.dirname(fullPath);
 
-    // 디렉토리 생성
     await fs.mkdir(dir, { recursive: true });
 
-    // 파일 저장 (Buffer는 바이너리로, 문자열은 utf8로)
     if (Buffer.isBuffer(content)) {
       await fs.writeFile(fullPath, content);
     } else {
@@ -65,10 +74,11 @@ class LocalStorageProvider {
    * @param {string} userId - 사용자 ID
    * @param {string} filePath - 상대 경로
    * @param {Object} options - 옵션 { binary: true }면 Buffer 반환
-   * @returns {Promise<string|Buffer>} - 파일 내용
+   * @returns {Promise<string|Buffer>}
    */
   async loadFile(userId, filePath, options = {}) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     if (options.binary) {
       return fs.readFile(fullPath);
     }
@@ -82,7 +92,8 @@ class LocalStorageProvider {
    * @returns {Promise<{success: boolean}>}
    */
   async deleteFile(userId, filePath) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     await fs.unlink(fullPath);
     return { success: true };
   }
@@ -94,7 +105,8 @@ class LocalStorageProvider {
    * @returns {Promise<Array<{name: string, isDirectory: boolean, mtime: Date}>>}
    */
   async listFiles(userId, directory = '') {
-    const dirPath = path.join(this._getUserPath(userId), directory);
+    const userPath = await this._getUserPath(userId);
+    const dirPath = path.join(userPath, directory);
 
     try {
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -132,11 +144,12 @@ class LocalStorageProvider {
    * @returns {Promise<boolean>}
    */
   async exists(userId, filePath) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     try {
       await fs.access(fullPath);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -147,7 +160,7 @@ class LocalStorageProvider {
    * @returns {Promise<{totalSize: number, fileCount: number}>}
    */
   async getUsage(userId) {
-    const userPath = this._getUserPath(userId);
+    const userPath = await this._getUserPath(userId);
     let totalSize = 0;
     let fileCount = 0;
 
@@ -182,7 +195,8 @@ class LocalStorageProvider {
    * @returns {Promise<{success: boolean}>}
    */
   async deleteDirectory(userId, directory) {
-    const fullPath = path.join(this._getUserPath(userId), directory);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, directory);
 
     try {
       await fs.access(fullPath);
@@ -202,8 +216,9 @@ class LocalStorageProvider {
    * @returns {Promise<{success: boolean}>}
    */
   async copy(userId, sourcePath, targetPath) {
-    const srcFull = path.join(this._getUserPath(userId), sourcePath);
-    const tgtFull = path.join(this._getUserPath(userId), targetPath);
+    const userPath = await this._getUserPath(userId);
+    const srcFull = path.join(userPath, sourcePath);
+    const tgtFull = path.join(userPath, targetPath);
 
     const stat = await fs.stat(srcFull);
 
@@ -242,8 +257,9 @@ class LocalStorageProvider {
    * @returns {Promise<{success: boolean}>}
    */
   async move(userId, sourcePath, targetPath) {
-    const srcFull = path.join(this._getUserPath(userId), sourcePath);
-    const tgtFull = path.join(this._getUserPath(userId), targetPath);
+    const userPath = await this._getUserPath(userId);
+    const srcFull = path.join(userPath, sourcePath);
+    const tgtFull = path.join(userPath, targetPath);
 
     await fs.mkdir(path.dirname(tgtFull), { recursive: true });
     await fs.rename(srcFull, tgtFull);
@@ -259,7 +275,8 @@ class LocalStorageProvider {
    * @returns {Promise<string>}
    */
   async readFilePartial(userId, filePath, bytes = 512) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     const fd = await fs.open(fullPath, 'r');
     try {
       const buffer = Buffer.alloc(bytes);
@@ -277,7 +294,8 @@ class LocalStorageProvider {
    * @returns {Promise<{size: number, mtime: Date, isDirectory: boolean}>}
    */
   async getFileInfo(userId, filePath) {
-    const fullPath = path.join(this._getUserPath(userId), filePath);
+    const userPath = await this._getUserPath(userId);
+    const fullPath = path.join(userPath, filePath);
     const stat = await fs.stat(fullPath);
     return {
       size: stat.size,

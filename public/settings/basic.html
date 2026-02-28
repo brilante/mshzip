@@ -65,11 +65,37 @@
             <div class="setting-item">
               <div class="setting-label">
                 <label for="agentSkillsEnabled" data-i18n="agentSkillsLabel">Agent Skills 사용</label>
-                <p class="setting-description" data-i18n="agentSkillsDesc">Claude Code Skill 사용 설정</p>
+                <p class="setting-description" data-i18n="agentSkillsDesc">Claude Code Agent Skills 사용 설정</p>
               </div>
               <div class="setting-control">
                 <label class="toggle-switch">
                   <input type="checkbox" id="agentSkillsEnabled">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="settingsAutoCreateEnabled" data-i18n="autoCreateNodeLabel">노드 자동 만들기</label>
+                <p class="setting-description" data-i18n="autoCreateNodeDesc">AI 응답 시 질문 맥락으로 자동 노드 생성</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsAutoCreateEnabled">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <label for="settingsMultiSelectEnabled" data-i18n="multiSelectLabel">모델 다중 선택</label>
+                <p class="setting-description" data-i18n="multiSelectDesc">여러 AI 모델에 동시 질문 보내기</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsMultiSelectEnabled">
                   <span class="toggle-slider"></span>
                 </label>
               </div>

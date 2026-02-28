@@ -130,7 +130,7 @@ Task(
 대상: {target}
 관련 파일: {files}
 서버: http://localhost:{PORT} (.env PORT 참조)
-테스트 계정: bril / 1
+테스트 계정: Brilante33 / Zkfltmak33
 
 [테스트 기획서]
 {Phase 2의 기획 결과 중 해당 에이전트 영역}

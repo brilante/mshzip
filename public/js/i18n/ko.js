@@ -453,7 +453,7 @@ window.i18n_ko = {
   downloadBtn: '다운로드',
 
   // 마인드맵 검색
-  searchPlaceholder: '노드 검색...',
+  searchPlaceholder: '노드 검색 (제목, 내용, id:노드ID)...',
   searchButton: '검색',
   searchResultCount: '{count}개 발견',
   searchNoResults: '결과 없음',
@@ -1323,7 +1323,7 @@ window.i18n_ko = {
   menuSecurity: '보안',
   menuToolSettings: '도구설정',
   agentSkillsLabel: 'Agent Skills 사용',
-  agentSkillsDesc: 'Claude Code Skill 사용 설정',
+  agentSkillsDesc: 'Claude Code Agent Skills 사용 설정',
   agentSkillsTitle: 'Agent Skills 연결',
   agentSkillsDescription: 'Claude Code Agent Skills와 연동하여 노드 문서에 직접 접근합니다.',
   securityTitle: '보안',
@@ -1419,7 +1419,7 @@ window.i18n_ko = {
   saveBtn: '저장',
   serverUrlHint: '다른 컴퓨터에서 접속 시 서버 주소를 변경하세요.',
   keyFilePathLabel: '키 파일 경로',
-  keyFilePathPlaceholder: '예: C:\\Users\\bril\\.mymindmp3',
+  keyFilePathPlaceholder: '예: C:\\Users\\{username}\\.mymindmp3',
   keyFilePathHint: '발급받은 .mymindmp3 파일의 저장 경로를 설정하세요.',
   selectKeyPlaceholder: '테스트할 키 선택...',
   connectionTestBtn: '연결 테스트',

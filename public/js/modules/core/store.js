@@ -16,7 +16,7 @@
  *   const user = store.get('user');
  *
  *   // 상태 설정
- *   store.set('user', { name: 'bril' });
+ *   store.set('user', { name: 'testUser' });
  *
  *   // 상태 변경 구독
  *   const unsubscribe = store.subscribe('user', (newValue, oldValue) => {

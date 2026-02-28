@@ -62,6 +62,14 @@ window.MyMind3.APIClient = (function() {
       const response = await fetch(url, { ...defaultOptions, ...options });
       const data = await response.json();
 
+      // LOGIN_OK_ACCESSKEY 만료 → 얼럿 후 로그인 페이지로 이동
+      if (response.status === 401 && data.code === 'LOGIN_OK_KEY_EXPIRED') {
+        const msg = data.error || 'ACCESS KEY가 만료되었습니다.\n다시 로그인해주세요.';
+        alert(`🔐 인증 만료\n\n${msg}`);
+        window.location.href = '/login';
+        return; // 이후 처리 중단
+      }
+
       if (!response.ok) {
         throw new Error(data.error || data.message || `HTTP ${response.status}`);
       }

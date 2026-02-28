@@ -186,6 +186,8 @@
     defaultNodeExpanded: true,
     confirmDelete: true,
     agentSkillsEnabled: false,
+    autoCreateEnabled: false,
+    multiSelectEnabled: false,
     editorFontSize: '14',
     appLanguage: detectBrowserLanguage()
   };
@@ -434,6 +436,30 @@
         autoSaveSettings();
       });
     }
+    const settingsAutoCreate = document.getElementById('settingsAutoCreateEnabled');
+    if (settingsAutoCreate) {
+      settingsAutoCreate.addEventListener('change', () => {
+        // 메인 페이지 체크박스도 즉시 동기화
+        const mainCheckbox = document.getElementById('autoCreateNodeAI');
+        if (mainCheckbox) mainCheckbox.checked = settingsAutoCreate.checked;
+        autoSaveSettings();
+      });
+    }
+    const settingsMultiSelect = document.getElementById('settingsMultiSelectEnabled');
+    if (settingsMultiSelect) {
+      settingsMultiSelect.addEventListener('change', () => {
+        // 메인 페이지 체크박스도 즉시 동기화
+        const mainCheckbox = document.getElementById('multiSelectAI');
+        if (mainCheckbox) {
+          mainCheckbox.checked = settingsMultiSelect.checked;
+          // 다중선택 모드 전역 상태 업데이트
+          if (window.MyMindAI) window.MyMindAI.multiSelectMode = settingsMultiSelect.checked;
+          // 탭 UI 업데이트
+          if (typeof updateAITabsForMode === 'function') updateAITabsForMode();
+        }
+        autoSaveSettings();
+      });
+    }
     if (editorFontSize) {
       // range slider의 실시간 값 표시 업데이트
       editorFontSize.addEventListener('input', updateFontSizeDisplay);
@@ -558,6 +584,14 @@
       // 보안 탭: 2FA 상태 데이터 갱신
       if (typeof window.loadTwoFactorStatus === 'function') {
         window.loadTwoFactorStatus();
+      }
+    } else if (menuName === 'agent-skills') {
+      // Agent Skills 탭: TODO Node ID 데이터 갱신 + Access Keys 재로드 (상태 유지)
+      if (typeof window.reloadTodoNodeId === 'function') {
+        window.reloadTodoNodeId();
+      }
+      if (typeof window.reloadAccessKeys === 'function') {
+        window.reloadAccessKeys();
       }
     }
   }
@@ -707,6 +741,12 @@
             if (result.data.agentSkillsEnabled !== undefined) {
               currentSettings.agentSkillsEnabled = result.data.agentSkillsEnabled === 'true' || result.data.agentSkillsEnabled === true;
             }
+            if (result.data.autoCreateEnabled !== undefined) {
+              currentSettings.autoCreateEnabled = result.data.autoCreateEnabled === 'true' || result.data.autoCreateEnabled === true;
+            }
+            if (result.data.multiAiEnabled !== undefined) {
+              currentSettings.multiSelectEnabled = result.data.multiAiEnabled === 'true' || result.data.multiAiEnabled === true;
+            }
             if (result.data.editorFontSize !== undefined) {
               currentSettings.editorFontSize = result.data.editorFontSize;
             }
@@ -745,6 +785,8 @@
       if (settings.defaultNodeExpanded !== undefined) body.defaultNodeExpanded = String(settings.defaultNodeExpanded);
       if (settings.confirmDelete !== undefined) body.confirmDelete = String(settings.confirmDelete);
       if (settings.agentSkillsEnabled !== undefined) body.agentSkillsEnabled = String(settings.agentSkillsEnabled);
+      if (settings.autoCreateEnabled !== undefined) body.autoCreateEnabled = String(settings.autoCreateEnabled);
+      if (settings.multiSelectEnabled !== undefined) body.multiAiEnabled = String(settings.multiSelectEnabled);
       if (settings.editorFontSize !== undefined) body.editorFontSize = String(settings.editorFontSize);
 
       // 빈 객체면 저장 안 함
@@ -819,6 +861,27 @@
     // Agent Skills 메뉴 표시/숨김
     updateAgentSkillsMenuVisibility(currentSettings.agentSkillsEnabled);
 
+    // 노드 자동 만들기 (설정 페이지 토글 + 메인 페이지 체크박스)
+    const settingsAutoCreate = document.getElementById('settingsAutoCreateEnabled');
+    if (settingsAutoCreate) {
+      settingsAutoCreate.checked = currentSettings.autoCreateEnabled;
+    }
+    const mainAutoCreate = document.getElementById('autoCreateNodeAI');
+    if (mainAutoCreate) {
+      mainAutoCreate.checked = currentSettings.autoCreateEnabled;
+    }
+
+    // 모델 다중 선택 (설정 페이지 토글 + 메인 페이지 체크박스)
+    const settingsMultiSelect = document.getElementById('settingsMultiSelectEnabled');
+    if (settingsMultiSelect) {
+      settingsMultiSelect.checked = currentSettings.multiSelectEnabled;
+    }
+    const mainMultiSelect = document.getElementById('multiSelectAI');
+    if (mainMultiSelect) {
+      mainMultiSelect.checked = currentSettings.multiSelectEnabled;
+      if (window.MyMindAI) window.MyMindAI.multiSelectMode = currentSettings.multiSelectEnabled;
+    }
+
     // 에디터 폰트 크기
     const editorFontSize = document.getElementById('editorFontSize');
     if (editorFontSize) {
@@ -857,6 +920,12 @@
       const editorFontSizeEl = document.getElementById('editorFontSize');
       const appLanguageEl = document.getElementById('appLanguage');
 
+      // 노드 자동 만들기 / 모델 다중 선택 (설정 페이지 또는 메인 페이지에서 읽기)
+      const settingsAutoCreateEl = document.getElementById('settingsAutoCreateEnabled');
+      const mainAutoCreateEl = document.getElementById('autoCreateNodeAI');
+      const settingsMultiSelectEl = document.getElementById('settingsMultiSelectEnabled');
+      const mainMultiSelectEl = document.getElementById('multiSelectAI');
+
       // 설정 객체 업데이트
       const newSettings = {
         appTheme: appThemeEl ? appThemeEl.value : 'light',
@@ -864,6 +933,8 @@
         defaultNodeExpanded: defaultNodeExpandedEl.checked,
         confirmDelete: confirmDeleteEl.checked,
         agentSkillsEnabled: agentSkillsEnabledEl ? agentSkillsEnabledEl.checked : false,
+        autoCreateEnabled: settingsAutoCreateEl ? settingsAutoCreateEl.checked : (mainAutoCreateEl ? mainAutoCreateEl.checked : false),
+        multiSelectEnabled: settingsMultiSelectEl ? settingsMultiSelectEl.checked : (mainMultiSelectEl ? mainMultiSelectEl.checked : false),
         editorFontSize: editorFontSizeEl.value,
         appLanguage: appLanguageEl.value || 'ko'
       };
@@ -1130,7 +1201,7 @@
   // 외부에서 호출 가능한 초기화 함수 (레이어 팝업용)
   window.initSettings = function() {
     window.settingsInitialized = true;
-    initializePage();
+    return initializePage();
   };
 
   // 레이어 팝업 콘텐츠에 대해 이벤트 리스너만 재설정하는 함수

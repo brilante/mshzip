@@ -90,8 +90,12 @@
     if (creditPart && balance !== undefined) {
       const total = balance.total !== undefined ? balance.total :
                    (balance.free || 0) + (balance.service || 0) + (balance.paid || 0);
-      const fmtTotal = window.MyMind3?.Intl?.formatNumber(total) || total;
-      creditPart.innerHTML = `(<b>${fmtTotal}C</b>)`;
+      if (total > 0) {
+        const fmtTotal = window.MyMind3?.Intl?.formatNumber(total) || total;
+        creditPart.innerHTML = `(<b>${fmtTotal}C</b>)`;
+      } else {
+        creditPart.innerHTML = '';
+      }
     }
   }
 

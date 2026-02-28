@@ -1895,8 +1895,18 @@
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.4) !important;
 }
 
+/* 노드ID 매칭 다크모드 */
+[data-theme="dark"] .mindmap-node.search-highlight.match-node-id {
+  border: 3px solid #60a5fa !important;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.4) !important;
+}
+
+[data-theme="dark"] .mindmap-node.search-highlight.match-node-id::after {
+  background: #3b82f6;
+}
+
 /* 콘텐츠 매칭 표시 아이콘 다크모드 */
-[data-theme="dark"] .mindmap-node.search-highlight.match-content::after {
+[data-theme="dark"] .mindmap-node.search-highlight.match-content:not(.match-node-id)::after {
   background: var(--bg-secondary);
   box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }

@@ -411,7 +411,7 @@ window.i18n_zhCN = {
   pageTitle: '思维导图',
 
   // 思维导图搜索
-  searchPlaceholder: '搜索节点...',
+  searchPlaceholder: '搜索 (标题, 内容, id:节点ID)...',
   searchButton: '搜索',
   searchResultCount: '找到{count}个',
   searchNoResults: '无结果',
@@ -1260,7 +1260,7 @@ window.i18n_zhCN = {
   menuSecurity: '安全',
   menuToolSettings: '工具设置',
   agentSkillsLabel: '使用 Agent Skills',
-  agentSkillsDesc: 'Claude Code Skill 使用设置',
+  agentSkillsDesc: 'Claude Code Agent Skills 使用设置',
   agentSkillsTitle: 'Agent Skills 连接',
   agentSkillsDescription: '与 Claude Code Agent Skills 联动,直接访问节点文档。',
   securityTitle: '安全',
@@ -1356,7 +1356,7 @@ window.i18n_zhCN = {
   saveBtn: '保存',
   serverUrlHint: '从其他电脑访问时请更改服务器地址。',
   keyFilePathLabel: '密钥文件路径',
-  keyFilePathPlaceholder: '例如: C:\\Users\\bril\\.mymindmp3',
+  keyFilePathPlaceholder: '例如: C:\\Users\\{username}\\.mymindmp3',
   keyFilePathHint: '设置已下载的 .mymindmp3 文件的保存路径。',
   selectKeyPlaceholder: '选择要测试的密钥...',
   connectionTestBtn: '连接测试',

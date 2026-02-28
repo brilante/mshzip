@@ -36,10 +36,16 @@
   let keyFilePathSaved = false; // 키 파일 경로 저장 여부
   let serverUrlSaved = false; // 서버 주소 저장 여부
 
+  // 연결 테스트 상태 보존 (메뉴 이탈 시에도 유지)
+  let lastTestResult = null; // { success, status, details, scope }
+  let testCooldownTimer = null; // 쿨다운 타이머 ID
+  let testCooldownEnd = 0; // 쿨다운 종료 시각 (timestamp)
+  let lastSelectedKeyId = null; // 마지막 선택된 키 ID
+
   /**
    * 초기화
    */
-  function init() {
+  async function init() {
     // DOM 요소 캐싱
     accessKeysList = document.getElementById('accessKeysList');
     btnNewAccessKey = document.getElementById('btnNewAccessKey');
@@ -64,8 +70,8 @@
     btnSaveTodoNodeId = document.getElementById('btnSaveTodoNodeId');
     todoNodeIdStatus = document.getElementById('todoNodeIdStatus');
 
-    // TODO Node ID 로드 (Access Key 존재 여부와 무관)
-    loadTodoNodeId();
+    // TODO Node ID 로드 (Access Key 존재 여부와 무관, await로 완료 대기)
+    await loadTodoNodeId();
 
     if (!accessKeysList) return;
 
@@ -115,8 +121,10 @@
     // 연결 테스트 - 키 선택 변경
     if (testKeySelect) {
       testKeySelect.addEventListener('change', function() {
+        lastSelectedKeyId = this.value || null;
         if (btnTestConnection) {
-          btnTestConnection.disabled = !this.value;
+          const inCooldown = Date.now() < testCooldownEnd;
+          btnTestConnection.disabled = !this.value || inCooldown;
         }
       });
     }
@@ -202,6 +210,14 @@
       let item;
       if (template) {
         item = template.content.cloneNode(true).querySelector('.access-key-item');
+        // 복제된 템플릿의 data-icon 속성을 SVG로 변환
+        item.querySelectorAll('[data-icon]').forEach(function(el) {
+          var iconName = el.getAttribute('data-icon');
+          var iconSize = parseInt(el.getAttribute('data-icon-size') || '16', 10);
+          el.innerHTML = mmIcon(iconName, iconSize);
+          el.removeAttribute('data-icon');
+          el.removeAttribute('data-icon-size');
+        });
       } else {
         item = document.createElement('div');
         item.className = 'access-key-item';
@@ -565,6 +581,12 @@
   // 전역 초기화 함수 노출 (initSettingsAll에서 호출)
   window.initAccessKeys = init;
 
+  // 탭 전환 시 TODO Node ID 재로드 (settings-core.js handleMenuClick에서 호출)
+  window.reloadTodoNodeId = loadTodoNodeId;
+
+  // 탭 전환 시 Access Keys 재로드 (상태 유지: 선택값, 결과, 쿨다운)
+  window.reloadAccessKeys = loadAccessKeys;
+
   /**
    * 연결 테스트 UI 업데이트
    * Access Key가 있을 때만 테스트 UI 표시
@@ -603,16 +625,35 @@
           testKeySelect.appendChild(option);
         });
 
-        // 버튼 비활성화 (선택 전)
+        // 키가 1개뿐이면 자동 선택 (이전 선택값 또는 유일한 키)
+        if (keys.length === 1) {
+          testKeySelect.value = keys[0].id;
+          lastSelectedKeyId = keys[0].id;
+        } else if (lastSelectedKeyId) {
+          // 이전에 선택했던 키가 있으면 복원
+          const exists = keys.some(k => k.id == lastSelectedKeyId);
+          if (exists) {
+            testKeySelect.value = lastSelectedKeyId;
+          }
+        }
+
+        // 버튼 활성 상태는 키 선택 여부 + 쿨다운에 따라 결정
         if (btnTestConnection) {
-          btnTestConnection.disabled = true;
+          const inCooldown = Date.now() < testCooldownEnd;
+          btnTestConnection.disabled = !testKeySelect.value || inCooldown;
         }
       }
 
-      // 결과 영역 초기화
-      if (connectionTestResult) {
+      // 이전 테스트 결과가 있으면 복원, 없으면 초기화
+      if (lastTestResult && connectionTestResult) {
+        showConnectionResult(lastTestResult.success, lastTestResult.status, lastTestResult.details, lastTestResult.scope);
+        connectionTestResult.style.display = 'block';
+      } else if (connectionTestResult) {
         connectionTestResult.style.display = 'none';
       }
+
+      // 쿨다운 진행 중이면 타이머 UI 복원
+      restoreCooldownUI();
     }
   }
 
@@ -802,12 +843,22 @@
       return;
     }
 
+    // 쿨다운 체크
+    if (Date.now() < testCooldownEnd) {
+      const remaining = Math.ceil((testCooldownEnd - Date.now()) / 1000);
+      alert(t('accessKeyTestCooldown', '테스트 쿨다운 중입니다.') + ` (${remaining}${t('seconds', '초')})`);
+      return;
+    }
+
     // 선택된 키 정보 찾기
     const selectedKey = loadedKeys.find(k => k.id == selectedKeyId);
     if (!selectedKey) {
       alert(t('accessKeyNotFound', '키 정보를 찾을 수 없습니다.'));
       return;
     }
+
+    // 선택된 키 ID 보존
+    lastSelectedKeyId = selectedKeyId;
 
     // 버튼 비활성화 및 로딩 표시
     if (btnTestConnection) {
@@ -841,18 +892,91 @@
           const more = data.mindmaps.length > 10 ? ` 외 ${data.mindmaps.length - 10}개` : '';
           details += `\n접근 가능: ${mapList}${more}`;
         }
-        showConnectionResult(true, t('accessKeyConnectSuccess', '연결 성공'), details, data.scope);
+        lastTestResult = { success: true, status: t('accessKeyConnectSuccess', '연결 성공'), details, scope: data.scope };
+        showConnectionResult(true, lastTestResult.status, details, data.scope);
       } else {
-        showConnectionResult(false, t('accessKeyConnectFailed', '연결 실패'), data.message || data.error || '');
+        const errMsg = data.message || data.error || '';
+        lastTestResult = { success: false, status: t('accessKeyConnectFailed', '연결 실패'), details: errMsg, scope: null };
+        showConnectionResult(false, lastTestResult.status, errMsg);
       }
     } catch (error) {
       console.error('연결 테스트 오류:', error);
-      showConnectionResult(false, t('accessKeyConnectFailed', '연결 실패'), error.message || t('networkError', '네트워크 오류'));
+      const errMsg = error.message || t('networkError', '네트워크 오류');
+      lastTestResult = { success: false, status: t('accessKeyConnectFailed', '연결 실패'), details: errMsg, scope: null };
+      showConnectionResult(false, lastTestResult.status, errMsg);
     } finally {
-      // 버튼 복원
-      if (btnTestConnection) {
-        btnTestConnection.disabled = false;
-        btnTestConnection.innerHTML = mmIcon('link', 14) + ' 연결 테스트';
+      // 10초 쿨다운 시작
+      startTestCooldown();
+    }
+  }
+
+  /**
+   * 10초 테스트 쿨다운 시작
+   */
+  function startTestCooldown() {
+    const COOLDOWN_MS = 10000;
+    testCooldownEnd = Date.now() + COOLDOWN_MS;
+
+    // 기존 타이머 정리
+    if (testCooldownTimer) {
+      clearInterval(testCooldownTimer);
+    }
+
+    updateCooldownButton();
+
+    testCooldownTimer = setInterval(() => {
+      const remaining = testCooldownEnd - Date.now();
+      if (remaining <= 0) {
+        // 쿨다운 종료
+        clearInterval(testCooldownTimer);
+        testCooldownTimer = null;
+        testCooldownEnd = 0;
+        if (btnTestConnection) {
+          btnTestConnection.disabled = !testKeySelect?.value;
+          btnTestConnection.innerHTML = mmIcon('link', 14) + ' ' + t('connectionTestBtn', '연결 테스트');
+        }
+      } else {
+        updateCooldownButton();
+      }
+    }, 1000);
+  }
+
+  /**
+   * 쿨다운 버튼 UI 업데이트
+   */
+  function updateCooldownButton() {
+    if (!btnTestConnection) return;
+    const remaining = Math.ceil((testCooldownEnd - Date.now()) / 1000);
+    if (remaining > 0) {
+      btnTestConnection.disabled = true;
+      btnTestConnection.textContent = t('accessKeyTestWait', '재테스트') + ` (${remaining}${t('seconds', '초')})`;
+    }
+  }
+
+  /**
+   * 탭 복귀 시 쿨다운 UI 복원
+   */
+  function restoreCooldownUI() {
+    if (Date.now() < testCooldownEnd) {
+      // 쿨다운 진행 중 → 타이머가 없으면 다시 시작
+      if (!testCooldownTimer) {
+        updateCooldownButton();
+        testCooldownTimer = setInterval(() => {
+          const remaining = testCooldownEnd - Date.now();
+          if (remaining <= 0) {
+            clearInterval(testCooldownTimer);
+            testCooldownTimer = null;
+            testCooldownEnd = 0;
+            if (btnTestConnection) {
+              btnTestConnection.disabled = !testKeySelect?.value;
+              btnTestConnection.innerHTML = mmIcon('link', 14) + ' ' + t('connectionTestBtn', '연결 테스트');
+            }
+          } else {
+            updateCooldownButton();
+          }
+        }, 1000);
+      } else {
+        updateCooldownButton();
       }
     }
   }
@@ -886,24 +1010,44 @@
 
   /**
    * TODO Node ID 로드 (DB에서)
+   * 세션 미확립 등으로 기본값만 반환된 경우 1회 재시도
    */
   async function loadTodoNodeId() {
+    // DOM 참조가 stale하면 다시 캐싱
+    if (!todoNodeIdInput) {
+      todoNodeIdInput = document.getElementById('todoNodeId');
+      btnSaveTodoNodeId = document.getElementById('btnSaveTodoNodeId');
+      todoNodeIdStatus = document.getElementById('todoNodeIdStatus');
+    }
     if (!todoNodeIdInput) return;
 
-    try {
-      const response = await fetch('/api/user/settings', { credentials: 'include' });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data && data.data.todoRootNodeId) {
-          todoNodeIdInput.value = data.data.todoRootNodeId;
-          if (btnSaveTodoNodeId) {
-            btnSaveTodoNodeId.innerHTML = mmIcon('check-circle', 14) + ' ' + t('saved', '저장됨');
+    const maxRetries = 2;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await fetch('/api/user/settings', { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data && data.data.todoRootNodeId) {
+            todoNodeIdInput.value = data.data.todoRootNodeId;
+            if (btnSaveTodoNodeId) {
+              btnSaveTodoNodeId.innerHTML = mmIcon('check-circle', 14) + ' ' + t('saved', '저장됨');
+            }
+            showTodoNodeIdStatus(true, t('todoNodeIdRegistered', '등록됨 - Claude Code 연동 활성'));
+            return; // 성공 시 즉시 반환
           }
-          showTodoNodeIdStatus(true, t('todoNodeIdRegistered', '등록됨 - Claude Code 연동 활성'));
+          // source가 default이면 세션 미확립 가능성 → 재시도
+          if (data.source === 'default' && attempt < maxRetries - 1) {
+            console.warn('[AccessKeys] TODO Node ID: 기본값 응답, 재시도...', attempt + 1);
+            await new Promise(r => setTimeout(r, 500));
+            continue;
+          }
+        }
+      } catch (error) {
+        console.error('[AccessKeys] TODO Node ID 로드 실패:', error);
+        if (attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, 500));
         }
       }
-    } catch (error) {
-      console.error('[AccessKeys] TODO Node ID 로드 실패:', error);
     }
   }
 

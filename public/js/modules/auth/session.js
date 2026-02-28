@@ -120,7 +120,7 @@
               const subscription = JSON.parse(localStorage.getItem('mymind3_subscription') || '{}');
               if (subscription.isSubscribed && subscription.credits) {
                 const totalCredits = subscription.credits.total || 0;
-                creditPart.innerHTML = `(<b>${totalCredits}C</b>)`;
+                creditPart.innerHTML = totalCredits > 0 ? `(<b>${totalCredits}C</b>)` : '';
               } else {
                 creditPart.innerHTML = '';
               }

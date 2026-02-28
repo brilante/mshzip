@@ -60,6 +60,7 @@ const MODEL_MAX_TOKENS = {
   'gpt-image-1': 4096, 'gpt-image-1-mini': 4096, 'gpt-image-1.5': 4096, 'dall-e-3': 4096,
   // Grok-4 시리즈
   'grok-4': 100000, 'grok-4-1-fast': 100000,
+  'grok-4-1-fast-reasoning': 100000, 'grok-4-1-fast-non-reasoning': 100000,
   // Grok-3 시리즈
   'grok-3': 131072, 'grok-3-mini': 131072,
   // Grok-2 시리즈
@@ -67,8 +68,11 @@ const MODEL_MAX_TOKENS = {
   'grok-2-vision-1212': 8192, 'grok-vision-beta': 8192,
   // Grok 코딩/이미지
   'grok-code-fast-1': 8192, 'grok-2-image-1212': 1024, 'grok-embedding-small': 8192,
+  'grok-imagine-video': 4096,
   // Claude 4.5 시리즈
   'claude-opus-4-5': 64000, 'claude-sonnet-4-5': 64000, 'claude-haiku-4-5': 64000,
+  // Claude 4.6 시리즈
+  'claude-opus-4-6': 32000, 'claude-sonnet-4-6': 64000,
   // Claude 4 시리즈
   'claude-opus-4': 32000, 'claude-sonnet-4': 64000,
   // Claude 3.7 시리즈
@@ -78,6 +82,7 @@ const MODEL_MAX_TOKENS = {
   // Claude 3 시리즈
   'claude-3-opus': 4096, 'claude-3-haiku': 4096,
   // Gemini 3 시리즈
+  'gemini-3.1-pro-preview': 65536,
   'gemini-3-flash': 8192, 'gemini-3-pro': 8192,
   // Gemini 2.5 시리즈
   'gemini-2.5-pro': 64000, 'gemini-2.5-flash': 64000, 'gemini-2.5-flash-lite': 64000, 'gemini-2.5-flash-tts': 8192,
@@ -100,34 +105,51 @@ const MODEL_DESCRIPTIONS = {
   'gpt-5.2': '[멀티모달] 최신 플래그십, 복잡한 추론 최적화 (1M ctx)',
   'gpt-5.2-pro': '[멀티모달] 최고 성능 프리미엄 (1M ctx)',
   'gpt-5.2-chat-latest': '[멀티모달] GPT-5.2 채팅 최신 (1M ctx)',
+  'gpt-5.2-codex': '[코딩] GPT-5.2 코딩 특화 (1M ctx)',
+  // GPT-5.3 시리즈
+  'gpt-5.3-codex': '[코딩] GPT-5.3 코딩 특화 (1M ctx)',
   // GPT-5.1 시리즈
   'gpt-5.1': '[멀티모달] 효율성 향상 (1M ctx)',
   'gpt-5.1-codex': '[코딩] 코딩 특화, 효율성 향상 (1M ctx)',
+  'gpt-5.1-codex-mini': '[코딩] 코딩 경량, 비용 효율적 (1M ctx)',
+  'gpt-5.1-codex-max': '[코딩] 코딩 최대 성능 (1M ctx)',
+  'gpt-5.1-chat-latest': '[멀티모달] GPT-5.1 채팅 최신 (1M ctx)',
   // GPT-5 시리즈
   'gpt-5': '[멀티모달] 첫 GPT-5 시리즈 (256K ctx)',
   'gpt-5-pro': '[멀티모달] 전문가급 모델 (256K ctx)',
   'gpt-5-mini': '[멀티모달] 비용 효율적 (256K ctx)',
   'gpt-5-nano': '[멀티모달] 초경량, 빠른 응답 (256K ctx)',
+  'gpt-5-codex': '[코딩] GPT-5 코딩 특화 (256K ctx)',
+  'gpt-5-chat-latest': '[멀티모달] GPT-5 채팅 최신 (256K ctx)',
+  'gpt-5-search-api': '[멀티모달] GPT-5 웹검색 API (256K ctx)',
   // o-시리즈 추론 모델
   'o3': '[추론] 최고 추론 능력, STEM/코딩 최강 (200K ctx)',
   'o3-mini': '[추론] 경량 추론 모델 (200K ctx)',
   'o3-pro': '[추론] 최대 성능, 연구용 (200K ctx)',
   'o3-deep-research': '[추론] 심층 연구용, 웹검색 통합 (200K ctx)',
-  'o4-mini': '[추론] o3 대비 비용 효율적 (200K ctx)',
-  'o4-mini-deep-research': '[추론] 차세대 연구용, 웹검색 통합 (200K ctx)',
+  'o4-mini': '[멀티모달][추론] 비전+추론, 비용 효율적 (200K ctx)',
+  'o4-mini-deep-research': '[멀티모달][추론] 차세대 연구용, 웹검색 통합 (200K ctx)',
   // o1 시리즈
   'o1': '[추론] 심층 추론 모델 (200K ctx)',
   'o1-mini': '[추론] 추론 경량화 (128K ctx)',
   'o1-pro': '[추론] o1 최고 성능 (200K ctx)',
   // GPT-4.1 시리즈
   'gpt-4.1': '[코딩] 코딩/지시따르기 최적화 (1M ctx)',
-  'gpt-4.1-mini': '[텍스트] 4.1 경량화, 비용 효율적 (1M ctx)',
-  'gpt-4.1-nano': '[텍스트] 초경량, 빠른 응답 (1M ctx)',
+  'gpt-4.1-mini': '[멀티모달] 4.1 경량화, 비전 지원 (1M ctx)',
+  'gpt-4.1-nano': '[멀티모달] 초경량, 비전 지원 (1M ctx)',
   // GPT-4o 시리즈
   'gpt-4o': '[멀티모달] 텍스트/이미지/오디오 통합 (128K ctx)',
   'gpt-4o-2024-05-13': '[멀티모달] GPT-4o 안정 버전 (128K ctx)',
   'gpt-4o-mini': '[멀티모달] 4o 경량화 (128K ctx)',
+  'gpt-4o-mini-tts': '[오디오] 4o Mini 음성 합성(TTS)',
+  'gpt-4o-mini-transcribe': '[오디오] 4o Mini 음성→텍스트(STT)',
+  'gpt-4o-mini-search-preview': '[멀티모달] 4o Mini 웹검색 (128K ctx)',
+  'gpt-4o-transcribe': '[오디오] 4o 음성→텍스트(STT)',
+  'gpt-4o-transcribe-diarize': '[오디오] 4o 음성→텍스트 화자분리(STT)',
+  'gpt-4o-search-preview': '[멀티모달] 4o 웹검색 프리뷰 (128K ctx)',
   // GPT-4 시리즈
+  'gpt-4': '[레거시] GPT-4 기본 (8K ctx)',
+  'gpt-4-turbo-preview': '[멀티모달][레거시] GPT-4 Turbo 프리뷰, 비전 지원 (128K ctx)',
   'gpt-4-32k': '[레거시] GPT-4 대용량 (32K ctx)',
   'gpt-4-1106-vision-preview': '[비전] GPT-4 Vision 미리보기',
   'gpt-4-1106-preview': '[레거시] GPT-4 Turbo 미리보기 (128K ctx)',
@@ -135,12 +157,13 @@ const MODEL_DESCRIPTIONS = {
   'gpt-4-0314': '[레거시] GPT-4 초기 버전 (8K ctx)',
   'gpt-4-0125-preview': '[레거시] GPT-4 Turbo 개선판 (128K ctx)',
   // 기타
-  'computer-use-preview': '[에이전트] 컴퓨터 GUI 자동화 (128K ctx)',
+  'computer-use-preview': '[멀티모달][에이전트] 컴퓨터 GUI 자동화, 스크린샷 입력 (128K ctx)',
   'chatgpt-4o-latest': '[멀티모달] ChatGPT 최신 (128K ctx)',
   // 레거시
-  'gpt-4-turbo': '[레거시] GPT-4 Turbo (128K ctx)',
-  'gpt-4-turbo-2024-04-09': '[레거시] GPT-4 Turbo 스냅샷 (128K ctx)',
+  'gpt-4-turbo': '[멀티모달][레거시] GPT-4 Turbo, 비전 지원 (128K ctx)',
+  'gpt-4-turbo-2024-04-09': '[멀티모달][레거시] GPT-4 Turbo 스냅샷, 비전 지원 (128K ctx)',
   'gpt-3.5-turbo': '[레거시] 경제적 모델 (16K ctx)',
+  'gpt-3.5-turbo-16k': '[레거시] 대용량 컨텍스트 (16K ctx)',
   // 이미지 생성
   'gpt-image-1': '[이미지생성] 네이티브 이미지 생성',
   'gpt-image-1-mini': '[이미지생성] 80% 저렴, 비용 효율적',
@@ -158,11 +181,11 @@ const MODEL_DESCRIPTIONS = {
   // Grok-4 시리즈
   'grok-4': '[멀티모달] 최신 플래그십 (256K ctx)',
   'grok-4-fast': '[에이전트] 에이전트 최적화, 고속 (2M ctx)',
-  'grok-4-fast-reasoning': '[추론] 고속 추론 모델 (2M ctx)',
-  'grok-4-fast-non-reasoning': '[텍스트] 고속 처리 모델 (2M ctx)',
+  'grok-4-fast-reasoning': '[멀티모달][추론] 고속 추론, 비전 지원 (2M ctx)',
+  'grok-4-fast-non-reasoning': '[멀티모달] 고속 처리, 비전 지원 (2M ctx)',
   'grok-4-1-fast': '[에이전트] 에이전트 최적화 (2M ctx)',
-  'grok-4-1-fast-reasoning': '[추론] 고속 추론 모델 v4.1 (2M ctx)',
-  'grok-4-1-fast-non-reasoning': '[텍스트] 고속 처리 모델 v4.1 (2M ctx)',
+  'grok-4-1-fast-reasoning': '[멀티모달][추론] 고속 추론 v4.1, 비전 지원 (2M ctx)',
+  'grok-4-1-fast-non-reasoning': '[멀티모달] 고속 처리 v4.1, 비전 지원 (2M ctx)',
   // Grok-3 시리즈
   'grok-3': '[텍스트] 추론/코딩 강화 (131K ctx)',
   'grok-3-mini': '[텍스트] 초경량, 최저 비용 (131K ctx)',
@@ -177,11 +200,17 @@ const MODEL_DESCRIPTIONS = {
   // Grok 코딩/이미지
   'grok-code-fast-1': '[코딩] 에이전틱 코딩 최적화 (256K ctx)',
   'grok-2-image-1212': '[이미지생성] 텍스트→이미지 생성',
+  'grok-imagine-video': '[비디오생성] 텍스트/이미지→비디오 생성',
   'grok-embedding-small': '[임베딩] 텍스트 임베딩',
   // Claude 4.5 시리즈 (최신)
   'claude-opus-4-5': '[멀티모달] 최고 성능, 복잡한 분석 (200K ctx)',
   'claude-sonnet-4-5': '[멀티모달] 코딩 탁월, 균형잡힌 성능 (200K ctx)',
   'claude-haiku-4-5': '[멀티모달] 빠른 응답, 비용 효율 (200K ctx)',
+  // Claude 4.6 시리즈
+  'claude-opus-4-6': '[멀티모달] 최고 성능 플래그십 (200K ctx)',
+  'claude-sonnet-4-6': '[멀티모달] 코딩/분석 균형 (200K ctx)',
+  // Claude 4.1 시리즈
+  'claude-opus-4-1': '[멀티모달] 복잡한 작업용 v4.1 (200K ctx)',
   // Claude 4 시리즈
   'claude-opus-4': '[멀티모달] 복잡한 작업용 (200K ctx)',
   'claude-sonnet-4': '[멀티모달] 균형잡힌 성능 (200K ctx)',
@@ -193,17 +222,33 @@ const MODEL_DESCRIPTIONS = {
   // Claude 3 시리즈 (레거시)
   'claude-3-opus': '[레거시] 복잡한 작업용 (200K ctx)',
   'claude-3-haiku': '[레거시] 초고속, 저비용 (200K ctx)',
+  // Gemini 3.1 시리즈
+  'gemini-3.1-pro-preview': '[멀티모달] Gemini 3.1 Pro 프리뷰 (1M ctx)',
+  'gemini-3.1-pro-preview-customtools': '[멀티모달] Gemini 3.1 Pro 커스텀 도구 (1M ctx)',
   // Gemini 3 시리즈 (최신)
   'gemini-3-flash': '[멀티모달] Gemini 3 고속 모델',
+  'gemini-3-flash-preview': '[멀티모달] Gemini 3 Flash 프리뷰',
   'gemini-3-pro': '[멀티모달] 최신 플래그십 (1M ctx)',
+  'gemini-3-pro-preview': '[멀티모달] Gemini 3 Pro 프리뷰 (1M ctx)',
   // Gemini 2.5 시리즈 (주력)
   'gemini-2.5-pro': '[멀티모달] adaptive thinking (1M ctx)',
   'gemini-2.5-flash': '[멀티모달] 적응형 사고 (1M ctx)',
-  'gemini-2.5-flash-lite': '[텍스트] 초경량 (1M ctx)',
+  'gemini-2.5-flash-lite': '[멀티모달] 초경량, 이미지 지원 (1M ctx)',
   'gemini-2.5-flash-tts': '[오디오] TTS 특화 (저지연)',
+  'gemini-2.5-flash-preview-tts': '[오디오] Flash TTS 프리뷰 (저지연)',
+  'gemini-2.5-pro-preview-tts': '[오디오] Pro TTS 프리뷰 (저지연)',
+  'gemini-2.5-flash-lite-preview-09-2025': '[멀티모달] Flash Lite 프리뷰 (1M ctx)',
+  'gemini-2.5-computer-use-preview-10-2025': '[멀티모달][에이전트] 컴퓨터 사용 프리뷰 (1M ctx)',
   // Gemini 2.0 시리즈
   'gemini-2.0-flash': '[에이전트] 에이전트 최적화 (1M ctx)',
-  'gemini-2.0-flash-lite': '[텍스트] 초저비용 (1M ctx)',
+  'gemini-2.0-flash-lite': '[멀티모달] 초저비용, 이미지 지원 (1M ctx)',
+  'gemini-2.0-flash-exp-image-generation': '[이미지생성] Flash 이미지 생성 실험',
+  // Gemini 별칭 (latest)
+  'gemini-pro-latest': '[멀티모달] Gemini Pro 최신 별칭',
+  'gemini-flash-latest': '[멀티모달] Gemini Flash 최신 별칭',
+  'gemini-flash-lite-latest': '[멀티모달] Gemini Flash Lite 최신 별칭',
+  // Gemini 특수
+  'gemini-robotics-er-1.5-preview': '[에이전트] 로보틱스 ER 프리뷰 (1.5)',
   // Gemini 1.5 시리즈 (레거시)
   'gemini-1.5-pro': '[레거시] 장문 컨텍스트 (2M ctx)',
   'gemini-1.5-flash': '[레거시] 빠른 처리 (1M ctx)',

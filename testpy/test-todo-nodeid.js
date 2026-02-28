@@ -1,3 +1,7 @@
+/**
+ * 브라우저 테스트: 설정 > Agent Skills > TODO Node ID 로드 검증
+ * 수정사항: await 추가 + 탭 전환 재로드 + 재시도 로직
+ */
 const { chromium } = require('playwright');
 
 (async () => {
@@ -5,58 +9,44 @@ const { chromium } = require('playwright');
   const context = await browser.newContext({ viewport: null });
   const page = await context.newPage();
 
+  // 콘솔 로그 캡처
+  const logs = [];
   page.on('console', msg => {
     const t = msg.text();
-    if (t.includes('TODO') || t.includes('AccessKeys') || t.includes('401') || t.includes('저장')) {
-      console.log('[CONSOLE]', msg.type(), t);
+    if (t.includes('TODO') || t.includes('AccessKeys') || t.includes('Settings') || t.includes('ApiCache') || t.includes('user/settings')) {
+      logs.push(`[${msg.type()}] ${t}`);
     }
   });
+
+  // API 응답 캡처
   page.on('response', resp => {
     if (resp.url().includes('/api/user/settings')) {
-      console.log('[API]', resp.request().method(), resp.status());
+      console.log('[API]', resp.request().method(), resp.status(), resp.url());
     }
   });
 
-  // 1. 접속 + 강제 로그인
+  // 1. 접속 + 로그인
   await page.goto('http://localhost:5858/', { waitUntil: 'networkidle' });
 
-  // 로그아웃 후 다시 로그인하여 세션 확보
-  await page.evaluate(() => {
-    if (typeof doLogout === 'function') doLogout();
-  });
-  await page.waitForTimeout(1500);
-
-  // 로그인 폼 표시 대기
-  const loginVisible = await page.locator('#loginForm, #loginUsername').isVisible({ timeout: 5000 }).catch(() => false);
-  if (loginVisible) {
-    await page.fill('#loginUsername', 'bril');
-    await page.fill('#loginPassword', '1');
-    await page.click('#loginSubmit');
-    await page.waitForTimeout(3000);
-    console.log('[1] 로그인 완료');
-  } else {
-    // 이미 로그인 상태 → 세션 확인
-    console.log('[1] 로그인 폼 미표시 - 세션 확인 필요');
-    // 로그인 API 직접 호출
-    const loginResp = await page.evaluate(async () => {
-      const resp = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: 'bril', password: '1' })
-      });
-      return { status: resp.status, data: await resp.json() };
+  // 로그인 API 직접 호출로 세션 확보
+  const loginResp = await page.evaluate(async () => {
+    const resp = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: 'bril', password: '1' })
     });
-    console.log('[1] 로그인 API:', loginResp.status, loginResp.data.success);
-    await page.waitForTimeout(1000);
-  }
+    return { status: resp.status, data: await resp.json() };
+  });
+  console.log('[1] 로그인:', loginResp.data.success ? 'OK' : 'FAIL');
+  await page.waitForTimeout(1000);
 
   // 2. 설정 팝업 열기
   await page.evaluate(() => showSettingsLayerPopup('#basic'));
-  await page.waitForTimeout(2000);
-  console.log('[2] 설정 팝업');
+  await page.waitForTimeout(4000);
+  console.log('[2] 설정 팝업 열기 완료');
 
-  // 3. Agent Skills 활성화 + 관리자 인증
+  // 3. Agent Skills 활성화 (체크박스)
   const checked = await page.evaluate(() => {
     const el = document.getElementById('agentSkillsEnabled');
     if (el && !el.checked) {
@@ -69,41 +59,66 @@ const { chromium } = require('playwright');
   console.log('[3] Agent Skills:', checked);
   await page.waitForTimeout(1500);
 
+  // 관리자 인증 팝업 자동 처리
   const adminVis = await page.locator('#adminPasswordPopup').isVisible().catch(() => false);
   if (adminVis) {
     await page.fill('#adminPasswordInput', '1');
     await page.click('#adminPasswordConfirmBtn');
     await page.waitForTimeout(2000);
-    console.log('[3.1] 관리자 인증');
+    console.log('[3.1] 관리자 인증 통과');
   }
 
-  // 4. Agent Skills 메뉴
+  // 4. Agent Skills 탭 클릭
   const navVis = await page.locator('[data-menu="agent-skills"]').isVisible().catch(() => false);
   if (navVis) {
     await page.locator('[data-menu="agent-skills"]').click();
-    await page.waitForTimeout(3000);
-    console.log('[4] Agent Skills 메뉴');
+    await page.waitForTimeout(2000);
+    console.log('[4] Agent Skills 탭 활성');
+  } else {
+    console.log('[4] Agent Skills 탭 미표시');
   }
 
-  // 5. TODO Node ID 확인
+  // 5. TODO Node ID 확인 (첫 번째)
   const todoVis = await page.locator('#todoNodeId').isVisible().catch(() => false);
-  const loadedVal = todoVis ? await page.locator('#todoNodeId').inputValue() : '';
-  console.log('[5] TODO Node ID:', todoVis ? 'PASS' : 'FAIL', '값:', loadedVal || '(비어있음)');
+  const val1 = todoVis ? await page.locator('#todoNodeId').inputValue() : '';
+  console.log('[5] TODO Node ID (초기):', todoVis ? (val1 || '(비어있음)') : 'input 미표시');
+  console.log('[5] 결과:', val1.length > 0 ? 'PASS - 값 로드됨' : 'EMPTY - 값 없음');
 
-  if (todoVis) {
-    // 6. 저장
-    await page.locator('#todoNodeId').clear();
-    await page.locator('#todoNodeId').fill('BTW5XOTCJ0');
-    await page.locator('#btnSaveTodoNodeId').click();
-    await page.waitForTimeout(3000);
+  // 6. 탭 전환 후 재로드 테스트 (basic → agent-skills)
+  const basicTab = await page.locator('[data-menu="basic"]');
+  if (await basicTab.isVisible().catch(() => false)) {
+    await basicTab.click();
+    await page.waitForTimeout(500);
+    console.log('[6] basic 탭으로 전환');
 
-    const statusVis = await page.locator('#todoNodeIdStatus').isVisible().catch(() => false);
-    const statusTxt = statusVis ? await page.locator('#todoNodeIdStatus').textContent() : '';
-    const btnHtml = await page.locator('#btnSaveTodoNodeId').innerHTML();
-    console.log('[6] 상태:', statusVis ? 'PASS' : 'FAIL', statusTxt.trim());
-    console.log('[6] 버튼:', btnHtml.substring(0, 80));
+    const agentTab = await page.locator('[data-menu="agent-skills"]');
+    if (await agentTab.isVisible().catch(() => false)) {
+      await agentTab.click();
+      await page.waitForTimeout(2000);
+      console.log('[6] agent-skills 탭으로 복귀');
+    }
   }
 
-  await page.screenshot({ path: 'testpy/todo-node-id-test.png', fullPage: false });
-  console.log('[7] 스크린샷');
+  // 7. TODO Node ID 재확인 (탭 전환 후)
+  const val2 = await page.locator('#todoNodeId').inputValue().catch(() => '');
+  console.log('[7] TODO Node ID (탭 전환 후):', val2 || '(비어있음)');
+  console.log('[7] 결과:', val2.length > 0 ? 'PASS - 재로드 성공' : 'EMPTY');
+
+  // 8. 콘솔 로그 출력
+  console.log('\n--- 캡처된 콘솔 로그 ---');
+  logs.forEach(l => console.log(l));
+
+  // 9. 스크린샷
+  await page.screenshot({ path: 'testpy/agent-skills-todo-test.png', fullPage: false });
+  console.log('\n[9] 스크린샷: testpy/agent-skills-todo-test.png');
+
+  // 종합
+  const pass = val1.length > 0 && val2.length > 0;
+  console.log('\n=== 종합 결과 ===');
+  console.log('초기 로드:', val1.length > 0 ? 'PASS' : 'FAIL');
+  console.log('탭 전환 재로드:', val2.length > 0 ? 'PASS' : 'FAIL');
+  console.log('전체:', pass ? 'PASS' : 'FAIL');
+
+  await page.waitForTimeout(3000);
+  await browser.close();
 })().catch(e => console.error('오류:', e));

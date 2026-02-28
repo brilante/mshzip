@@ -192,7 +192,7 @@ router.get('/:toolId/qa', async (req, res) => {
       LEFT JOIN users u ON qa.user_id = u.id
       WHERE qa.tool_id = ?
         AND qa.status = 'answered'
-        AND qa.is_public = true
+        AND qa.is_public = 1
       ORDER BY qa.created_at DESC
     `, [toolId]);
 

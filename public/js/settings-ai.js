@@ -93,25 +93,21 @@
   // 모델 목록 캐시
   let modelListCache = null;
 
-  // AI 추천 정보 캐시
-  let aiRecommendations = null;
-
   // 프리페치된 공유 데이터 (중복 API 호출 방지)
   let _prefetchedData = null;
 
   /**
    * 설정 페이지 진입 시 필요한 데이터를 병렬로 프리페치
-   * models, balance, ai-services, recommendations를 한 번에 로드
+   * models, balance, ai-services를 한 번에 로드
    */
   async function prefetchSettingsData() {
     if (_prefetchedData) return _prefetchedData;
 
     const fetcher = window.ApiCache ? window.ApiCache.fetch.bind(window.ApiCache) : fetch;
-    const [modelsResp, balanceResp, servicesResp, recsResp] = await Promise.allSettled([
+    const [modelsResp, balanceResp, servicesResp] = await Promise.allSettled([
       fetcher('/api/credits/models'),
       fetcher('/api/credits/balance'),
-      fetcher('/api/credits/ai-services'),
-      fetcher('/api/ai/recommendations')
+      fetcher('/api/credits/ai-services')
     ]);
 
     _prefetchedData = {
@@ -120,21 +116,11 @@
       balance: balanceResp.status === 'fulfilled' && balanceResp.value.ok
         ? await balanceResp.value.json() : null,
       services: servicesResp.status === 'fulfilled' && servicesResp.value.ok
-        ? await servicesResp.value.json() : null,
-      recommendations: recsResp.status === 'fulfilled' && recsResp.value.ok
-        ? await recsResp.value.json() : null
+        ? await servicesResp.value.json() : null
     };
 
     return _prefetchedData;
   }
-
-  // 서비스명 매핑 (UI 서비스명 -> 추천 JSON 키)
-  const SERVICE_NAME_MAP = {
-    gpt: 'openai',
-    grok: 'xai',
-    gemini: 'google',
-    claude: 'anthropic'
-  };
 
   /**
    * 이미지 생성 전용 모델인지 확인 (텍스트 생성 불가)
@@ -213,73 +199,6 @@
     } catch (error) {
       console.warn('[AI Settings] 서버에서 모델 목록 로드 실패, 기본값 사용:', error.message);
     }
-  }
-
-  /**
-   * 서버에서 AI 추천 정보 로드
-   * response.ok 체크 추가
-   */
-  async function loadAIRecommendations() {
-    try {
-      // ApiCache 사용 (중복 호출 방지)
-      const response = window.ApiCache
-        ? await window.ApiCache.fetch('/api/ai/recommendations')
-        : await fetch('/api/ai/recommendations');
-
-      // response.ok 체크 추가
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: AI 추천 정보 로드 실패`);
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.data && data.data.recommendations) {
-        aiRecommendations = data.data.recommendations;
-        console.log('[AI Settings] AI 추천 정보 로드 완료:', Object.keys(aiRecommendations));
-      } else {
-        console.log('[AI Settings] AI 추천 정보 없음');
-        aiRecommendations = null;
-      }
-    } catch (error) {
-      console.warn('[AI Settings] AI 추천 정보 로드 실패:', error.message);
-      aiRecommendations = null;
-    }
-  }
-
-  /**
-   * 모델이 추천 모델인지 확인
-   * @param {string} service - UI 서비스명 (gpt, grok, gemini 등)
-   * @param {string} modelName - 모델명
-   * @returns {Object|null} 추천 정보 (type: '최고성능' | '가성비') 또는 null
-   */
-  function isModelRecommended(service, modelName) {
-    if (!aiRecommendations || !modelName) return null;
-
-    // 서비스명 매핑
-    const mappedService = SERVICE_NAME_MAP[service];
-    if (!mappedService || !aiRecommendations[mappedService]) return null;
-
-    const rec = aiRecommendations[mappedService];
-
-    // 최고 성능 모델 확인 (모델명 부분 일치)
-    if (rec.best_performance?.model) {
-      const bestPerfModel = rec.best_performance.model.toLowerCase();
-      const checkModel = modelName.toLowerCase();
-      if (checkModel.includes(bestPerfModel) || bestPerfModel.includes(checkModel)) {
-        return { type: t('aiBestPerformance', '최고성능'), badge: 'best-perf' };
-      }
-    }
-
-    // 가성비 모델 확인 (모델명 부분 일치)
-    if (rec.best_value?.model) {
-      const bestValueModel = rec.best_value.model.toLowerCase();
-      const checkModel = modelName.toLowerCase();
-      if (checkModel.includes(bestValueModel) || bestValueModel.includes(checkModel)) {
-        return { type: t('aiBestValue', '가성비'), badge: 'best-value' };
-      }
-    }
-
-    return null;
   }
 
   // API Key 검증 상태 (서비스별)
@@ -394,9 +313,6 @@
 
       // 모델 목록 로드
       await loadModelList();
-
-      // AI 추천 정보 로드
-      await loadAIRecommendations();
 
       // UI에 설정 적용
       applyAISettingsToUI();
@@ -1376,9 +1292,11 @@
     const multiAiToggle = document.getElementById('multiAIEnabled');
     if (multiAiToggle) multiAiToggle.checked = currentAISettings.multiAiEnabled;
 
-    // 결제 통화
+    // 결제 통화 (구독 중 통화 고정 상태면 덮어쓰기 방지)
     const currencySelect = document.getElementById('paymentCurrency');
-    if (currencySelect) currencySelect.value = currentAISettings.paymentCurrency || 'USD';
+    if (currencySelect && !currencySelect.disabled) {
+      currencySelect.value = currentAISettings.paymentCurrency || 'USD';
+    }
 
     // 각 AI 서비스 카드 설정
     AI_SERVICES.forEach(service => {
@@ -1778,15 +1696,7 @@
     models.forEach(model => {
       const option = document.createElement('option');
       option.value = model.value;
-
-      // 추천 모델 여부 확인
-      const recommended = isModelRecommended(service, model.value);
-      if (recommended) {
-        option.classList.add('recommended-option');
-        option.textContent = `${model.label} (${recommended.type})`;
-      } else {
-        option.textContent = model.label;
-      }
+      option.textContent = model.label;
 
       if (model.value === selectedModel) {
         option.selected = true;

@@ -9,9 +9,26 @@
 |------|-----|
 | **URL** | `http://localhost:5858/` (`.env` PORT 확인) |
 | **계정 (Admin, OAuth)** | `.env` TEST_ADMIN_USERNAME / TEST_ADMIN_PASSWORD |
-| **계정 (Playwright)** | `bril` / `1` (로컬 로그인, email: brilante33@gmail.com) |
+| **계정 (Playwright)** | `Brilante33` / `Zkfltmak33` (`.env` TEST_ADMIN 계정, OAuth) |
 | **관리자 비밀번호** | `1` (관리자 인증 팝업 → 입력값 `1` 입력 후 확인) |
 | **테스트 카드** | `testpy/md5/테스트 카드 정보.md` 참조 |
+
+### 관리자 인증 팝업 자동 처리
+
+브라우저 테스트 또는 UI 조작 중 **"관리자 인증"** 팝업이 표시되면 자동으로 처리:
+1. 비밀번호 입력란에 `1` 입력
+2. **확인** 버튼 클릭
+
+Playwright 코드 예시:
+```javascript
+// 관리자 인증 팝업 감지 시 자동 처리
+const adminPasswordInput = await page.$('.admin-auth-modal input[type="password"], #adminPassword');
+if (adminPasswordInput) {
+  await adminPasswordInput.fill('1');
+  const confirmBtn = await page.$('.admin-auth-modal .btn-primary, .admin-auth-modal button:has-text("확인")');
+  if (confirmBtn) await confirmBtn.click();
+}
+```
 
 ## 프로젝트 개요
 
@@ -22,44 +39,100 @@
 
 ## 마인드맵 연동 설정
 
+### 연동 MyMind3 계정 (Claude Code ↔ MyMind3 연결 기준)
+
+> Claude Code와 MyMind3를 연동하는 계정은 `brilante33` (`.env` TEST_ADMIN 계정).
+> Access Key 인증으로 마인드맵 API에 접근하며, user_settings에서 todoRootNodeId를 조회해 TODO 이력을 기록함.
+
+| 항목 | 값 | 출처 |
+|------|-----|------|
+| **연동 사용자명** | `brilante33` | `.env` `TEST_ADMIN_USERNAME` (Access Key 소유자) |
+| **연동 이메일** | `brilante33@gmail.com` | `.env` `TEST_ADMIN_EMAIL` |
+| **인증 키 파일** | `G:/USER/brilante33/.mymindmp3` | Access Key (sha256 해시) |
+| **저장소 해시** | `JDJiJDEwJFFHcE9Tc3pkWkl2bDZncjVKWm5pdmVjVnR2bXEvbXguNDVURnVVQ2JzTFVxcklnOVVlL1NXUeWah5faIQcX66ccmeX4` | brilante33 계정 마인드맵 저장소 |
+| **저장소 물리경로** | `save/2025/202512/20251217/{저장소 해시}/` | 날짜 기반 경로 (DB `user_id_mapping.date_path`) |
+
+> Hook들은 `GET /api/user/settings → data.todoRootNodeId`에서 실시간 조회하여 사용. **하드코딩 금지.**
+
+### 저장소 경로 아키텍처
+
+**경로 구조**: 날짜 기반 경로 (`save/{yyyy}/{yyyyMM}/{yyyyMMdd}/{hash}/`) + 레거시 경로 (`save/{hash}/`)
+
+```
+save/
+├── 2025/202512/20251217/           ← 날짜 기반 (신규 사용자)
+│   └── JDJiJDEw...UeWah5fa.../    ← brilante33 저장소 해시
+│       ├── .userid                 ← 소유자 식별 파일 ("brilante33")
+│       ├── {마인드맵명}/           ← 마인드맵 폴더
+│       │   └── {마인드맵명}.json
+│       └── 기획 마인드맵/
+│           └── ...
+└── JDJiJDEw.../                    ← 레거시 경로 (기존 사용자, date_path 없음)
+```
+
+**핵심 테이블**: `user_id_mapping` (PostgreSQL)
+
+| 컬럼 | 설명 | 예시 |
+|------|------|------|
+| `user_id` | 사용자명 (UNIQUE 키) | `brilante33` |
+| `user_id_hash` | bcrypt+base64 해시 (100자) | `JDJiJDEwJFFH...` |
+| `date_path` | 날짜 경로 | `2025/202512/20251217` |
+| `legacy_folder` | 레거시 폴더 (base64) | `YnJpbGFudGUzMw==` |
+
+**경로 해석 흐름** (`resolveUserPath(username)`):
+1. `user_id_mapping`에서 `user_id = username` 조회
+2. `date_path` 있으면 → `save/{date_path}/{hash}/` (날짜 기반)
+3. `date_path` 없으면 → `save/{hash}/` (레거시)
+
+**폴더 소유자 확인**: `.userid` 마커 파일 (텍스트, 소유자 username 기록). `getUserFolder()` 4단계 폴백:
+1. 소유 날짜 디렉토리 (`.userid` 일치)
+2. 소유 레거시 디렉토리 (`.userid` 일치)
+3. 날짜 디렉토리 (소유 무관, 마인드맵 존재)
+4. 레거시 디렉토리 (소유 무관, 마인드맵 존재)
+
 ### 기획 마인드맵 (기본)
 
 | 항목 | 값 |
 |------|-----|
 | **마인드맵 ID** | `개발자가 AI 길들이는 데 6개월 걸린 이유 (시행착오 전부 공개)_1` |
+| **저장소** | `JDJiJDEwJFFHcE9Tc3pkWkl2bDZncjVKWm5pdmVjVnR2bXEvbXguNDVURnVVQ2JzTFVxcklnOVVlL1NXUeWah5faIQcX66ccmeX4` (brilante33 계정) |
 | **서버** | `http://localhost:{PORT}` (`.env` PORT 값 사용, 기본 5858) |
 | **인증** | `X-Access-Key-Hash` (sha256, 키 파일: `G:/USER/brilante33/.mymindmp3`) |
-| **규칙 노드 ID** | `ZCMJPYR5R4` (동적 규칙 저장소) |
 | **종합 CC 노드** | `8QIA56Z3PS` |
 | **헬퍼** | `node testpy/mm-api.js <명령> [args]` |
 
-### 프로젝트 TODO 마인드맵 (이력 관리)
+### TODO 마인드맵 (이력 관리)
 
 | 항목 | 값 |
 |------|-----|
-| **마인드맵 ID** | `프로젝트 TODO` |
-| **이력 루트 노드** | `BTW5XOTCJ0` |
+| **마인드맵 ID** | user_settings API 동적 조회 (마인드맵명 하드코딩 금지) |
+| **저장소** | `JDJiJDEwJFFHcE9Tc3pkWkl2bDZncjVKWm5pdmVjVnR2bXEvbXguNDVURnVVQ2JzTFVxcklnOVVlL1NXUeWah5faIQcX66ccmeX4` (brilante33 계정) |
+| **이력 루트 노드** | user_settings API 동적 조회: `GET /api/user/settings → data.todoRootNodeId` (하드코딩 금지) |
 | **헬퍼** | `node testpy/mm-api.js --mm todo <명령> [args]` |
 
 ### 세션 시작 규칙
 
-> **필수 순서**: 명령 접수 → ① TODO 이력 기록 → ② CC체크 (규칙 로드)
+> ⚠️ **절대 원칙**: 사용자 명령 수신 시 **첫 번째 행동은 반드시 TODO 등록**.
+> TODO 등록 완료 전에는 **서버 재시작 명령을 제외한 어떠한 명령도 수행 불가**.
+> (이 규칙은 command-log-enforcer Hook이 강제 차단으로 실행함)
 
-1. 마인드맵 서버(`localhost:{PORT}`, `.env` PORT 참조) 접근 가능 여부 확인
-2. **[TODO] 명령 노드 등록**: `BTW5XOTCJ0` → `yyyy` → `yyyyMM` → `yyyyMMdd` 경로 탐색/생성 → `--set-current`로 명령 노드 생성
-   - command-log-enforcer 차단이 해제되는 시점 (상태파일 생성)
+> **필수 순서**: 명령 접수 → ① **TODO 등록 (최우선, 차단 해제 조건)** → ② 작업 수행 → ③ CC체크
+
+1. **[TODO 등록 — 최우선]** 마인드맵 서버 확인 후 즉시 명령 노드 등록:
+   - `todoRootNodeId`(user_settings API 자동 조회) → `yyyy` → `yyyyMM` → `yyyyMMdd` 경로 탐색/생성
+   - `--set-current`로 명령 노드 생성 → 이 시점에 모든 도구 차단 해제
    - 명령 노드 제목: 사용자 실제 명령 요약 (범용 제목 금지)
-3. **[CC체크] 규칙 노드 읽기**: `/기획 R ZCMJPYR5R4` → 현재 Sprint 규칙, 임시 제약사항, 특수 코딩 규칙 로드
-   - cc-check-validator가 TODO 상태파일 확인 후 자동 실행 (세션당 1회)
-4. **최근 이력 확인**: 오늘 날짜 노드의 마지막 명령 번호 확인 (다음 번호 결정)
-5. 서버 미실행 시 → 정적 규칙(`.claude/rules/`)만으로 동작, 경고 출력
+   - **⚠️ TODO 등록 전 시도 가능한 명령: `mm-api.js` 호출, 서버 재시작만 허용**
+2. **[CC체크] 검증**: cc-check-validator가 TODO 상태파일 확인 후 자동 실행 (세션당 1회)
+3. **최근 이력 확인**: 오늘 날짜 노드의 마지막 명령 번호 확인 (다음 번호 결정)
+4. 서버 미실행 시 → 정적 규칙(`.claude/rules/`)만으로 동작, 경고 출력
 
-### 명령 이력 기록 규칙 (프로젝트 TODO)
+### 명령 이력 기록 규칙 (TODO)
 
-**구조**: `BTW5XOTCJ0` → `yyyy` (년도) → `yyyyMM` (년월) → `yyyyMMdd` (년월일) → `N. 명령내용` (순번) → 3-노드 구조
+**구조**: `todoRootNodeId`(user_settings API 실시간 조회) → `yyyy` (년도) → `yyyyMM` (년월) → `yyyyMMdd` (년월일) → `N. 명령내용` (순번) → 3-노드 구조
 
 ```
-BTW5XOTCJ0 (프로젝트 TODO)
+<todoRootNodeId> (TODO, user_settings에서 조회)
 ├── 2026 (년도)
 │   └── 202602 (년월)
 │       └── 20260225 (년월일)
@@ -88,15 +161,23 @@ BTW5XOTCJ0 (프로젝트 TODO)
 
 **`--set-current` 필수**: 명령 노드 생성 시 반드시 `--set-current`를 붙여야 세션 종료 시 해당 노드 하위에 세션 요약이 기록됨. 상태 파일: `.claude/current-command-node-{SSE_PORT}` (세션별 고유, `CLAUDE_CODE_SSE_PORT` 환경변수 기반)
 
+**상태파일 생성/복원 원칙**:
+- `--set-current` 실행 시: 로컬 상태파일 + `POST /api/user/settings { currentCommandNodeId }` **동시 저장**
+- 새 세션 시작 시 (상태파일 없음): `GET /api/user/settings → currentCommandNodeId` 조회 후 상태파일 자동 생성 → 직접 통과
+- 사용자가 노드를 변경 시: `node testpy/mm-api.js set-current <nodeId>` 로 파일+API 동기화
+
 **헬퍼 사용법**:
 ```bash
+# user_settings API에서 동적 조회: GET /api/user/settings → data.todoRootNodeId
+# 실제 루트ID는 user-prompt-submit.js가 안내를 맡 때 자동 주입함 (로컬 하드코딩 금지)
+
 # 3단계 경로 탐색 (년도 → 년월 → 년월일)
-node testpy/mm-api.js --mm todo children BTW5XOTCJ0          # → 년도 노드 목록
+node testpy/mm-api.js --mm todo children <todoRootNodeId>    # → 년도 노드 목록
 node testpy/mm-api.js --mm todo children <년도노드ID>         # → 년월 노드 목록
 node testpy/mm-api.js --mm todo children <년월노드ID>         # → 년월일 노드 목록
 
 # 없는 단계 생성 (년도 → 년월 → 년월일 순서)
-node testpy/mm-api.js --mm todo add-child BTW5XOTCJ0 "2026"
+node testpy/mm-api.js --mm todo add-child <todoRootNodeId> "2026"
 node testpy/mm-api.js --mm todo add-child <년도노드ID> "202602"
 node testpy/mm-api.js --mm todo add-child <년월노드ID> "20260225"
 
@@ -186,6 +267,7 @@ Plan Mode 내 필수 산출물:
 - `security.md` - 보안 규칙 (SQL Injection, XSS, API 키)
 - `api.md` - API 설계 규칙 (RESTful, 에러 코드)
 - `browser-test.md` - 브라우저 테스트 규칙
+- **`guide.md` - CC체크 시스템 전체 가이드 (EUDC5SXHH7 기획 기반, Hook/Skill/Rules/세션 상세 명세)**
 
 ### Skills 역할 전문화
 
@@ -272,7 +354,8 @@ Plan Mode 내 필수 산출물:
 
 | 원칙 | 설명 |
 |------|------|
-| **명령 이력 기록 필수** | **사용자 명령 수신 즉시** `--set-current`로 명령 노드 생성이 최우선. 코드 작성보다 먼저 실행 |
+| **TODO 등록 첫 번째 (강제)** | **사용자 명령 수신 시 첫 번째 행동은 TODO 등록**. TODO 완료 전 서버 재시작을 제외한 모든 명령 차단 (Hook 강제). `mm-api.js --set-current` 실행이 모든 작업보다 먼저 |
+| **3-노드 구조 필수** | 명령 노드 하위에 반드시 3개 노드 생성: ① 작업 전 `명령 수행 계획수립` ② 작업 후 `수행 및 테스트 결과` ③ 세션 종료 시 `세션 요약`(자동). ①②를 누락하면 절차 위반. |
 | 서버 경유 필수 | `fetch('/api/...')` (외부 API 직접 호출 금지) |
 | Git 쓰기 제한 | add/commit/push → 사용자 요청 필수 |
 | 유니코드 이스케이프 금지 | `ensure_ascii=False` 필수 |
@@ -281,6 +364,8 @@ Plan Mode 내 필수 산출물:
 | 노드 접근 API 필수 | 노드ID로 읽기/쓰기/하위 생성 등 모든 노드 조작은 반드시 `/기획` 스킬 또는 API(`/api/skill/node/...`) 경유 |
 | 노드ID 패턴 자동 인식 | 영숫자 10자리 패턴(예: `YU23DJ8GJQ`)은 노드ID → `/기획` 스킬 자동 사용 |
 | **참고소스 동등 구현 필수** | 참고소스(`G:\MyWrok\mymind3`)를 확인하고 구현할 때 간소화/축약 금지. 참고소스와 동등한 수준으로 완전 구현 |
+| **SQLite 사용 절대 금지** | SQLite(`sqlite3`, `better-sqlite3`, `sql.js` 등) 사용 금지. 모든 데이터베이스는 **PostgreSQL**만 사용. SQLite 관련 패키지 설치(`npm install sqlite3` 등), `require('sqlite3')`, SQLite 파일(`.sqlite`, `.db`) 생성 일체 금지 |
+| **테스트 계정 하드코딩 절대 금지** | 사용자명, 비밀번호, 이메일을 코드에 직접 문자열로 쓰지 않는다. 반드시 `.env` 환경변수(`TEST_ADMIN_USERNAME`, `TEST_ADMIN_PASSWORD`, `TEST_ADMIN_EMAIL`)를 `process.env`로 읽어 사용. 주석/JSDoc 예시에도 실제 계정명 대신 `username`, `testUser` 등 일반 placeholder 사용. 프론트엔드는 서버 API 경유 또는 role 기반 판별 사용 |
 
 ### SVG 아이콘 단색 원칙
 
@@ -319,32 +404,41 @@ Plan Mode 내 필수 산출물:
 
 ### Hook 실행 체인 (PreToolUse)
 
-도구 호출 시 아래 순서로 Hook이 순차 실행됨. 앞 단계에서 `exit(1)` 시 도구 호출 차단.
+도구 호출 시 아래 순서로 Hook이 순차 실행됨. **`exit(2)`** 시 도구 호출 차단 (`exit(1)` 은 non-blocking이므로 사용하지 않음).
+
+> **핵심 원칙**: `command-log-enforcer`가 `*` 매찬로 **모든 도구의 첫 번째 관문**. TODO 미등록 시 Bash/Read/Grep/Glob/Write/Edit/Task 등 **전부 차단**.
 
 | 순서 | Hook | matcher | 역할 | 차단 조건 |
 |------|------|---------|------|-----------|
-| 1 | `check-dangerous.js` | Bash | 위험 명령 차단/경고 | BLOCKED 11종 → exit(1), WARNED 6종 → 경고 |
-| 2 | `command-log-enforcer.js` | Bash | **[TODO] 명령 이력 차단** | 서버 정상 + 상태 파일 없음 → **exit(1) 차단** (mm-api.js 등 예외 통과). 날짜 경로 자동 생성 후 차단 |
-| 3 | `command-log-enforcer.js` | Write\|Edit | **[TODO] 명령 이력 차단** | 상태 파일 없음 → exit(1) 차단. 서버 미실행 시만 통과 |
-| 4 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 8종 → exit(1) |
-| 5 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → exit(1) |
-| 6 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → exit(1), 나머지 → 경고 |
-| 7 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (15종 도구명 인식, detail 기록) |
-| 8 | `cc-check-validator.js` | * (전체) | **[CC체크] 정합성 검증** | TODO 상태파일 없으면 건너뜀. 상태파일 있으면 세션당 1회 실행, 차단 없음 (경고만) |
+| 1 | `command-log-enforcer.js` | **\* (전체)** | **[TODO 게이트] 모든 도구 일괄 차단** | 상태파일 없음 → **exit(2)**. 예외: mm-api.js/--set-current(데드락 방지) + 서버 재시작 패턴만 통과. **그 외 어떠한 명령도 차단** |
+| 2 | `check-dangerous.js` | Bash | 위험 명령 차단/경고 | BLOCKED 11종 → **exit(2)**, WARNED 6종 → 경고 |
+| 3 | `protect-sensitive.js` | Write\|Edit | 민감 파일 보호 | .env, .pem, .key 등 9종 → **exit(2)** |
+| 4 | `validate-output.js` | Write\|Edit | 출력 검증 | JSON 무효 또는 유니코드 이스케이프 → **exit(2)** |
+| 5 | `security-scan.js` | Write\|Edit | 보안 취약점 탐지 | eval/SQL Injection/API키 → **exit(2)**, 나머지 → 경고 |
+| 6 | `log-action.js` | * (전체) | 액션 로깅 | 차단 없음 (16종 도구명 인식, detail 기록) |
+| 7 | `cc-check-validator.js` | * (전체) | **[CC체크] 정합성 검증** | TODO 상태파일 없으면 건너뜀. 있으면 세션당 1회 실행, 차단 없음 (경고만). session_id 기반 격리 |
+
+> **훅 수 정리**: PreToolUse `*(1)` → `Bash(1)` → `Write|Edit(3)` → `*(2)` = PreToolUse **7개** + Stop **1개** = **전체 8개**
 
 ### Stop 이벤트
 
 | Hook | 역할 |
 |------|------|
-| `session-summary.js` | 세션 종료 시 로그 파일에 총 액션 수 요약 추가 + 프로젝트 TODO에 세션 요약 기록 |
+| `session-summary.js` | 세션 종료 시 로그 파일에 총 액션 수 요약 추가 + TODO에 세션 요약 기록 |
+
+### UserPromptSubmit 이벤트
+
+| Hook | 역할 |
+|------|------|
+| `user-prompt-submit.js` | TODO 상태파일 없으면 **명령 등록 절차 안내를 Claude 컨텍스트에 주입** (프롬프트 수신 시점, 차단 없음). 상태파일 있으면 조용히 통과 |
 
 ### 이벤트 요약
 
 | 이벤트 | 동작 |
 |--------|------|
-| SessionStart | 환경 점검, 미완료 작업 복구 |
-| PreToolUse | **8단계 체인**: 위험차단 → **[TODO]차단** → 보호 → 검증 → 탐지 → 로깅 → **[CC체크]** |
-| Stop | 세션 요약 생성 |
+| **UserPromptSubmit** | `user-prompt-submit.js`: TODO 미등록 시 **명령 등록 절차 안내 주입** |
+| PreToolUse | **7단계 체인**: **[TODO]차단(exit 2)** → 위험차단(exit 2) → 보호 → 검증 → 탐지 → 로깅 → **[CC체크]** |
+| Stop | `session-summary.js`: 세션 요약 생성 |
 
 ## CC체크 자동 검증 (EUDC5SXHH7 기획 기반)
 
@@ -352,7 +446,7 @@ Plan Mode 내 필수 산출물:
 
 | # | 구성 요소 | 검증 기준 | 필수 수량 |
 |---|----------|---------|----------|
-| 1 | PreToolUse Hook Chain | settings.json 순서: Bash(2개)→Write\|Edit(4개)→*(2개) | 8개 훅 |
+| 1 | PreToolUse Hook Chain | settings.json 순서: *(1개)→Bash(1개)→Write\|Edit(3개)→*(2개) = PreToolUse 7개 + Stop 1개 = 전체 8개 | 7개 PreToolUse 훅 |
 | 2 | Hook 파일 | check-dangerous, command-log-enforcer, protect-sensitive, validate-output, security-scan, log-action, session-summary, cc-check-validator | 8개 |
 | 3 | Rules 파일 | general, api, security, browser-test, command-log | 5개 |
 | 4 | Skills | 기획, 팀즈, browser-test, ralph-checker, pr-review, kill-server, 노드추출 | 7개 |
@@ -380,9 +474,9 @@ node .claude/hooks/cc-check-validator.js
 | protect-sensitive.js | 보호 대상 9종 (.env, .pem, .key, id_rsa, id_ed25519, credentials.json, .mymindmp3, .htpasswd, shadow) |
 | validate-output.js | JSON 검증 + 유니코드 이스케이프 + Edit(new_string) 검사 |
 | security-scan.js | BLOCK 3패턴(eval, SQL Injection, API키) + WARN 6패턴 |
-| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 서버 접속 확인 + 날짜 경로만 자동 생성 + **차단(exit 1)** (서버 미실행 시만 exit 0) |
+| command-log-enforcer.js | SSE_PORT 기반 상태 파일 확인 + 2단계 fallback + 서버 접속 확인 + 날짜 경로만 자동 생성 + **차단(exit 2)** + hookSpecificOutput JSON (서버 미실행 시만 exit 0) |
 | log-action.js | 16종 도구 인식 + 25가지 Bash 분류 |
-| session-summary.js | 3단계 fallback + SSE_PORT 격리 + 상태 파일 삭제 |
+| session-summary.js | 3단계 fallback + SSE_PORT 격리 + 상태 파일 삭제 + **lok_ 토큰 만료 검증 후 폴백** |
 
 ## 세션 복구
 

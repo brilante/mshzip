@@ -282,23 +282,69 @@ window.MyMind3.Features.Search = (function() {
     }
   }
 
+  // ============ 노드ID 패턴 감지 ============
+
+  /**
+   * 노드ID 패턴 여부 확인 (영숫자 10자리)
+   * @param {string} str - 검사 문자열
+   * @returns {boolean}
+   */
+  function isNodeIdPattern(str) {
+    return /^[A-Za-z0-9]{10}$/.test(str);
+  }
+
+  /**
+   * id: 접두사 검색 파싱
+   * @param {string} query - 원본 검색어
+   * @returns {{ mode: string, value: string }}
+   *   mode: 'nodeId' (id: 접두사) | 'auto' (10자리 패턴) | 'normal' (일반)
+   */
+  function parseSearchQuery(query) {
+    // id: 또는 ID: 접두사
+    const idPrefixMatch = query.match(/^id:\s*(.+)$/i);
+    if (idPrefixMatch) {
+      return { mode: 'nodeId', value: idPrefixMatch[1].trim() };
+    }
+    // 영숫자 10자리 패턴 → 노드ID 우선 검색
+    if (isNodeIdPattern(query)) {
+      return { mode: 'auto', value: query };
+    }
+    return { mode: 'normal', value: query };
+  }
+
+  /**
+   * 노드ID 정확 매칭 시 해당 노드 자동 선택 (클릭)
+   * @param {Element} nodeEl - 노드 DOM 요소
+   */
+  function autoSelectNode(nodeEl) {
+    if (!nodeEl) return;
+    // 스크롤
+    nodeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    // 약간의 딜레이 후 클릭으로 선택
+    setTimeout(function() {
+      nodeEl.click();
+    }, 300);
+  }
+
   /**
    * 검색 실행 (비동기 - 콘텐츠 검색 포함)
    */
   async function handleSearch() {
-    const query = searchInput.value.trim();
+    const rawQuery = searchInput.value.trim();
 
-    if (query.length === 0) {
+    if (rawQuery.length === 0) {
       showToastMessage(t('searchEmptyQuery', '검색어를 입력해주세요.'), 'warning');
       return;
     }
 
-    if (query.length < 1) {
+    if (rawQuery.length < 1) {
       showToastMessage(t('searchMinLength', '검색어는 1자 이상 입력해주세요.'), 'warning');
       return;
     }
 
-    currentSearchQuery = query;
+    // 검색 모드 파싱 (id: 접두사 또는 10자리 패턴)
+    const parsed = parseSearchQuery(rawQuery);
+    currentSearchQuery = parsed.value;
     searchResults = [];
 
     // 기존 하이라이트 제거
@@ -311,13 +357,15 @@ window.MyMind3.Features.Search = (function() {
     }
 
     try {
-      // 콘텐츠가 사전 로드되지 않았으면 로드
-      if (!isContentLoaded && currentFolder) {
-        await preloadAllNodeContents();
+      // 노드ID 전용 모드가 아닌 경우에만 콘텐츠 사전 로드
+      if (parsed.mode === 'normal') {
+        if (!isContentLoaded && currentFolder) {
+          await preloadAllNodeContents();
+        }
       }
 
-      // 노드 검색 (제목 + 콘텐츠 + 노드ID)
-      await searchAllNodes(query);
+      // 노드 검색
+      await searchAllNodes(parsed.value, parsed.mode);
 
       // 결과 표시
       updateResultCount();
@@ -325,17 +373,22 @@ window.MyMind3.Features.Search = (function() {
       // 검색 활성화 상태
       isSearchActive = true;
 
+      // 노드ID 정확 매칭이 1건이면 자동 선택
+      if ((parsed.mode === 'nodeId' || parsed.mode === 'auto') && searchResults.length === 1) {
+        autoSelectNode(searchResults[0].element);
+      }
+
       // 현재 에디터/프리뷰에 키워드 하이라이트 적용
       // DOM 준비 확인 후 하이라이트 적용
       requestAnimationFrame(function() {
         const editorEl = document.querySelector('.toastui-editor-contents');
         const previewEl = document.querySelector('.custom-preview-container');
         if (editorEl || previewEl) {
-          highlightEditorContent(query);
+          highlightEditorContent(parsed.value);
         } else {
           // 폴백: DOM이 아직 준비되지 않은 경우 지연 실행
           setTimeout(function() {
-            highlightEditorContent(query);
+            highlightEditorContent(parsed.value);
           }, 100);
         }
       });
@@ -356,8 +409,10 @@ window.MyMind3.Features.Search = (function() {
    * 모든 노드에서 검색 (제목 + 콘텐츠 + 노드ID)
    * 데이터 트리를 직접 순회하여 접힌 노드도 검색 가능
    * @param {string} query - 검색어
+   * @param {string} mode - 검색 모드 ('normal' | 'nodeId' | 'auto')
    */
-  async function searchAllNodes(query) {
+  async function searchAllNodes(query, mode) {
+    mode = mode || 'normal';
     const lowerQuery = query.toLowerCase();
     const upperQuery = query.toUpperCase();
 
@@ -369,21 +424,42 @@ window.MyMind3.Features.Search = (function() {
       const title = node.title || '';
       const lowerTitle = title.toLowerCase();
 
-      let matchInTitle = lowerTitle.includes(lowerQuery);
+      let matchInTitle = false;
       let matchInContent = false;
       let matchInNodeId = false;
 
-      // 노드 콘텐츠 검색 (캐시된 콘텐츠, 내부 id 키)
-      const cachedContent = nodeContentCache.get(String(node.id)) || '';
-      if (cachedContent.toLowerCase().includes(lowerQuery)) {
-        matchInContent = true;
-      }
+      if (mode === 'nodeId') {
+        // 노드ID 전용 검색 (id: 접두사)
+        if (node.nodeId) {
+          const upperNodeId = node.nodeId.toUpperCase();
+          if (upperNodeId.includes(upperQuery)) {
+            matchInNodeId = true;
+          }
+        }
+      } else if (mode === 'auto') {
+        // 10자리 패턴: 노드ID 정확 매칭 우선, 없으면 일반 검색 폴백
+        if (node.nodeId) {
+          const upperNodeId = node.nodeId.toUpperCase();
+          if (upperNodeId === upperQuery) {
+            matchInNodeId = true; // 정확 매칭
+          }
+        }
+      } else {
+        // 일반 검색: 제목 + 콘텐츠 + 노드ID 통합
+        matchInTitle = lowerTitle.includes(lowerQuery);
 
-      // 노드 ID 검색 (대소문자 무시)
-      if (node.nodeId) {
-        const upperNodeId = node.nodeId.toUpperCase();
-        if (upperNodeId.includes(upperQuery)) {
-          matchInNodeId = true;
+        // 노드 콘텐츠 검색 (캐시된 콘텐츠, 내부 id 키)
+        const cachedContent = nodeContentCache.get(String(node.id)) || '';
+        if (cachedContent.toLowerCase().includes(lowerQuery)) {
+          matchInContent = true;
+        }
+
+        // 노드 ID 검색 (대소문자 무시)
+        if (node.nodeId) {
+          const upperNodeId = node.nodeId.toUpperCase();
+          if (upperNodeId.includes(upperQuery)) {
+            matchInNodeId = true;
+          }
         }
       }
 
@@ -396,6 +472,16 @@ window.MyMind3.Features.Search = (function() {
           matchInNodeId: matchInNodeId
         });
       }
+    }
+
+    // auto 모드에서 정확 매칭이 없으면 일반 검색으로 폴백
+    if (mode === 'auto' && matchedNodes.length === 0) {
+      console.log('[Search] 노드ID 정확 매칭 없음 → 일반 검색 폴백');
+      // 콘텐츠 사전 로드 (아직 안 됐으면)
+      if (!isContentLoaded && currentFolder) {
+        await preloadAllNodeContents();
+      }
+      return searchAllNodes(query, 'normal');
     }
 
     // 매칭 노드 중 DOM에 없는 노드가 있으면 조상 펼침 필요
@@ -482,15 +568,27 @@ window.MyMind3.Features.Search = (function() {
   }
 
   /**
-   * 검색 결과 카운트 업데이트 (간단히 숫자만 표시)
+   * 검색 결과 카운트 업데이트 (유형별 표시)
    */
   function updateResultCount() {
     if (!resultCount) return;
 
     const count = searchResults.length;
+    const nodeIdMatches = searchResults.filter(function(r) { return r.matchInNodeId; }).length;
+    const titleMatches = searchResults.filter(function(r) { return r.matchInTitle; }).length;
+    const contentMatches = searchResults.filter(function(r) { return r.matchInContent; }).length;
 
     if (count > 0) {
-      resultCount.textContent = count + '개';
+      // 노드ID 매칭이 있으면 유형별 표시
+      if (nodeIdMatches > 0 && (titleMatches > 0 || contentMatches > 0)) {
+        var parts = [];
+        if (nodeIdMatches > 0) parts.push('ID:' + nodeIdMatches);
+        if (titleMatches > 0) parts.push(t('searchMatchTitle', '제목') + ':' + titleMatches);
+        if (contentMatches > 0) parts.push(t('searchMatchContent', '내용') + ':' + contentMatches);
+        resultCount.textContent = count + t('searchResultUnit', '개') + ' (' + parts.join(', ') + ')';
+      } else {
+        resultCount.textContent = count + t('searchResultUnit', '개');
+      }
       resultCount.classList.remove('no-results');
     } else {
       resultCount.textContent = t('zeroResults', '0개');

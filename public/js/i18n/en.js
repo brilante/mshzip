@@ -456,7 +456,7 @@ window.i18n_en = {
   downloadBtn: 'Download',
 
   // Mindmap Search
-  searchPlaceholder: 'Search nodes...',
+  searchPlaceholder: 'Search (title, content, id:nodeID)...',
   searchButton: 'Search',
   searchResultCount: '{count} found',
   searchNoResults: 'No results',
@@ -1321,7 +1321,7 @@ window.i18n_en = {
   menuSecurity: 'Security',
   menuToolSettings: 'Tool Settings',
   agentSkillsLabel: 'Use Agent Skills',
-  agentSkillsDesc: 'Claude Code Skill settings',
+  agentSkillsDesc: 'Claude Code Agent Skills settings',
   agentSkillsTitle: 'Agent Skills Connection',
   agentSkillsDescription: 'Connect with Claude Code Agent Skills to directly access node documents.',
   securityTitle: 'Security',
@@ -1417,7 +1417,7 @@ window.i18n_en = {
   saveBtn: 'Save',
   serverUrlHint: 'Change server address when accessing from another computer.',
   keyFilePathLabel: 'Key File Path',
-  keyFilePathPlaceholder: 'e.g.: C:\\Users\\bril\\.mymindmp3',
+  keyFilePathPlaceholder: 'e.g.: C:\\Users\\{username}\\.mymindmp3',
   keyFilePathHint: 'Set the path for the downloaded .mymindmp3 file.',
   selectKeyPlaceholder: 'Select key to test...',
   connectionTestBtn: 'Connection Test',

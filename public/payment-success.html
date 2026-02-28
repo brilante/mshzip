@@ -490,7 +490,7 @@
         try {
           const res = await fetch('/api/credits/payment-alerts', { credentials: 'include' });
           const data = await res.json();
-          if (!data.success || !data.data || data.data.length === 0) return;
+          if (!data.success || !Array.isArray(data.data) || data.data.length === 0) return;
 
           const container = document.getElementById('alertContainer');
           data.data.forEach(alert => {

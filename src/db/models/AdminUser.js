@@ -41,6 +41,33 @@ const ARGON2_OPTIONS = {
 
 const AdminUser = {
   /**
+   * admin_users 테이블 생성 (없으면 생성)
+   * 마이그레이션 013_admin_users_postgres.sql 기반
+   */
+  async initTable() {
+    try {
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS admin_users (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL UNIQUE,
+          admin_password TEXT NOT NULL,
+          is_active INTEGER DEFAULT 1,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          last_verified_at TIMESTAMP,
+          failed_attempts INTEGER DEFAULT 0,
+          locked_until TIMESTAMP
+        )
+      `);
+      await db.exec('CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id)');
+      await db.exec('CREATE INDEX IF NOT EXISTS idx_admin_users_active ON admin_users(is_active)');
+      console.log('[AdminUser] 테이블 초기화 완료');
+    } catch (error) {
+      console.error('[AdminUser] 테이블 초기화 실패:', error.message);
+    }
+  },
+
+  /**
    * 비밀번호를 Argon2id로 해시 (최고 수준 암호화)
    * @param {string} password - 평문 비밀번호
    * @returns {Promise<string>} Argon2id 해시 문자열

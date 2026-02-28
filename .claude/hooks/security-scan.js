@@ -3,6 +3,8 @@
  * Write/Edit 시 코드에서 보안 취약점 패턴을 자동 감지
  * /팀즈 --security 없이도 독립적으로 동작
  */
+const fs = require('fs');
+
 const SECURITY_PATTERNS = [
   { pattern: /innerHTML\s*=/, name: 'XSS: innerHTML 사용', severity: 'WARN' },
   { pattern: /document\.write\s*\(/, name: 'XSS: document.write 사용', severity: 'WARN' },
@@ -15,8 +17,21 @@ const SECURITY_PATTERNS = [
   { pattern: /child_process.*exec\s*\(/, name: '명령 인젝션: exec() 사용', severity: 'WARN' }
 ];
 
+// stdin 읽기 (Claude Code는 tool input을 stdin으로 전달)
+function readInput() {
+  try {
+    const raw = fs.readFileSync(0, 'utf-8').trim();
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed.tool_input || parsed.input || parsed;
+    }
+  } catch { /* stdin 없거나 파싱 실패 */ }
+  // fallback: 환경변수
+  try { return JSON.parse(process.env.CLAUDE_TOOL_INPUT || '{}'); } catch { return {}; }
+}
+
 try {
-  const input = JSON.parse(process.env.CLAUDE_TOOL_INPUT || '{}');
+  const input = readInput();
   const filePath = (input.file_path || '').toLowerCase();
   const content = input.content || input.new_string || '';
 
@@ -38,8 +53,15 @@ try {
     }
 
     if (blocks.length > 0) {
-      console.error('[보안탐지] 차단: ' + blocks.map(b => b.name).join(', '));
-      process.exit(1);
+      const reason = '[보안탐지] 차단: ' + blocks.map(b => b.name).join(', ');
+      console.error(reason);
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: {
+          permissionDecision: 'deny',
+          permissionDecisionReason: reason
+        }
+      }));
+      process.exit(2);
     }
   }
 } catch (e) {

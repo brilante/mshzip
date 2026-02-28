@@ -76,7 +76,7 @@ async function run(sql, params = []) {
   let adaptedSql = queryAdapter.adaptQuery(sql);
   const adaptedParams = queryAdapter.adaptParams(params);
   if (/^\s*INSERT\s+INTO/i.test(sql) && !/RETURNING/i.test(adaptedSql)) {
-    adaptedSql = adaptedSql.replace(/;?\s*$/, ' RETURNING id');
+    adaptedSql = adaptedSql.replace(/;?\s*$/, ' RETURNING *');
   }
   const result = await pool.query(adaptedSql, adaptedParams);
   return {
@@ -119,7 +119,7 @@ async function transaction(callback) {
         let adaptedSql = queryAdapter.adaptQuery(sql);
         const adaptedParams = queryAdapter.adaptParams(params);
         if (/^\s*INSERT\s+INTO/i.test(sql) && !/RETURNING/i.test(adaptedSql)) {
-          adaptedSql = adaptedSql.replace(/;?\s*$/, ' RETURNING id');
+          adaptedSql = adaptedSql.replace(/;?\s*$/, ' RETURNING *');
         }
         const result = await client.query(adaptedSql, adaptedParams);
         return { changes: result.rowCount, lastInsertRowid: result.rows[0]?.id || null };

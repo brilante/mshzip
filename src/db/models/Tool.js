@@ -33,17 +33,17 @@ const DEFAULT_TOOLS = [
   { id: 'image-to-pdf', name: '이미지 → PDF', icon: '', categoryId: 'document', sortOrder: 10, isImplemented: true },
 
   // 2. 이미지 도구 (17개)
-  { id: 'image-compress', name: '이미지 압축', icon: '', categoryId: 'image', sortOrder: 1, isImplemented: true },
-  { id: 'image-resize', name: '이미지 리사이즈', icon: '', categoryId: 'image', sortOrder: 2, isImplemented: true },
-  { id: 'image-convert', name: '포맷 변환', icon: '', categoryId: 'image', sortOrder: 3, isImplemented: true },
-  { id: 'image-grayscale', name: '흑백 변환', icon: '', categoryId: 'image', sortOrder: 4, isImplemented: true },
-  { id: 'image-to-base64', name: '이미지 → Base64', icon: '', categoryId: 'image', sortOrder: 5, isImplemented: true },
-  { id: 'image-crop', name: '이미지 자르기', icon: '', categoryId: 'image', sortOrder: 6, isImplemented: true },
-  { id: 'image-rotate', name: '이미지 회전', icon: '', categoryId: 'image', sortOrder: 7, isImplemented: true },
-  { id: 'image-flip', name: '이미지 뒤집기', icon: '↔', categoryId: 'image', sortOrder: 8, isImplemented: true },
+  { id: 'image-compress', name: '이미지 압축', icon: '', categoryId: 'image', sortOrder: 1, isImplemented: true, path: '/tools/image/compress' },
+  { id: 'image-resize', name: '이미지 리사이즈', icon: '', categoryId: 'image', sortOrder: 2, isImplemented: true, path: '/tools/image/resize' },
+  { id: 'image-convert', name: '포맷 변환', icon: '', categoryId: 'image', sortOrder: 3, isImplemented: true, path: '/tools/image/convert' },
+  { id: 'image-grayscale', name: '흑백 변환', icon: '', categoryId: 'image', sortOrder: 4, isImplemented: true, path: '/tools/image/grayscale' },
+  { id: 'image-to-base64', name: '이미지 → Base64', icon: '', categoryId: 'image', sortOrder: 5, isImplemented: true, path: '/tools/image/to-base64' },
+  { id: 'image-crop', name: '이미지 자르기', icon: '', categoryId: 'image', sortOrder: 6, isImplemented: true, path: '/tools/image/crop' },
+  { id: 'image-rotate', name: '이미지 회전', icon: '', categoryId: 'image', sortOrder: 7, isImplemented: true, path: '/tools/image/rotate' },
+  { id: 'image-flip', name: '이미지 뒤집기', icon: '↔', categoryId: 'image', sortOrder: 8, isImplemented: true, path: '/tools/image/flip' },
   { id: 'gif-maker', name: 'GIF 생성', icon: '', categoryId: 'image', sortOrder: 9, isImplemented: true },
   { id: 'watermark', name: '워터마크 추가', icon: '', categoryId: 'image', sortOrder: 10, isImplemented: true },
-  { id: 'favicon-generator', name: '파비콘 생성', icon: '', categoryId: 'image', sortOrder: 11, isImplemented: true },
+  { id: 'favicon-generator', name: '파비콘 생성', icon: '', categoryId: 'image', sortOrder: 11, isImplemented: true, path: '/tools/image/favicon' },
   { id: 'resize-advanced', name: '고급 리사이즈', icon: '', categoryId: 'image', sortOrder: 12, isImplemented: true, path: '/tools/image/resize-advanced' },
   { id: 'convert-advanced', name: '고급 포맷 변환', icon: '', categoryId: 'image', sortOrder: 13, isImplemented: true, path: '/tools/image/convert-advanced' },
   { id: 'crop-advanced', name: '고급 자르기', icon: '', categoryId: 'image', sortOrder: 14, isImplemented: true, path: '/tools/image/crop-advanced' },
@@ -100,28 +100,28 @@ const DEFAULT_TOOLS = [
 
   // 6. 데이터 변환 (9개)
   { id: 'csv-to-json', name: 'CSV → JSON', icon: '', categoryId: 'data-convert', sortOrder: 1, isImplemented: true, path: '/tools/data-converter/csv-to-json' },
-  { id: 'excel-to-json', name: 'Excel → JSON', icon: '', categoryId: 'data-convert', sortOrder: 2 },
-  { id: 'xml-to-json', name: 'XML → JSON', icon: '', categoryId: 'data-convert', sortOrder: 3, isImplemented: true },
+  { id: 'excel-to-json', name: 'Excel → JSON', icon: '', categoryId: 'data-convert', sortOrder: 2, path: '/tools/data-converter/excel-to-json' },
+  { id: 'xml-to-json', name: 'XML → JSON', icon: '', categoryId: 'data-convert', sortOrder: 3, isImplemented: true, path: '/tools/data-converter/xml-to-json' },
   { id: 'yaml-to-json', name: 'YAML ↔ JSON', icon: '', categoryId: 'data-convert', sortOrder: 4, isImplemented: true, path: '/tools/data-converter/yaml-to-json' },
   { id: 'json-to-csv', name: 'JSON → CSV', icon: '', categoryId: 'data-convert', sortOrder: 5, isImplemented: true, path: '/tools/data-converter/json-to-csv' },
   { id: 'markdown-to-html', name: 'Markdown → HTML', icon: '', categoryId: 'data-convert', sortOrder: 6, isImplemented: true, path: '/tools/data-converter/markdown-to-html' },
   { id: 'html-to-markdown', name: 'HTML → Markdown', icon: '', categoryId: 'data-convert', sortOrder: 7, isImplemented: true, path: '/tools/data-converter/html-to-markdown' },
-  { id: 'text-to-binary', name: '텍스트 → 바이너리', icon: '0', categoryId: 'data-convert', sortOrder: 8 },
-  { id: 'text-to-hex', name: '텍스트 → HEX', icon: '', categoryId: 'data-convert', sortOrder: 9 },
+  { id: 'text-to-binary', name: '텍스트 → 바이너리', icon: '0', categoryId: 'data-convert', sortOrder: 8, path: '/tools/data-converter/text-to-binary' },
+  { id: 'text-to-hex', name: '텍스트 → HEX', icon: '', categoryId: 'data-convert', sortOrder: 9, path: '/tools/data-converter/text-to-hex' },
 
   // 7. QR 코드 (7개)
-  { id: 'qr-generate', name: 'QR 코드 생성', icon: '', categoryId: 'qr', sortOrder: 1, isImplemented: true },
+  { id: 'qr-generate', name: 'QR 코드 생성', icon: '', categoryId: 'qr', sortOrder: 1, isImplemented: true, path: '/tools/qr-seo/qr-generator' },
   { id: 'qr-reader', name: 'QR 코드 읽기', icon: '', categoryId: 'qr', sortOrder: 2, isImplemented: true, path: '/tools/qr-seo/qr-reader' },
   { id: 'qr-custom', name: '맞춤형 QR (로고)', icon: '', categoryId: 'qr', sortOrder: 3, isImplemented: true, path: '/tools/qr-seo/qr-custom' },
-  { id: 'qr-wifi', name: 'WiFi QR 코드', icon: '', categoryId: 'qr', sortOrder: 4, isImplemented: true },
-  { id: 'qr-vcard', name: 'vCard QR 코드', icon: '', categoryId: 'qr', sortOrder: 5, isImplemented: true },
+  { id: 'qr-wifi', name: 'WiFi QR 코드', icon: '', categoryId: 'qr', sortOrder: 4, isImplemented: true, path: '/tools/qr-seo/qr-wifi' },
+  { id: 'qr-vcard', name: 'vCard QR 코드', icon: '', categoryId: 'qr', sortOrder: 5, isImplemented: true, path: '/tools/qr-seo/qr-vcard' },
   { id: 'barcode-generate', name: '바코드 생성', icon: '', categoryId: 'qr', sortOrder: 6, isImplemented: true, path: '/tools/qr-seo/barcode-generate' },
   { id: 'barcode-reader', name: '바코드 읽기', icon: '', categoryId: 'qr', sortOrder: 7, isImplemented: true, path: '/tools/qr-seo/barcode-reader' },
 
   // 8. SEO 도구 (12개)
-  { id: 'meta-tag-gen', name: '메타 태그 생성', icon: '', categoryId: 'seo', sortOrder: 1, isImplemented: true },
+  { id: 'meta-tag-gen', name: '메타 태그 생성', icon: '', categoryId: 'seo', sortOrder: 1, isImplemented: true, path: '/tools/seo/og-tag-gen' },
   { id: 'og-tag-gen', name: 'OG 태그 생성', icon: '', categoryId: 'seo', sortOrder: 2, isImplemented: true, path: '/tools/seo/og-tag-gen' },
-  { id: 'sitemap-gen', name: '사이트맵 생성', icon: '', categoryId: 'seo', sortOrder: 3, isImplemented: true },
+  { id: 'sitemap-gen', name: '사이트맵 생성', icon: '', categoryId: 'seo', sortOrder: 3, isImplemented: true, path: '/tools/qr-seo/sitemap-generator' },
   { id: 'robots-txt-gen', name: 'robots.txt 생성', icon: '', categoryId: 'seo', sortOrder: 4, isImplemented: true, path: '/tools/seo/robots-txt-gen' },
   { id: 'keyword-research', name: '키워드 리서치', icon: '', categoryId: 'seo', sortOrder: 5, isImplemented: true, path: '/tools/seo/keyword-research' },
   { id: 'backlink-checker', name: '백링크 체커', icon: '', categoryId: 'seo', sortOrder: 6, isImplemented: true, path: '/tools/seo/backlink-checker' },
@@ -140,7 +140,7 @@ const DEFAULT_TOOLS = [
   { id: 'compound-interest', name: '복리 계산기', icon: '', categoryId: 'calculator', sortOrder: 5, isImplemented: true },
   { id: 'unit-converter', name: '단위 변환기', icon: '', categoryId: 'calculator', sortOrder: 6, isImplemented: true },
   { id: 'currency-converter', name: '환율 계산기', icon: '', categoryId: 'calculator', sortOrder: 7 },
-  { id: 'date-diff-calc', name: '날짜 차이 계산', icon: '', categoryId: 'calculator', sortOrder: 8, isImplemented: true },
+  { id: 'date-diff-calc', name: '날짜 차이 계산', icon: '', categoryId: 'calculator', sortOrder: 8, isImplemented: true, path: '/tools/calculator/date-diff' },
   { id: 'time-zone', name: '시간대 변환', icon: '', categoryId: 'calculator', sortOrder: 9, isImplemented: true },
   { id: 'tip-calc', name: '팁 계산기', icon: '', categoryId: 'calculator', sortOrder: 10, isImplemented: true },
   { id: 'gpa-calc', name: '학점 계산기', icon: '', categoryId: 'calculator', sortOrder: 11 },
@@ -149,11 +149,11 @@ const DEFAULT_TOOLS = [
 
   // 10. 디자인 도구 (12개)
   { id: 'color-palette', name: '색상 팔레트 생성', icon: '', categoryId: 'design', sortOrder: 1, isImplemented: true },
-  { id: 'gradient-gen', name: '그라디언트 생성', icon: '', categoryId: 'design', sortOrder: 2, isImplemented: true },
+  { id: 'gradient-gen', name: '그라디언트 생성', icon: '', categoryId: 'design', sortOrder: 2, isImplemented: true, path: '/tools/design/gradient-generator' },
   { id: 'color-picker', name: '색상 추출기', icon: '', categoryId: 'design', sortOrder: 3 },
   { id: 'font-pairing', name: '폰트 조합', icon: '', categoryId: 'design', sortOrder: 4 },
   { id: 'box-shadow-gen', name: 'Box Shadow 생성', icon: '', categoryId: 'design', sortOrder: 5, isImplemented: true },
-  { id: 'border-radius-gen', name: 'Border Radius 생성', icon: '◐', categoryId: 'design', sortOrder: 6, isImplemented: true },
+  { id: 'border-radius-gen', name: 'Border Radius 생성', icon: '◐', categoryId: 'design', sortOrder: 6, isImplemented: true, path: '/tools/design/border-radius' },
   { id: 'glassmorphism-gen', name: 'Glassmorphism 생성', icon: '', categoryId: 'design', sortOrder: 7 },
   { id: 'neumorphism-gen', name: 'Neumorphism 생성', icon: '', categoryId: 'design', sortOrder: 8 },
   { id: 'svg-editor', name: 'SVG 편집기', icon: '', categoryId: 'design', sortOrder: 9 },
@@ -172,7 +172,7 @@ const DEFAULT_TOOLS = [
   { id: 'project-timeline', name: '프로젝트 타임라인', icon: '', categoryId: 'business', sortOrder: 8, isImplemented: true, path: '/tools/business/project-timeline' },
 
   // 12. 보안 도구 (8개)
-  { id: 'password-gen', name: '비밀번호 생성', icon: '', categoryId: 'security', sortOrder: 1, isImplemented: true },
+  { id: 'password-gen', name: '비밀번호 생성', icon: '', categoryId: 'security', sortOrder: 1, isImplemented: true, path: '/tools/security/password-generator' },
   { id: 'password-strength', name: '비밀번호 강도 체크', icon: '', categoryId: 'security', sortOrder: 2, isImplemented: true },
   { id: 'md5-hash', name: 'MD5 해시', icon: '#', categoryId: 'security', sortOrder: 3, isImplemented: true, path: '/tools/security/md5-hash' },
   { id: 'sha256-hash', name: 'SHA256 해시', icon: '#', categoryId: 'security', sortOrder: 4, isImplemented: true, path: '/tools/security/sha256-hash' },
@@ -592,7 +592,7 @@ const Tool = {
       FROM tools t
       JOIN tool_categories c ON t.category_id = c.id
       WHERE t.is_active = 1 AND c.is_active = 1
-      ORDER BY c.sort_order ASC, t.sort_order ASC
+      ORDER BY c.sort_order ASC, t.is_premium DESC, t.sort_order ASC
     `);
 
     // 카테고리별 그룹화

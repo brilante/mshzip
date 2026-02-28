@@ -415,6 +415,239 @@
 .subscription-actions {
   margin-top: 17px;         /* was 20px */
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* subscription-actions 내 버튼 통일 스타일 */
+.subscription-actions button {
+  background: transparent !important;
+  border: 1px solid #333 !important;
+  color: #1d1d1f !important;
+  opacity: 1 !important;
+  padding: 12px 24px;
+  min-height: 48px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subscription-actions button:disabled {
+  opacity: 1 !important;
+  cursor: pointer;
+  border-color: #333 !important;
+  color: #1d1d1f !important;
+  background: transparent !important;
+}
+
+.subscription-actions button:hover {
+  background: #f5f5f7;
+  border-color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 다크 모드 - subscription-actions 버튼 */
+[data-theme="dark"] .subscription-actions button {
+  border-color: #555 !important;
+  color: #e0e0e0 !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] .subscription-actions button:disabled {
+  border-color: #555 !important;
+  color: #e0e0e0 !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] .subscription-actions button:hover {
+  background: #2a2a2a !important;
+  border-color: #fff !important;
+  color: #fff !important;
+}
+
+/* 다크 모드 - 자동결제 체크박스 */
+[data-theme="dark"] .autopay-checkbox-wrapper {
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .autopay-checkbox-wrapper:hover {
+  background: #2a2a2a;
+  border-color: #fff;
+}
+
+/* 자동결제 체크박스 스타일 - 버튼 크기와 동일하게 */
+.autopay-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 12px 24px;
+  min-height: 48px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  background: transparent !important;
+  border: 1px solid #333 !important;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+/* 기본 상태: 컬러 유지 (회색조 제거) */
+.autopay-checkbox-wrapper .autopay-label,
+.autopay-checkbox-wrapper .autopay-bonus-badge {
+  filter: none;
+  opacity: 1;
+}
+
+/* 호버 시 또는 체크됨: 블링블링 효과 */
+.autopay-checkbox-wrapper:hover,
+.autopay-checkbox-wrapper.checked {
+  background: linear-gradient(135deg, #fff7e6 0%, #fff3cd 100%) !important;
+  border-color: #ffc107 !important;
+  box-shadow: 0 2px 12px rgba(255, 193, 7, 0.4);
+  transform: translateY(-1px);
+}
+
+.autopay-checkbox-wrapper:hover .autopay-label,
+.autopay-checkbox-wrapper.checked .autopay-label {
+  filter: none;
+  opacity: 1;
+  animation: autopay-pulse 1s ease-in-out infinite;
+}
+
+.autopay-checkbox-wrapper:hover .autopay-bonus-badge,
+.autopay-checkbox-wrapper.checked .autopay-bonus-badge {
+  filter: none;
+  opacity: 1;
+  animation: badge-glow 1s ease-in-out infinite;
+}
+
+.autopay-checkbox-wrapper input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #ff9800;
+  cursor: pointer;
+}
+
+/* v7.6: 구독 중 자동결제 비활성화 (잠금) 상태 */
+.autopay-checkbox-wrapper.locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.autopay-checkbox-wrapper.locked::after {
+  content: '\2022';
+  position: absolute;
+  right: 8px;
+  font-size: 12px;
+}
+
+.autopay-checkbox-wrapper.locked input[type="checkbox"] {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.autopay-checkbox-wrapper.locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.autopay-checkbox-wrapper.locked .autopay-label,
+.autopay-checkbox-wrapper.locked .autopay-bonus-badge {
+  animation: none !important;
+}
+
+/* 다크 모드 잠금 상태 */
+.dark-mode .autopay-checkbox-wrapper.locked,
+[data-theme="dark"] .autopay-checkbox-wrapper.locked {
+  opacity: 0.6;
+}
+
+.autopay-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e65100;
+  transition: all 0.3s ease;
+}
+
+/* 반짝이는 애니메이션 - 호버 시에만 적용 */
+@keyframes autopay-pulse {
+  0%, 100% {
+    text-shadow: 0 0 0 transparent;
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(255, 152, 0, 0.8), 0 0 20px rgba(255, 193, 7, 0.5);
+  }
+}
+
+.autopay-bonus-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+@keyframes badge-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.9), 0 0 25px rgba(255, 152, 0, 0.5);
+  }
+}
+
+/* 자동결제 보너스 라인 스타일 */
+.credit-line.autopay-bonus {
+  color: #ff9800;
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 193, 7, 0.1) 100%);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 2px 0;
+}
+
+.credit-line.autopay-bonus .autopay-bonus-label {
+  font-weight: 600;
+}
+
+.credit-line.autopay-bonus .credit-value-autopay-bonus {
+  color: #ff9800;
+  font-weight: 700;
+}
+
+/* 다크 모드 지원 */
+.dark-mode .autopay-checkbox-wrapper {
+  background: transparent;
+  border-color: #3a3a3a;
+}
+
+.dark-mode .autopay-checkbox-wrapper:hover {
+  background: linear-gradient(135deg, #3d2c00 0%, #4a3500 100%);
+  border-color: #ffc107;
+  box-shadow: 0 2px 12px rgba(255, 193, 7, 0.3);
+}
+
+.dark-mode .autopay-label {
+  color: #ffcc80;
+}
+
+.dark-mode .credit-line.autopay-bonus {
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.15) 100%);
 }
 
 .subscription-note {
@@ -1435,6 +1668,20 @@
   border-left: 4px solid #ffc107;
 }
 
+/* 구독 통화 고정 안내 */
+.currency-lock-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fff3e0;
+  border-left: 3px solid #ff9800;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #e65100;
+  margin-top: 8px;
+}
+
 .currency-modal-footer {
   display: flex;
   gap: 12px;
@@ -1929,6 +2176,25 @@
   background: #4a3000;
   color: #ffb74d;
   border-left-color: #f59e0b;
+}
+
+[data-theme="dark"] .currency-lock-notice {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ffb74d;
+  border-left-color: #ff9800;
+}
+
+/* 일반 크레딧 구매 모드: 통화 변경 가능 안내 (초록색) */
+.currency-lock-notice.credit-mode {
+  background: #e8f5e9;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+[data-theme="dark"] .currency-lock-notice.credit-mode {
+  background: rgba(76, 175, 80, 0.1);
+  color: #81c784;
+  border-left-color: #4caf50;
 }
 
 [data-theme="dark"] .currency-btn-confirm,

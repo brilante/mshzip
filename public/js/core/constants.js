@@ -391,8 +391,8 @@ window.MyMind3.loadPackagesFromAPI = async function() {
         }
 
         const data = await response.json();
-        if (data.success && data.packages) {
-            // API 응답으로 PACKAGES 업데이트
+        if (data.success && data.packages && Object.keys(data.packages).length > 0) {
+            // API 응답으로 PACKAGES 업데이트 (빈 응답은 무시)
             Object.keys(window.MyMind3.Constants.PACKAGES).forEach(key => {
                 delete window.MyMind3.Constants.PACKAGES[key];
             });

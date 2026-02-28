@@ -19,6 +19,7 @@ router.use('/packages', require('./packages'));
 // tools → src/api/tools.js로 이전 (실제 DB 연동)
 router.use('/exchange', require('./exchange'));
 router.use('/admin', require('./admin'));
+router.use('/drive', require('./drive'));
 
 // catch-all은 반드시 마지막 (미구현 API 대응)
 router.use('/', require('./catch-all'));

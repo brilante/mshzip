@@ -2122,74 +2122,114 @@ const response = await fetch('/api/savenode', {
         // 탭 바 항상 표시 (단일/다중 모드 모두)
         aiTabBar.style.display = 'flex';
 
-        // 설정에서 multiAiEnabled 값 로드하여 체크박스에 적용
-        const savedAISettings = localStorage.getItem('mymind3_ai_settings');
-        if (savedAISettings) {
-          try {
-            const aiSettings = JSON.parse(savedAISettings);
-            if (aiSettings.multiAiEnabled === true) {
-              multiSelectAI.checked = true;
-              window.MyMindAI.multiSelectMode = true;
-              console.log('[AI] Multi-select mode loaded from settings: enabled');
+        // DB에서 설정 로드 (localStorage 폴백)
+        try {
+          const settingsResp = await fetch('/api/user/settings', { credentials: 'include' });
+          if (settingsResp.ok) {
+            const settingsResult = await settingsResp.json();
+            if (settingsResult.success && settingsResult.data) {
+              // 다중선택 모드 복원
+              const multiEnabled = settingsResult.data.multiAiEnabled === 'true' || settingsResult.data.multiAiEnabled === true;
+              if (multiEnabled) {
+                multiSelectAI.checked = true;
+                window.MyMindAI.multiSelectMode = true;
+                console.log('[AI] Multi-select mode loaded from DB: enabled');
+              }
+              // 자동만들기 모드 복원
+              const autoCreateCheckbox = document.getElementById('autoCreateNodeAI');
+              const autoEnabled = settingsResult.data.autoCreateEnabled === 'true' || settingsResult.data.autoCreateEnabled === true;
+              if (autoCreateCheckbox && autoEnabled) {
+                autoCreateCheckbox.checked = true;
+                console.log('[AI] Auto-create mode loaded from DB: enabled');
+              }
             }
-          } catch (e) {
-            console.warn('[AI] Failed to parse AI settings:', e);
+          }
+        } catch (e) {
+          // DB 실패 시 localStorage 폴백
+          console.warn('[AI] DB 설정 로드 실패, localStorage 폴백:', e);
+          const savedAISettings = localStorage.getItem('mymind3_ai_settings');
+          if (savedAISettings) {
+            try {
+              const aiSettings = JSON.parse(savedAISettings);
+              if (aiSettings.multiAiEnabled === true) {
+                multiSelectAI.checked = true;
+                window.MyMindAI.multiSelectMode = true;
+              }
+              const autoCreateCheckbox = document.getElementById('autoCreateNodeAI');
+              if (autoCreateCheckbox && aiSettings.autoCreateEnabled) {
+                autoCreateCheckbox.checked = true;
+              }
+            } catch (e2) {
+              console.warn('[AI] localStorage 파싱 실패:', e2);
+            }
           }
         }
 
         // 초기 탭 업데이트 (단일/다중 모드에 따라 탭 표시 조정)
         setTimeout(() => updateAITabsForMode(), 100);
 
+        // 메인 페이지 토글 → DB 저장 + 설정 페이지 동기화 헬퍼
+        async function saveToggleToServer(key, value) {
+          try {
+            const csrfHeaders = window.csrfUtils ? await window.csrfUtils.getCsrfHeaders() : {};
+            await fetch('/api/user/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', ...csrfHeaders },
+              credentials: 'include',
+              body: JSON.stringify({ [key]: String(value) })
+            });
+            console.log('[AI] 설정 저장:', key, value);
+            if (window.ApiCache) window.ApiCache.invalidatePattern('/api/user/settings');
+          } catch (err) {
+            console.warn('[AI] 설정 저장 실패:', err);
+          }
+          // localStorage 동기화 (폴백)
+          try {
+            const saved = localStorage.getItem('mymind3_ai_settings');
+            const aiSettings = saved ? JSON.parse(saved) : {};
+            if (key === 'multiAiEnabled') aiSettings.multiAiEnabled = value;
+            if (key === 'autoCreateEnabled') aiSettings.autoCreateEnabled = value;
+            localStorage.setItem('mymind3_ai_settings', JSON.stringify(aiSettings));
+          } catch (e) { /* ignore */ }
+        }
+
         multiSelectAI.addEventListener('change', function () {
-          // 다중 선택 모드 상태 저장
           window.MyMindAI.multiSelectMode = this.checked;
           console.log('[AI] Multi-select mode:', this.checked ? 'enabled' : 'disabled');
-
-          // 모드에 따라 탭 표시 업데이트 (탭 바는 항상 표시 유지)
           updateAITabsForMode();
-
-          // Settings의 multiAiEnabled 값도 동기화
-          try {
-            const savedSettings = localStorage.getItem('mymind3_ai_settings');
-            const aiSettings = savedSettings ? JSON.parse(savedSettings) : {};
-            aiSettings.multiAiEnabled = this.checked;
-            localStorage.setItem('mymind3_ai_settings', JSON.stringify(aiSettings));
-            console.log('[AI] Saved multiAiEnabled to settings:', this.checked);
-          } catch (e) {
-            console.warn('[AI] Failed to save multiAiEnabled:', e);
-          }
+          // DB에 저장
+          saveToggleToServer('multiAiEnabled', this.checked);
+          // 설정 페이지 토글 동기화
+          const settingsEl = document.getElementById('settingsMultiSelectEnabled');
+          if (settingsEl) settingsEl.checked = this.checked;
         });
 
-        // 자동만들기 체크박스 상태 복원 및 저장
+        // 자동만들기 체크박스 이벤트
         const autoCreateCheckbox = document.getElementById('autoCreateNodeAI');
         if (autoCreateCheckbox) {
-          // 저장된 상태 복원
-          try {
-            const savedSettings = localStorage.getItem('mymind3_ai_settings');
-            if (savedSettings) {
-              const aiSettings = JSON.parse(savedSettings);
-              if (aiSettings.autoCreateEnabled !== undefined) {
-                autoCreateCheckbox.checked = aiSettings.autoCreateEnabled;
-                console.log('[AI] Auto-create mode loaded from settings:', aiSettings.autoCreateEnabled ? 'enabled' : 'disabled');
-              }
-            }
-          } catch (e) {
-            console.warn('[AI] Failed to parse AI settings for autoCreate:', e);
-          }
-
-          // 변경 시 저장
           autoCreateCheckbox.addEventListener('change', function () {
-            try {
-              const savedSettings = localStorage.getItem('mymind3_ai_settings');
-              const aiSettings = savedSettings ? JSON.parse(savedSettings) : {};
-              aiSettings.autoCreateEnabled = this.checked;
-              localStorage.setItem('mymind3_ai_settings', JSON.stringify(aiSettings));
-              console.log('[AI] Saved autoCreateEnabled to settings:', this.checked);
-            } catch (e) {
-              console.warn('[AI] Failed to save autoCreateEnabled:', e);
-            }
+            console.log('[AI] Auto-create mode:', this.checked ? 'enabled' : 'disabled');
+            // DB에 저장
+            saveToggleToServer('autoCreateEnabled', this.checked);
+            // 설정 페이지 토글 동기화
+            const settingsEl = document.getElementById('settingsAutoCreateEnabled');
+            if (settingsEl) settingsEl.checked = this.checked;
           });
         }
+
+        // 설정 페이지에서 변경 시 메인 페이지 동기화 (settingsChanged 이벤트)
+        window.addEventListener('settingsChanged', function (e) {
+          if (e.detail) {
+            if (e.detail.multiSelectEnabled !== undefined) {
+              multiSelectAI.checked = e.detail.multiSelectEnabled;
+              window.MyMindAI.multiSelectMode = e.detail.multiSelectEnabled;
+              updateAITabsForMode();
+            }
+            if (e.detail.autoCreateEnabled !== undefined && autoCreateCheckbox) {
+              autoCreateCheckbox.checked = e.detail.autoCreateEnabled;
+            }
+          }
+        });
 
         // 탭 클릭 이벤트 설정
         setupAITabListeners();
@@ -2720,7 +2760,7 @@ const response = await fetch('/api/savenode', {
       if (creditPart && balance !== undefined) {
         const total = balance.total !== undefined ? balance.total :
                      (balance.free || 0) + (balance.service || 0) + (balance.paid || 0);
-        creditPart.innerHTML = `(<b>${Math.floor(total)}C</b>)`;
+        creditPart.innerHTML = total > 0 ? `(<b>${Math.floor(total)}C</b>)` : '';
       }
     }
 
@@ -8891,7 +8931,7 @@ const response = await fetch('/api/templates', { credentials: 'include' });
                 const subscription = JSON.parse(localStorage.getItem('mymind3_subscription') || '{}');
                 if (subscription.isSubscribed && subscription.credits) {
                   const totalCredits = subscription.credits.total || 0;
-                  creditPart.innerHTML = `(<b>${Math.floor(totalCredits)}C</b>)`;
+                  creditPart.innerHTML = totalCredits > 0 ? `(<b>${Math.floor(totalCredits)}C</b>)` : '';
                 } else {
                   creditPart.innerHTML = '';
                 }
@@ -9498,9 +9538,14 @@ const response = await fetch('/api/templates', { credentials: 'include' });
           currentUser = null;
           updateLoginUI(false);
 
-          // _xt 삭제
+          // _xt 삭제 + 구독/크레딧 캐시 제거
           sessionStorage.removeItem('_xt');
-          console.log('[Auth] Session token removed');
+          localStorage.removeItem('mymind3_subscription');
+          localStorage.removeItem('aiSettings');
+          if (window.ApiCache) {
+            window.ApiCache.invalidate('/api/credits/balance');
+          }
+          console.log('[Auth] Session token and subscription cache removed');
 
           // CSRF 토큰 정리 (세션 파괴로 기존 토큰 무효)
           if (window.csrfUtils) {
