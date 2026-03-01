@@ -603,6 +603,84 @@ push/PR -> [parallel] Test (Python 3.12/3.13/3.14) + Lint (ruff)
 
 ---
 
+## Why mshzip?
+
+### The Problem with Traditional Compression
+
+Standard compressors (gzip, zstd) use a **sliding window** (typically 32 KB) to find redundancy. Any repeated patterns beyond that window are invisible to them.
+
+```
+Traditional:  Input → Entropy compression (32KB window) → Output
+mshzip:       Input → Fixed-chunk split → SHA-256 dedup (global) → Entropy compression → Output
+```
+
+mshzip splits data into fixed-size chunks, hashes each with SHA-256, and eliminates duplicates across the **entire file** before compressing. This two-stage approach captures repetition that sliding-window compressors miss.
+
+### Where mshzip Delivers Value
+
+#### High Value — Repetitive Structured Data
+
+| Data Type | mshzip | gzip alone | Advantage |
+|-----------|:------:|:----------:|:---------:|
+| Repeated patterns (config copies, templates) | **100%** | ~60% | **+40%** |
+| CSV (same schema, many rows) | **88%** | ~70% | **+18%** |
+| JSON (repeated key names) | **85%** | ~65% | **+20%** |
+| Server logs (structured, timestamped) | **82%** | ~65% | **+17%** |
+
+Why: Log lines, JSON objects, and CSV rows repeat the same structure with minor variations. gzip's 32 KB window can't see repetitions separated by more than 32 KB. mshzip's global dictionary catches them all.
+
+#### High Value — Slow-to-Medium Network Transfers
+
+| Scenario | 10 Mbps | 100 Mbps |
+|----------|:-------:|:--------:|
+| 1 GB log file | **4.2x faster** | ~1x |
+| 10 GB repetitive data | **105x faster** | **10.6x faster** |
+
+For cloud-to-cloud transfers, remote backups, or cross-region sync over ≤100 Mbps links, mshzip can cut transfer time dramatically.
+
+#### Medium Value
+
+| Use Case | Compression | Notes |
+|----------|:-----------:|-------|
+| Binary structs (IoT sensors, protocol buffers) | 68% | Fixed-size records → chunk dedup works |
+| Mixed text (HTML, source code) | 55% | Partial repetition → similar to gzip |
+| Cross-language pipelines | — | Node.js ↔ Python 100% compatible MSH1 format |
+
+#### No Value — Don't Use mshzip For
+
+| Data Type | Result | Reason |
+|-----------|:------:|--------|
+| Random binary | **-1.6%** (larger) | No duplicate chunks → header overhead only |
+| Already compressed (mp4, zip, jpg) | **-1~-2%** | Double compression has no effect |
+| Encrypted data | **-1~-2%** | High entropy → no patterns |
+| ≥1 Gbps fast networks | CPU bottleneck | Pack/unpack time exceeds transfer time |
+
+### mshzip vs Alternatives
+
+| Tool | Strength | Weakness | vs mshzip |
+|------|----------|----------|-----------|
+| **gzip** | Universal, available everywhere | 32 KB window limit | mshzip +15~40% on repetitive data |
+| **zstd** | Best ratio/speed balance | No deduplication | zstd wins general-purpose; mshzip wins on repetitive data |
+| **rsync** | Network-level dedup | Requires both-side install, file-level | mshzip is single-file, app-level |
+| **ZFS dedup** | Block-level dedup | Filesystem-bound, high RAM | mshzip is portable, app-level |
+
+### Ideal Use Cases
+
+- **Operations teams** regularly backing up or transferring server logs, CSV exports, JSON datasets
+- **Data pipeline operators** processing high-volume data with repeating schemas
+- **Cross-platform developers** needing identical compression format across Node.js and Python
+- **Bandwidth-constrained environments** transferring GB-scale data over ≤100 Mbps links
+
+### When NOT to Use
+
+- Media files (video, images, audio) — already compressed
+- General-purpose compression where zstd/brotli suffice
+- Real-time processing on 10 Gbps+ LAN — CPU overhead dominates
+
+> **One-line summary**: mshzip is most valuable when compressing **repetitive structured data** for **storage or transfer over medium-speed networks** — delivering 15~40% better compression than gzip and 4~105x faster transfers in measured benchmarks.
+
+---
+
 ## Limitations
 
 1. **Dictionary memory**: For random data with many unique chunks, memory usage approaches original size
