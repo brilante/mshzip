@@ -1,5 +1,11 @@
 # mshzip
 
+[![npm](https://img.shields.io/npm/v/msh-zip)](https://www.npmjs.com/package/msh-zip)
+[![PyPI](https://img.shields.io/pypi/v/mshzip)](https://pypi.org/project/mshzip/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+
 **Fixed-chunk deduplication + entropy compression utility (monorepo)**
 
 A tool that removes duplicates using SHA-256 hash-based deduplication on data with repetitive patterns, then applies gzip entropy compression.
