@@ -46,6 +46,7 @@ nodejs/package-lock.json
 
 # 내부 문서 / 데모
 배포.md
+README_kr.md
 demo-test.js
 demo test.md
 MSHZIP Logic.md
