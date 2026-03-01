@@ -1,4 +1,4 @@
-'Unpacker 클래스 단위 테스트'
+'Unpacker class unit tests'
 from __future__ import annotations
 
 import pytest
@@ -19,7 +19,7 @@ class TestUnpack:
         assert result == data
 
     def test_exact_chunk_boundary(self):
-        data = b'x' * 128  # 청크 크기 정확히
+        data = b'x' * 128  # Exact chunk size
         packed = Packer(chunk_size=128).pack(data)
         result = Unpacker().unpack(packed)
         assert result == data
@@ -39,7 +39,7 @@ class TestUnpack:
     def test_dict_accumulation(self):
         u = Unpacker()
         p = Packer(chunk_size=8, codec='none')
-        # 고유 청크 4개
+        # 4 unique chunks
         data = bytes(range(32))
         packed = p.pack(data)
         u.unpack(packed)
@@ -67,31 +67,31 @@ class TestUnpack:
 
 class TestErrors:
     def test_invalid_magic(self):
-        with pytest.raises(ValueError, match='매직'):
+        with pytest.raises(ValueError, match='magic'):
             Unpacker().unpack(b'XXXX' + b'\x00' * 40)
 
     def test_truncated_header(self):
-        with pytest.raises(ValueError, match='헤더 부족'):
+        with pytest.raises(ValueError, match='header'):
             Unpacker().unpack(b'MSH1' + b'\x00' * 10)
 
     def test_invalid_codec(self):
         p = Packer(chunk_size=8, codec='none')
         packed = bytearray(p.pack(b'test1234'))
-        # 코덱 ID를 99로 변조
+        # Tamper codec ID to 99
         packed[12] = 99
-        with pytest.raises(ValueError, match='코덱'):
+        with pytest.raises(ValueError, match='codec'):
             Unpacker().unpack(bytes(packed))
 
     def test_dict_index_overflow(self):
         p = Packer(chunk_size=8, codec='none')
         packed = bytearray(p.pack(b'testtest'))
-        # seqCount 영역의 인덱스를 변조하기 어려우므로
-        # 사전 인덱스 범위를 벗어나는 경우 에러 발생 테스트
-        # 간접적으로: 사전 항목을 0으로 만들고 시퀀스 유지
-        # dictEntries를 0으로 변조
+        # Hard to tamper seqCount indices directly, so
+        # test dict index out of range error indirectly:
+        # set dictEntries to 0 while keeping sequence
+        # Tamper dictEntries to 0
         import struct
         struct.pack_into('<I', packed, 24, 0)
-        with pytest.raises(ValueError, match='범위 초과'):
+        with pytest.raises(ValueError, match='out of range'):
             Unpacker().unpack(bytes(packed))
 
     def test_memoryview_input(self):

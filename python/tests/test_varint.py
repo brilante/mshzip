@@ -1,4 +1,4 @@
-'varint 모듈 단위 테스트'
+'varint module unit tests'
 from __future__ import annotations
 
 import pytest
@@ -58,14 +58,14 @@ class TestDecode:
         assert val == 1000
 
     def test_overflow(self):
-        # 6바이트 이상 연속 continuation bit
+        # 6+ consecutive continuation bits
         bad = bytes([0x80] * 6)
-        with pytest.raises(ValueError, match='오버플로우'):
+        with pytest.raises(ValueError, match='overflow'):
             varint.decode(bad)
 
     def test_incomplete(self):
         bad = bytes([0x80])
-        with pytest.raises(ValueError, match='불완전'):
+        with pytest.raises(ValueError, match='incomplete'):
             varint.decode(bad)
 
 

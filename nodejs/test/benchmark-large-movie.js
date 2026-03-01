@@ -2,18 +2,18 @@
 'use strict';
 
 /**
- * mshzip 대용량 4K 영화 벤치마크 (1GB / 5GB / 전체 파일)
+ * mshzip large-file 4K movie benchmark (1GB / 5GB / full file)
  *
- * 스트리밍 기반으로 메모리 효율적으로 대용량 파일을 테스트한다.
- * PackStream/UnpackStream을 사용하여 프레임 단위 처리.
+ * Tests large files in a streaming fashion for memory efficiency.
+ * Uses PackStream/UnpackStream for frame-by-frame processing.
  *
- * V8 Map 한계(~1,677만 항목) 자동 감지 → 청크 크기 자동 조정
- * 프레임 크기 16MB로 축소 → gzip 메모리 부담 경감
+ * Automatically detects V8 Map limit (~16.77M entries) → adjusts chunk size
+ * Frame size capped at 16MB → reduces gzip memory pressure
  *
- * 사용법:
- *   node test/benchmark-large-movie.js <영화파일경로>
+ * Usage:
+ *   node test/benchmark-large-movie.js <movie-file-path>
  *
- * 결과는 콘솔 + test.txt 파일로 출력
+ * Results are printed to console and saved to test.txt
  */
 
 const crypto = require('crypto');
@@ -26,20 +26,20 @@ const { PackStream, UnpackStream } = require('../lib/stream');
 const { Packer } = require('../lib/packer');
 const { FRAME_HEADER_SIZE, FLAG } = require('../lib/constants');
 
-// V8 Map 최대 항목 수 (안전 마진 포함)
+// V8 Map maximum entry count (with safety margin)
 const V8_MAP_MAX = 16_000_000;
-// 벤치마크용 프레임 크기 (메모리 부담 경감)
+// Frame size for benchmarks (reduces memory pressure)
 const BENCH_FRAME_LIMIT = 16 * 1024 * 1024; // 16MB
 
-// ─── 인자 ───────────────────────────────────────────────────
+// ─── Arguments ──────────────────────────────────────────────
 
 const filePath = process.argv[2];
 if (!filePath) {
-  console.log('사용법: node test/benchmark-large-movie.js <영화파일경로>');
+  console.log('Usage: node test/benchmark-large-movie.js <movie-file-path>');
   process.exit(0);
 }
 
-// ─── 유틸리티 ───────────────────────────────────────────────
+// ─── Utilities ──────────────────────────────────────────────
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes}B`;
@@ -58,14 +58,14 @@ function pad(str, len, right = false) {
   return right ? str.padEnd(len) : str.padStart(len);
 }
 
-// 출력 버퍼 (콘솔 + 파일 동시 기록)
+// Output buffer (writes to console and file simultaneously)
 const outputLines = [];
 function log(msg = '') {
   console.log(msg);
   outputLines.push(msg);
 }
 
-// ─── 바이트 카운터 스트림 ───────────────────────────────────
+// ─── Byte counter stream ─────────────────────────────────────
 
 class ByteCounter extends Transform {
   constructor() {
@@ -79,7 +79,7 @@ class ByteCounter extends Transform {
   }
 }
 
-// ─── /dev/null 스트림 (해시 계산용) ─────────────────────────
+// ─── /dev/null stream (for hash calculation) ─────────────────
 
 class HashSink extends Writable {
   constructor() {
@@ -97,9 +97,9 @@ class HashSink extends Writable {
   }
 }
 
-// ─── 프레임 분석기 (스트리밍) ───────────────────────────────
+// ─── Frame analyzer (streaming) ──────────────────────────────
 
-// 메모리 효율적 프레임 분석기: 헤더(36B)만 버퍼링, 페이로드는 스킵
+// Memory-efficient frame analyzer: buffers only the header (36B), skips payload
 class FrameAnalyzer extends Transform {
   constructor() {
     super();
@@ -111,11 +111,11 @@ class FrameAnalyzer extends Transform {
   }
 
   _transform(chunk, enc, cb) {
-    this.push(chunk); // 원본 데이터 즉시 통과 (메모리 보존)
+    this.push(chunk); // pass through raw data immediately (preserve memory)
     let off = 0;
 
     while (off < chunk.length) {
-      // 페이로드 스킵 중
+      // skipping payload
       if (this._skipRemain > 0) {
         const skip = Math.min(this._skipRemain, chunk.length - off);
         this._skipRemain -= skip;
@@ -123,7 +123,7 @@ class FrameAnalyzer extends Transform {
         continue;
       }
 
-      // 헤더 수집 (36바이트: 32 헤더 + 4 payloadSize)
+      // collect header (36 bytes: 32 header + 4 payloadSize)
       const needed = (FRAME_HEADER_SIZE + 4) - this._headerBuf.length;
       if (needed > 0) {
         const take = Math.min(needed, chunk.length - off);
@@ -132,7 +132,7 @@ class FrameAnalyzer extends Transform {
         if (this._headerBuf.length < FRAME_HEADER_SIZE + 4) continue;
       }
 
-      // 헤더 파싱
+      // parse header
       const h = this._headerBuf;
       const flags = h.readUInt16LE(6);
       const hasCRC = (flags & FLAG.CRC32) !== 0;
@@ -171,7 +171,7 @@ class FrameAnalyzer extends Transform {
   _flush(cb) { cb(); }
 }
 
-// ─── 엔트로피 샘플링 (처음 N바이트만 읽기) ─────────────────
+// ─── Entropy sampling (reads only the first N bytes) ─────────
 
 async function sampleEntropy(fpath, sampleBytes) {
   return new Promise((resolve, reject) => {
@@ -195,7 +195,7 @@ async function sampleEntropy(fpath, sampleBytes) {
     const zeroRate = (freq[0] / size * 100);
     const uniqueBytes = freq.filter(f => f > 0).length;
 
-    // 128B 청크 중복 샘플
+    // 128B chunk deduplication sample
     const chunkMap = new Map();
     const totalChunks = Math.floor(size / 128);
     for (let i = 0; i < size - 128; i += 128) {
@@ -210,7 +210,7 @@ async function sampleEntropy(fpath, sampleBytes) {
   });
 }
 
-// ─── V8 Map 한계 확인 ────────────────────────────────────────
+// ─── V8 Map limit check ──────────────────────────────────────
 
 function estimateChunks(fileBytes, chunkSize) {
   return Math.ceil(fileBytes / chunkSize);
@@ -228,7 +228,7 @@ function minFeasibleChunkSize(fileBytes) {
   return 16384;
 }
 
-// ─── 단일 크기 스트리밍 벤치마크 ────────────────────────────
+// ─── Single-size streaming benchmark ────────────────────────
 
 async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) {
   const tmpDir = path.join(os.tmpdir(), 'mshzip-bench');
@@ -238,18 +238,18 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
   const stat = fs.statSync(fpath);
   const actualRead = Math.min(readBytes, stat.size);
 
-  // Map 한계 확인
+  // check Map limit
   const estChunks = estimateChunks(actualRead, chunkSize);
   if (estChunks > V8_MAP_MAX) {
-    log(`  ── ${label} — SKIP (예상 ${estChunks.toLocaleString()} 청크 > Map 한계 ${V8_MAP_MAX.toLocaleString()}) ──`);
+    log(`  ── ${label} — SKIP (estimated ${estChunks.toLocaleString()} chunks > Map limit ${V8_MAP_MAX.toLocaleString()}) ──`);
     log('');
     return null;
   }
 
   log(`  ── ${label} (chunk=${chunkSize}B, codec=${codec}, frame=${formatSize(BENCH_FRAME_LIMIT)}) ──`);
-  log(`  읽기 크기: ${formatSize(actualRead)} | 예상 청크: ${estChunks.toLocaleString()}`);
+  log(`  Read size: ${formatSize(actualRead)} | Estimated chunks: ${estChunks.toLocaleString()}`);
 
-  // ── Pack (압축) ──
+  // ── Pack (compress) ──
   const packPs = new PackStream({ chunkSize, codec, frameLimit: BENCH_FRAME_LIMIT });
   const packCounter = new ByteCounter();
   const frameAnalyzer = new FrameAnalyzer();
@@ -266,28 +266,28 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
   const ratio = ((1 - packedSize / actualRead) * 100).toFixed(3);
   const packSpeed = formatSpeed(actualRead, packMs);
 
-  log(`  Pack 완료: ${formatSize(actualRead)} → ${formatSize(packedSize)} (${ratio}%)`);
-  log(`  Pack 시간: ${(packMs / 1000).toFixed(2)}s | Pack 속도: ${packSpeed} MB/s`);
-  log(`  프레임 수: ${frameAnalyzer.frames.length} | 최종 사전: ${frameAnalyzer._globalDictSize.toLocaleString()}개`);
+  log(`  Pack done: ${formatSize(actualRead)} → ${formatSize(packedSize)} (${ratio}%)`);
+  log(`  Pack time: ${(packMs / 1000).toFixed(2)}s | Pack speed: ${packSpeed} MB/s`);
+  log(`  Frames: ${frameAnalyzer.frames.length} | Final dict: ${frameAnalyzer._globalDictSize.toLocaleString()} entries`);
 
-  // ── 프레임 상세 ──
+  // ── Frame detail ──
   const frames = frameAnalyzer.frames;
   if (frames.length > 0) {
     const totalReuse = frames.reduce((s, f) => s + f.reuseCount, 0);
     const totalSeq = frames.reduce((s, f) => s + f.seqCount, 0);
     const overallReuse = totalSeq > 0 ? (totalReuse / totalSeq * 100).toFixed(4) : '0';
 
-    log(`  전체 재사용율: ${overallReuse}% (${totalReuse.toLocaleString()} / ${totalSeq.toLocaleString()} 청크)`);
+    log(`  Overall reuse rate: ${overallReuse}% (${totalReuse.toLocaleString()} / ${totalSeq.toLocaleString()} chunks)`);
 
-    // 첫 3 + 마지막 3 프레임
+    // first 3 + last 3 frames
     log('');
-    log('  ' + pad('프레임#', 8, true) + pad('입력', 12) + pad('출력', 12) + pad('압축률', 10) + pad('신규', 12) + pad('재사용', 10) + pad('적중률', 10) + pad('누적사전', 14));
+    log('  ' + pad('Frame#', 8, true) + pad('Input', 12) + pad('Output', 12) + pad('Ratio', 10) + pad('New', 12) + pad('Reused', 10) + pad('HitRate', 10) + pad('DictTotal', 14));
     log('  ' + '─'.repeat(88));
 
     const showFrames = [];
     const first = Math.min(3, frames.length);
     for (let i = 0; i < first; i++) showFrames.push(frames[i]);
-    if (frames.length > 6) showFrames.push(null); // 생략 마커
+    if (frames.length > 6) showFrames.push(null); // omit marker
     const last = Math.min(3, frames.length - first);
     for (let i = frames.length - last; i < frames.length; i++) {
       if (i >= first) showFrames.push(frames[i]);
@@ -295,7 +295,7 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
 
     for (const f of showFrames) {
       if (!f) {
-        log('  ' + pad('...', 8, true) + pad('(중간 생략)', 40, true));
+        log('  ' + pad('...', 8, true) + pad('(middle omitted)', 40, true));
         continue;
       }
       log('  ' +
@@ -311,7 +311,7 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
     }
   }
 
-  // ── Unpack (해제) ──
+  // ── Unpack (decompress) ──
   log('');
   let unpackMs = 0;
   let unpackSpeed = '0';
@@ -332,32 +332,32 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
     restoredSize = hashSink.bytes;
     integrity = restoredSize === actualRead;
 
-    log(`  Unpack 완료: ${formatSize(restoredSize)}`);
-    log(`  Unpack 시간: ${(unpackMs / 1000).toFixed(2)}s | Unpack 속도: ${unpackSpeed} MB/s`);
-    log(`  무결성: ${integrity ? '✅ PASS' : '❌ FAIL'} (크기 ${integrity ? '일치' : `불일치: ${restoredSize} ≠ ${actualRead}`})`);
+    log(`  Unpack done: ${formatSize(restoredSize)}`);
+    log(`  Unpack time: ${(unpackMs / 1000).toFixed(2)}s | Unpack speed: ${unpackSpeed} MB/s`);
+    log(`  Integrity: ${integrity ? '✅ PASS' : '❌ FAIL'} (size ${integrity ? 'match' : `mismatch: ${restoredSize} ≠ ${actualRead}`})`);
   } catch (err) {
-    log(`  Unpack 오류: ${err.message}`);
-    log(`  (Pack은 성공했으나 Unpack 검증 실패 — 메모리/디스크 제약 가능)`);
+    log(`  Unpack error: ${err.message}`);
+    log(`  (Pack succeeded but Unpack verification failed — possible memory/disk constraint)`);
     unpackSpeed = 'ERR';
   }
 
-  // 정리
+  // cleanup
   try { fs.unlinkSync(mshFile); } catch (e) { /* ignore */ }
 
-  // ── 4K 스트리밍 계산 ──
+  // ── 4K streaming calculation ──
   const BITRATE_4K = 100 * 1000 * 1000 / 8; // 100Mbps → bytes/sec
   const packBps = actualRead / (packMs / 1000);
   const unpackBps = actualRead / (unpackMs / 1000);
 
   log('');
-  log(`  4K 동시 스트리밍 (100Mbps 기준):`);
-  log(`    Pack   ${packSpeed} MB/s → 동시 ${Math.floor(packBps / BITRATE_4K)}개`);
-  log(`    Unpack ${unpackSpeed} MB/s → 동시 ${Math.floor(unpackBps / BITRATE_4K)}개`);
+  log(`  4K concurrent streaming (100Mbps baseline):`);
+  log(`    Pack   ${packSpeed} MB/s → ${Math.floor(packBps / BITRATE_4K)} concurrent streams`);
+  log(`    Unpack ${unpackSpeed} MB/s → ${Math.floor(unpackBps / BITRATE_4K)} concurrent streams`);
 
-  // ── 전송 절감 ──
+  // ── Transfer savings ──
   const savedBytes = actualRead - packedSize;
   log('');
-  log(`  전송 절감: ${savedBytes > 0 ? '-' : '+'}${formatSize(Math.abs(savedBytes))} (${ratio}%)`);
+  log(`  Transfer savings: ${savedBytes > 0 ? '-' : '+'}${formatSize(Math.abs(savedBytes))} (${ratio}%)`);
 
   return {
     label, actualRead, packedSize, ratio: parseFloat(ratio),
@@ -369,11 +369,11 @@ async function runStreamingBenchmark(fpath, readBytes, chunkSize, codec, label) 
   };
 }
 
-// ─── 메인 ───────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────
 
 async function main() {
   if (!fs.existsSync(filePath)) {
-    console.error(`파일 없음: ${filePath}`);
+    console.error(`File not found: ${filePath}`);
     process.exit(1);
   }
 
@@ -381,7 +381,7 @@ async function main() {
   const totalFileSize = stat.size;
   const fileName = path.basename(filePath);
 
-  // 테스트 크기 설정
+  // test size configuration
   const testSizes = [
     { size: 1 * 1024 * 1024 * 1024, label: '1GB' },
     { size: 5 * 1024 * 1024 * 1024, label: '5GB' },
@@ -392,47 +392,47 @@ async function main() {
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
   log('╔' + '═'.repeat(100) + '╗');
-  log('║  mshzip 대용량 4K 영화 벤치마크 (1GB / 5GB / 10GB)' + ' '.repeat(49) + '║');
+  log('║  mshzip large-file 4K movie benchmark (1GB / 5GB / 10GB)' + ' '.repeat(43) + '║');
   log('╚' + '═'.repeat(100) + '╝');
   log('');
-  log(`  날짜:      ${dateStr}`);
-  log(`  파일:      ${fileName}`);
-  log(`  경로:      ${filePath}`);
-  log(`  전체 크기: ${formatSize(totalFileSize)}`);
-  log(`  Node.js:   ${process.version}`);
-  log(`  OS:        ${os.type()} ${os.release()} (${os.arch()})`);
-  log(`  CPU:       ${os.cpus()[0].model}`);
-  log(`  RAM:       ${formatSize(os.totalmem())}`);
-  log(`  힙 제한:   ${formatSize(require('v8').getHeapStatistics().heap_size_limit)}`);
+  log(`  Date:       ${dateStr}`);
+  log(`  File:       ${fileName}`);
+  log(`  Path:       ${filePath}`);
+  log(`  Total size: ${formatSize(totalFileSize)}`);
+  log(`  Node.js:    ${process.version}`);
+  log(`  OS:         ${os.type()} ${os.release()} (${os.arch()})`);
+  log(`  CPU:        ${os.cpus()[0].model}`);
+  log(`  RAM:        ${formatSize(os.totalmem())}`);
+  log(`  Heap limit: ${formatSize(require('v8').getHeapStatistics().heap_size_limit)}`);
   log('');
 
-  // ── 엔트로피 분석 (50MB 샘플) ──
+  // ── Entropy analysis (50MB sample) ──
   log('╔' + '═'.repeat(100) + '╗');
-  log('║  사전 분석: 엔트로피 & 128B 청크 중복 (50MB 샘플)' + ' '.repeat(50) + '║');
+  log('║  Pre-analysis: Entropy & 128B chunk deduplication (50MB sample)' + ' '.repeat(36) + '║');
   log('╚' + '═'.repeat(100) + '╝');
   log('');
 
   const sample = await sampleEntropy(filePath, 50 * 1024 * 1024);
-  log(`  샘플 크기:       ${formatSize(sample.sampleSize)}`);
-  log(`  엔트로피:        ${sample.entropy.toFixed(4)} bits/byte (최대 8.0, ${(sample.entropy / 8 * 100).toFixed(1)}%)`);
-  log(`  고유 바이트 값:  ${sample.uniqueBytes}/256`);
-  log(`  0x00 비율:       ${sample.zeroRate.toFixed(3)}%`);
-  log(`  128B 청크 수:    ${sample.totalChunks.toLocaleString()}`);
-  log(`  고유 청크 수:    ${sample.uniqueChunks.toLocaleString()}`);
-  log(`  중복 청크 수:    ${sample.dupChunks.toLocaleString()}`);
-  log(`  128B 중복률:     ${sample.dedupRate.toFixed(4)}%`);
+  log(`  Sample size:        ${formatSize(sample.sampleSize)}`);
+  log(`  Entropy:            ${sample.entropy.toFixed(4)} bits/byte (max 8.0, ${(sample.entropy / 8 * 100).toFixed(1)}%)`);
+  log(`  Unique byte values: ${sample.uniqueBytes}/256`);
+  log(`  0x00 ratio:         ${sample.zeroRate.toFixed(3)}%`);
+  log(`  128B chunk count:   ${sample.totalChunks.toLocaleString()}`);
+  log(`  Unique chunks:      ${sample.uniqueChunks.toLocaleString()}`);
+  log(`  Duplicate chunks:   ${sample.dupChunks.toLocaleString()}`);
+  log(`  128B dedup rate:    ${sample.dedupRate.toFixed(4)}%`);
   log('');
 
-  // ── 청크 크기별 빠른 비교 (100MB) ──
+  // ── Quick comparison by chunk size (100MB) ──
   log('╔' + '═'.repeat(100) + '╗');
-  log('║  청크 크기별 빠른 비교 (100MB 샘플, gzip)' + ' '.repeat(57) + '║');
+  log('║  Quick comparison by chunk size (100MB sample, gzip)' + ' '.repeat(47) + '║');
   log('╚' + '═'.repeat(100) + '╝');
   log('');
 
   const quickSize = Math.min(100 * 1024 * 1024, totalFileSize);
   const chunkSizes = [64, 128, 256, 512, 1024, 2048, 4096];
 
-  log('  ' + pad('청크', 8) + pad('압축크기', 12) + pad('압축률', 10) + pad('Pack(s)', 10) + pad('Pack속도', 12) + pad('Unpack(s)', 10) + pad('Unpack속도', 12));
+  log('  ' + pad('Chunk', 8) + pad('PackedSize', 12) + pad('Ratio', 10) + pad('Pack(s)', 10) + pad('PackSpeed', 12) + pad('Unpack(s)', 10) + pad('UnpackSpeed', 12));
   log('  ' + '─'.repeat(74));
 
   for (const cs of chunkSizes) {
@@ -479,7 +479,7 @@ async function main() {
         pad(unpackSpd, 12)
       );
     } catch (e) {
-      log(`  ${pad(`${cs}B`, 8)} 오류: ${e.message}`);
+      log(`  ${pad(`${cs}B`, 8)} error: ${e.message}`);
     }
 
     try { fs.unlinkSync(tmpMsh); } catch (e) { /* ignore */ }
@@ -487,22 +487,22 @@ async function main() {
 
   log('');
 
-  // ── 대용량 테스트 (1GB / 5GB / 전체 파일) ──
+  // ── Large-file tests (1GB / 5GB / full file) ──
   const allResults = [];
 
-  // 테스트 목록 생성: 파일 크기와 Map 한계 고려
+  // build test list: account for file size and Map limit
   const testPlan = [];
 
   for (const ts of testSizes) {
     const actualSize = Math.min(ts.size, totalFileSize);
     const effectiveLabel = ts.size > totalFileSize
-      ? `${formatSize(totalFileSize)} (전체)`
+      ? `${formatSize(totalFileSize)} (full)`
       : ts.label;
 
-    // 10GB 요청이나 파일이 작으면 전체 파일로 대체
+    // if 10GB requested but file is smaller, fall back to full file
     if (ts.size > totalFileSize && ts.label === '10GB') {
       if (totalFileSize > 5 * 1024 * 1024 * 1024) {
-        // 전체 파일 테스트 (1024B + 4096B + none)
+        // full file test (1024B + 4096B + none)
         testPlan.push({ size: totalFileSize, label: `${effectiveLabel}`, chunkSize: 1024, codec: 'gzip' });
         testPlan.push({ size: totalFileSize, label: `${effectiveLabel}`, chunkSize: 4096, codec: 'gzip' });
         testPlan.push({ size: totalFileSize, label: `${effectiveLabel}`, chunkSize: 1024, codec: 'none' });
@@ -512,10 +512,10 @@ async function main() {
 
     if (ts.size > totalFileSize) continue;
 
-    // 각 크기별 최적 청크 크기 결정
+    // determine optimal chunk size per test size
     const minCS = minFeasibleChunkSize(actualSize);
 
-    // gzip 테스트: 가능한 작은 청크 + 큰 청크
+    // gzip tests: smallest feasible chunk + larger chunks
     if (isFeasible(actualSize, 128)) {
       testPlan.push({ size: actualSize, label: ts.label, chunkSize: 128, codec: 'gzip' });
     }
@@ -525,13 +525,13 @@ async function main() {
     testPlan.push({ size: actualSize, label: ts.label, chunkSize: 1024, codec: 'gzip' });
     testPlan.push({ size: actualSize, label: ts.label, chunkSize: 4096, codec: 'gzip' });
 
-    // none 테스트 (dedup만): 128B 가능하면 포함
+    // none tests (dedup only): include 128B if feasible
     if (isFeasible(actualSize, 128)) {
       testPlan.push({ size: actualSize, label: ts.label, chunkSize: 128, codec: 'none' });
     }
   }
 
-  // 중복 제거
+  // deduplicate
   const seen = new Set();
   const uniquePlan = testPlan.filter(t => {
     const key = `${t.size}-${t.chunkSize}-${t.codec}`;
@@ -540,13 +540,13 @@ async function main() {
     return true;
   });
 
-  // 크기별로 그룹핑하여 실행
+  // group by size and run
   let lastSize = 0;
   for (const t of uniquePlan) {
     if (t.size !== lastSize) {
       const sizeLabel = t.label || formatSize(t.size);
       log('╔' + '═'.repeat(100) + '╗');
-      const title = `  ${sizeLabel} 테스트`;
+      const title = `  ${sizeLabel} Test`;
       log(`║${title}${' '.repeat(100 - title.length)}║`);
       log('╚' + '═'.repeat(100) + '╝');
       log('');
@@ -558,24 +558,24 @@ async function main() {
     if (r) allResults.push(r);
     log('');
 
-    // GC 강제 실행 (가능한 경우)
+    // force GC if available
     if (global.gc) global.gc();
   }
 
-  // ── 종합 비교표 ──
+  // ── Summary comparison table ──
   log('╔' + '═'.repeat(100) + '╗');
-  log('║  종합 비교표' + ' '.repeat(87) + '║');
+  log('║  Summary Comparison Table' + ' '.repeat(74) + '║');
   log('╚' + '═'.repeat(100) + '╝');
   log('');
 
   log('  ' +
-    pad('테스트', 35, true) +
-    pad('입력', 10) +
-    pad('출력', 10) +
-    pad('압축률', 10) +
+    pad('Test', 35, true) +
+    pad('Input', 10) +
+    pad('Output', 10) +
+    pad('Ratio', 10) +
     pad('Pack', 12) +
     pad('Unpack', 12) +
-    pad('무결성', 6)
+    pad('OK', 6)
   );
   log('  ' + '─'.repeat(95));
 
@@ -593,17 +593,17 @@ async function main() {
 
   log('');
 
-  // ── 결론 ──
+  // ── Conclusion ──
   log('╔' + '═'.repeat(100) + '╗');
-  log('║  결론' + ' '.repeat(94) + '║');
+  log('║  Conclusion' + ' '.repeat(88) + '║');
   log('╚' + '═'.repeat(100) + '╝');
   log('');
 
-  // 코덱별 결과 분류
+  // classify results by codec
   const gzipResults = allResults.filter(r => r.label.includes('gzip'));
   const noneResults = allResults.filter(r => r.label.includes('none'));
 
-  // 청크 크기별 gzip 결과 분류
+  // classify gzip results by chunk size
   const gzip128 = gzipResults.filter(r => r.label.includes('128B'));
   const gzip1024 = gzipResults.filter(r => r.label.includes('1024B'));
   const gzip4096 = gzipResults.filter(r => r.label.includes('4096B'));
@@ -617,62 +617,62 @@ async function main() {
       ? validUnpack.reduce((s, r) => s + parseFloat(r.unpackSpeed), 0) / validUnpack.length : 0;
 
     log(`  ${label}:`);
-    log(`    평균 압축률:      ${avgRatio.toFixed(3)}%`);
-    log(`    평균 Pack 속도:   ${avgPack.toFixed(1)} MB/s`);
+    log(`    Avg ratio:        ${avgRatio.toFixed(3)}%`);
+    log(`    Avg pack speed:   ${avgPack.toFixed(1)} MB/s`);
     if (avgUnpack > 0) {
-      log(`    평균 Unpack 속도: ${avgUnpack.toFixed(1)} MB/s`);
+      log(`    Avg unpack speed: ${avgUnpack.toFixed(1)} MB/s`);
     }
     log('');
   }
 
   if (noneResults.length > 0) {
     const avgRatioNone = noneResults.reduce((s, r) => s + r.ratio, 0) / noneResults.length;
-    log(`  none (dedup만):`);
-    log(`    평균 압축률: ${avgRatioNone.toFixed(3)}% (순수 dedup 오버헤드)`);
+    log(`  none (dedup only):`);
+    log(`    Avg ratio: ${avgRatioNone.toFixed(3)}% (pure dedup overhead)`);
     log('');
   }
 
-  // 4K 스트리밍
+  // 4K streaming
   const BITRATE_4K = 100 * 1000 * 1000 / 8;
   const validUnpacks = allResults.filter(r => r.unpackSpeed !== 'ERR' && parseFloat(r.unpackSpeed) > 0);
   if (validUnpacks.length > 0) {
     const bestUnpack = Math.max(...validUnpacks.map(r => parseFloat(r.unpackSpeed)));
     const maxStreams = Math.floor(bestUnpack * 1024 * 1024 / BITRATE_4K);
-    log(`  4K 동시 스트리밍 최대: ${maxStreams}개 (Unpack ${bestUnpack} MB/s 기준)`);
+    log(`  4K max concurrent streams: ${maxStreams} (Unpack ${bestUnpack} MB/s baseline)`);
     log('');
   }
 
-  log(`  파일 엔트로피: ${sample.entropy.toFixed(4)}/8.0 (${(sample.entropy / 8 * 100).toFixed(1)}%)`);
-  log(`  128B 청크 중복률: ${sample.dedupRate.toFixed(4)}%`);
-  log(`  V8 Map 한계: ${V8_MAP_MAX.toLocaleString()} 항목`);
+  log(`  File entropy: ${sample.entropy.toFixed(4)}/8.0 (${(sample.entropy / 8 * 100).toFixed(1)}%)`);
+  log(`  128B chunk dedup rate: ${sample.dedupRate.toFixed(4)}%`);
+  log(`  V8 Map limit: ${V8_MAP_MAX.toLocaleString()} entries`);
   log('');
 
   const anyPositive = allResults.some(r => r.ratio > 0);
   const anyNegative = allResults.some(r => r.ratio < 0);
 
   if (anyPositive && anyNegative) {
-    log('  판정: 청크 크기에 따라 결과가 다름');
-    log('    → 작은 청크(128B): 프레임 헤더/varint 오버헤드 > dedup 효과 (크기 증가)');
-    log('    → 큰 청크(1024B+): gzip 효율 향상으로 소폭 압축 가능');
-    log('    → H.265 영상은 엔트로피 99.6%로 dedup 효과가 거의 0%');
+    log('  Verdict: Results vary by chunk size');
+    log('    → Small chunk (128B): frame header/varint overhead > dedup gain (size increase)');
+    log('    → Large chunk (1024B+): improved gzip efficiency allows slight compression');
+    log('    → H.265 video has ~99.6% entropy, so dedup gain is nearly 0%');
   } else if (anyPositive) {
-    log('  판정: ✅ 이 영상 파일에서 압축 효과 있음');
+    log('  Verdict: ✅ Compression effective for this video file');
   } else {
-    log('  판정: ⚠️  이 영상 파일에서 압축 효과 없음 (엔트로피 과다)');
+    log('  Verdict: ⚠️  Compression not effective for this video file (entropy too high)');
   }
 
   log('');
-  log('  벤치마크 완료.');
+  log('  Benchmark complete.');
   log('');
 
-  // ── test.txt 저장 ──
+  // ── save test.txt ──
   const testTxtPath = path.join(__dirname, '..', 'test.txt');
   fs.writeFileSync(testTxtPath, outputLines.join('\n'), 'utf8');
-  console.log(`\n  ✅ 결과 저장: ${testTxtPath}`);
+  console.log(`\n  ✅ Results saved: ${testTxtPath}`);
 }
 
 main().catch((err) => {
-  console.error('오류:', err.message);
+  console.error('Error:', err.message);
   console.error(err.stack);
   process.exit(1);
 });
