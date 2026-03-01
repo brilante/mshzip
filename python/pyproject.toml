@@ -1,6 +1,6 @@
 [project]
 name = "mshzip"
-version = "1.0.0"
+version = "1.0.1"
 description = "Fixed-chunk dedup + entropy compression utility (MSH1 binary format)"
 readme = "README.md"
 license = { text = "MIT" }
@@ -17,6 +17,10 @@ classifiers = [
     "Topic :: System :: Archiving :: Compression",
 ]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/brilante/mshzip"
+Repository = "https://github.com/brilante/mshzip"
 
 [project.scripts]
 mshzip = "mshzip.cli:main"
