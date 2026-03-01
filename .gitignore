@@ -49,4 +49,8 @@ nodejs/package-lock.json
 README_kr.md
 demo-test.js
 demo test.md
+demo test2.md
 MSHZIP Logic.md
+
+# 통합 테스트
+test/

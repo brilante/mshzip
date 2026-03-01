@@ -13,7 +13,7 @@ It shares the MSH1 binary format, and the Node.js and Python implementations are
 
 ## Benchmark Results
 
-> Node.js 221 PASS + Python 253 PASS = **474 tests all passed**
+> Node.js 221 + Python 253 + Stress 56 = **530 tests all passed**
 
 ### Transfer Time Comparison — Raw vs mshzip
 
@@ -21,31 +21,31 @@ How much faster is it to compress first, then transfer, compared to sending raw 
 
 > **Formula**: mshzip total = pack time + (compressed size / network speed) + unpack time
 
-#### Scenario: 1 GB Log File (82% compression → 180 MB after mshzip)
+#### Scenario: 1 GB Log File (84.8% compression → 155 MB after mshzip)
 
 | Method | 10 Mbps | 100 Mbps | 1 Gbps | 10 Gbps |
 |--------|--------:|--------:|-------:|-------:|
-| **Raw transfer** | 13m 20s | 1m 20s | 8.0s | 0.8s |
-| **mshzip + transfer** | 2m 37s | 29.4s | 16.5s | 15.2s |
-| **Speedup** | **5.1x faster** | **2.7x faster** | 0.5x | 0.05x |
+| **Raw transfer** | 14.3m | 1.4m | 8.6s | 859ms |
+| **mshzip + transfer** | 3.4m | 1.4m | 1.2m | 1.2m |
+| **Speedup** | **4.2x faster** | **~1x** | 0.11x | 0.01x |
 
-#### Scenario: 10 GB Repetitive Data (100% compression → 10 KB after mshzip)
+#### Scenario: 10 GB Repetitive Data (100% compression → 451 KB after mshzip)
 
 | Method | 10 Mbps | 100 Mbps | 1 Gbps | 10 Gbps |
 |--------|--------:|--------:|-------:|-------:|
-| **Raw transfer** | 2h 13m | 13m 20s | 1m 20s | 8.0s |
-| **mshzip + transfer** | 15.0s | 15.0s | 15.0s | 15.0s |
-| **Speedup** | **533x faster** | **53x faster** | **5.3x faster** | 0.5x |
+| **Raw transfer** | 2.4h | 14.3m | 1.4m | 8.6s |
+| **mshzip + transfer** | 1.4m | 1.4m | 1.4m | 1.4m |
+| **Speedup** | **105x faster** | **10.6x faster** | **1.06x** | 0.11x |
 
-#### Scenario: 50 GB JSON Dataset (85% compression → 7.5 GB after mshzip)
+#### Scenario: 50 GB JSON Dataset (80.4% compression → 9.8 GB after mshzip)
 
 | Method | 100 Mbps | 1 Gbps | 10 Gbps |
 |--------|--------:|-------:|-------:|
-| **Raw transfer** | 1h 6m | 6m 40s | 40.0s |
-| **mshzip + transfer** | 19m 15s | 8m 31s | 8m 2s |
-| **Speedup** | **3.4x faster** | 0.8x | 0.08x |
+| **Raw transfer** | 1.2h | 7.2m | 43s |
+| **mshzip + transfer** | 1.3h | 1.1h | 1.1h |
+| **Speedup** | 0.93x | 0.11x | 0.01x |
 
-> **Key takeaway**: mshzip delivers the biggest wins on **slow-to-medium networks** (10 Mbps ~ 1 Gbps) with **high-redundancy data**. On 10 Gbps+ LAN, raw transfer is faster because pack/unpack overhead dominates.
+> **Key takeaway**: mshzip delivers the biggest wins on **slow networks** (10 Mbps ~ 100 Mbps) with **high-redundancy data** (repeat, zeros, log). At GB scale, CPU pack/unpack time dominates—so for low-redundancy data on fast networks (≥1 Gbps), raw transfer wins.
 
 ### Streaming Transfer — Pack & Send Simultaneously
 
@@ -58,10 +58,10 @@ Producer → PackStream → Network → UnpackStream → Consumer
 
 | Data (size) | Streaming Pack+Send | Buffered Pack→Send | Raw Send | Streaming vs Raw |
 |-------------|--------------------:|-------------------:|---------:|-----------------:|
-| Log 1 MB | 89 ms | 83 + send | send only | **~1x** (negligible overhead) |
-| Log 5 MB | 145 ms | 70 + send | send only | frames sent during pack |
-| Log 10 MB | 260 ms | 161 + send | send only | **50% of data already sent** by pack end |
-| Repeat 10 MB | 222 ms | 104 + send | send only | output is ~330B, instant send |
+| Log 1 MB | 89 ms | 80 + send | send only | **~1x** (negligible overhead) |
+| Log 5 MB | 141 ms | 65 + send | send only | frames sent during pack |
+| Log 10 MB | 318 ms | 172 + send | send only | **50% of data already sent** by pack end |
+| Repeat 10 MB | 222 ms | 106 + send | send only | output is ~330B, instant send |
 
 **Streaming advantages**:
 - **First byte out in < 100 ms** — receiver starts getting data immediately
@@ -73,43 +73,44 @@ Producer → PackStream → Network → UnpackStream → Consumer
 
 | Files | 1 Worker | 4 Workers | Speedup |
 |------:|---------:|----------:|--------:|
-| 4 x 1 MB | 75 ms | 42 ms | **1.8x** |
-| 8 x 1 MB | 150 ms | 68 ms | **2.2x** |
-| 10 x 1 MB (10 MB throughput) | — | 68 ms | **147 MB/s** |
+| 4 x 1 MB | 73 ms | 40 ms | **1.8x** |
+| 8 x 1 MB | 146 ms | 68 ms | **2.1x** |
+| 10 x 1 MB (10 MB throughput) | — | 67 ms | **149 MB/s** |
 
 ### Compression by Data Type (50MB, chunk=128B, gzip)
 
 | Data Type | Input | Output | Ratio | Pack Speed | Unpack Speed |
 |-----------|------:|-------:|------:|-----------:|-------------:|
-| Repetitive pattern | 50 MB | 2.7 KB | **100.0%** | 95.6 MB/s | 1,263 MB/s |
-| All zeros | 50 MB | 1.8 KB | **100.0%** | 98.8 MB/s | 2,137 MB/s |
-| CSV | 50 MB | 6.0 MB | **88.0%** | 60.3 MB/s | 290 MB/s |
-| JSON | 50 MB | 7.4 MB | **85.1%** | 58.8 MB/s | 301 MB/s |
-| Log files | 50 MB | 9.0 MB | **82.0%** | 57.2 MB/s | 280 MB/s |
-| Binary struct | 50 MB | 15.9 MB | **68.3%** | 51.1 MB/s | 262 MB/s |
-| Mixed text | 50 MB | 22.7 MB | **54.7%** | 42.8 MB/s | 226 MB/s |
-| Random binary | 10 MB | 10.2 MB | -1.6% | 35.2 MB/s | 415 MB/s |
+| Repetitive pattern | 50 MB | 2.7 KB | **100.0%** | 95.1 MB/s | 1,276 MB/s |
+| All zeros | 50 MB | 1.8 KB | **100.0%** | 98.0 MB/s | 2,119 MB/s |
+| Single byte (0x42) | 50 MB | 1.8 KB | **100.0%** | 100.1 MB/s | 2,079 MB/s |
+| CSV | 50 MB | 6.0 MB | **88.0%** | 60.5 MB/s | 286 MB/s |
+| JSON | 50 MB | 7.4 MB | **85.1%** | 60.1 MB/s | 302 MB/s |
+| Log files | 50 MB | 9.0 MB | **82.0%** | 55.6 MB/s | 274 MB/s |
+| Binary struct | 50 MB | 15.9 MB | **68.2%** | 51.6 MB/s | 251 MB/s |
+| Mixed text | 50 MB | 22.7 MB | **54.7%** | 43.6 MB/s | 228 MB/s |
+| Random binary | 10 MB | 10.2 MB | -1.6% | 35.4 MB/s | 441 MB/s |
 
 ### Speed by Chunk Size (1MB repeat, gzip)
 
 | Chunk Size | Ratio | Pack Speed | Pack Time |
 |-----------:|------:|-----------:|----------:|
-| 4096 B | 99.9% | **1,237 MB/s** | 0.8 ms |
-| 2048 B | 100.0% | 980 MB/s | 1.0 ms |
-| 1024 B | 100.0% | 703 MB/s | 1.4 ms |
-| 512 B | 100.0% | 395 MB/s | 2.5 ms |
-| 256 B | 100.0% | 237 MB/s | 4.2 ms |
-| 128 B | 100.0% | 76 MB/s | 13.1 ms |
-| 64 B | 100.0% | 65 MB/s | 15.4 ms |
-| 8 B | 99.9% | 7 MB/s | 151.6 ms |
+| 4096 B | 99.9% | **1,177 MB/s** | 0.8 ms |
+| 2048 B | 100.0% | 979 MB/s | 1.0 ms |
+| 1024 B | 100.0% | 680 MB/s | 1.5 ms |
+| 512 B | 100.0% | 407 MB/s | 2.5 ms |
+| 256 B | 100.0% | 215 MB/s | 4.6 ms |
+| 128 B | 100.0% | 70 MB/s | 14.2 ms |
+| 64 B | 100.0% | 60 MB/s | 16.8 ms |
+| 8 B | 99.9% | 6 MB/s | 156.0 ms |
 
 ### Large File Performance (gzip, chunk=1024B)
 
 | Input | Output | Ratio | Pack Speed | Pack Time |
 |------:|-------:|------:|-----------:|----------:|
-| 100 MB (repeat) | 1,005 B | **100.0%** | **684 MB/s** | 146 ms |
-| 50 MB (repeat) | 587 B | **100.0%** | **647 MB/s** | 77 ms |
-| 50 MB (log) | 8.3 MB | **83.5%** | 183 MB/s | 273 ms |
+| 100 MB (repeat) | 1,005 B | **100.0%** | **691 MB/s** | 145 ms |
+| 50 MB (repeat) | 587 B | **100.0%** | **645 MB/s** | 78 ms |
+| 50 MB (log) | 8.3 MB | **83.5%** | 189 MB/s | 264 ms |
 
 ---
 
@@ -117,8 +118,8 @@ Producer → PackStream → Network → UnpackStream → Consumer
 
 | Implementation | Language | Dependencies | Tests |
 |----------------|----------|-------------|-------|
-| **[nodejs/](nodejs/)** | Node.js 18+ | dotenv | 221 PASS |
-| **[python/](python/)** | Python 3.10+ | None (stdlib only) | 253 PASS |
+| **[nodejs/](nodejs/)** | Node.js 18+ | dotenv | 221 PASS + 32 stress |
+| **[python/](python/)** | Python 3.10+ | None (stdlib only) | 253 PASS + 32 stress |
 
 Both implementations use the same MSH1 binary format. Files compressed with Node.js can be decompressed with Python and vice versa.
 
@@ -385,12 +386,14 @@ Original data
 
 | Data Type | Ratio | Pack Speed | Notes |
 |-----------|-------|------------|-------|
-| Repetitive pattern | ~95-100% | 200-694 MB/s | Most chunks are duplicates |
+| Repetitive pattern | **100%** | 95-645 MB/s | Most chunks are duplicates |
+| All 0x00 / 0xFF | **100%** | 98-100 MB/s | Perfect duplication |
 | Log files | ~82% | 56 MB/s | Timestamp variation, structural repetition |
-| JSON documents | ~85% | 57 MB/s | Key name and structural repetition |
-| Mixed text | ~40% | 100 MB/s | Partial duplication |
-| All 0x00 | ~99% | 500+ MB/s | Perfect duplication |
-| Random binary | -1~-2% | 50 MB/s | No duplication, overhead only |
+| JSON documents | ~85% | 60 MB/s | Key name and structural repetition |
+| CSV | ~88% | 61 MB/s | Row structure repetition |
+| Mixed text | ~55% | 44 MB/s | Partial duplication |
+| Binary struct | ~68% | 52 MB/s | Fixed-size record repetition |
+| Random binary | -1~-2% | 35 MB/s | No duplication, overhead only |
 | Already compressed (mp4, zip, jpg) | -1~-2% | - | Virtually no dedup effect |
 
 ### Auto Chunk Detection Results
@@ -471,7 +474,7 @@ mshzip/
 │   │   ├── stream.js               # Transform Stream (PackStream/UnpackStream)
 │   │   ├── varint.js               # uvarint (LEB128) encoding/decoding
 │   │   └── parallel.js             # Worker Thread pool (multi-file)
-│   ├── test/                       # Benchmarks (221 PASS)
+│   ├── test/                       # Benchmarks (221 tests)
 │   │   ├── benchmark.js            # Comprehensive tests (codec/chunk/stream/parallel)
 │   │   ├── benchmark-4k-movie.js   # 4K video benchmark
 │   │   └── benchmark-large-movie.js# Large file streaming benchmark
@@ -487,7 +490,7 @@ mshzip/
 │   │   ├── varint.py               # uvarint (LEB128) encoding/decoding
 │   │   ├── parallel.py             # ProcessPoolExecutor (multi-file)
 │   │   └── cli.py                  # CLI entry point
-│   ├── tests/                      # pytest (253 PASS)
+│   ├── tests/                      # pytest (253 tests)
 │   │   ├── conftest.py             # 9 data generators + test constants
 │   │   ├── test_varint.py          # varint encoding/decoding (30)
 │   │   ├── test_packer.py          # Compression (16)
