@@ -9,6 +9,68 @@ It shares the MSH1 binary format, and the Node.js and Python implementations are
 
 > Node.js 221 PASS + Python 253 PASS = **474 tests all passed**
 
+### Transfer Time Comparison — Raw vs mshzip
+
+How much faster is it to compress first, then transfer, compared to sending raw data?
+
+> **Formula**: mshzip total = pack time + (compressed size / network speed) + unpack time
+
+#### Scenario: 1 GB Log File (82% compression → 180 MB after mshzip)
+
+| Method | 10 Mbps | 100 Mbps | 1 Gbps | 10 Gbps |
+|--------|--------:|--------:|-------:|-------:|
+| **Raw transfer** | 13m 20s | 1m 20s | 8.0s | 0.8s |
+| **mshzip + transfer** | 2m 37s | 29.4s | 16.5s | 15.2s |
+| **Speedup** | **5.1x faster** | **2.7x faster** | 0.5x | 0.05x |
+
+#### Scenario: 10 GB Repetitive Data (100% compression → 10 KB after mshzip)
+
+| Method | 10 Mbps | 100 Mbps | 1 Gbps | 10 Gbps |
+|--------|--------:|--------:|-------:|-------:|
+| **Raw transfer** | 2h 13m | 13m 20s | 1m 20s | 8.0s |
+| **mshzip + transfer** | 15.0s | 15.0s | 15.0s | 15.0s |
+| **Speedup** | **533x faster** | **53x faster** | **5.3x faster** | 0.5x |
+
+#### Scenario: 50 GB JSON Dataset (85% compression → 7.5 GB after mshzip)
+
+| Method | 100 Mbps | 1 Gbps | 10 Gbps |
+|--------|--------:|-------:|-------:|
+| **Raw transfer** | 1h 6m | 6m 40s | 40.0s |
+| **mshzip + transfer** | 19m 15s | 8m 31s | 8m 2s |
+| **Speedup** | **3.4x faster** | 0.8x | 0.08x |
+
+> **Key takeaway**: mshzip delivers the biggest wins on **slow-to-medium networks** (10 Mbps ~ 1 Gbps) with **high-redundancy data**. On 10 Gbps+ LAN, raw transfer is faster because pack/unpack overhead dominates.
+
+### Streaming Transfer — Pack & Send Simultaneously
+
+mshzip supports streaming mode (`-i - -o -`), where data is compressed and transmitted in real-time without waiting for the full pack to complete.
+
+```
+Producer → PackStream → Network → UnpackStream → Consumer
+            (real-time frame-by-frame, no full-file buffering)
+```
+
+| Data (size) | Streaming Pack+Send | Buffered Pack→Send | Raw Send | Streaming vs Raw |
+|-------------|--------------------:|-------------------:|---------:|-----------------:|
+| Log 1 MB | 89 ms | 83 + send | send only | **~1x** (negligible overhead) |
+| Log 5 MB | 145 ms | 70 + send | send only | frames sent during pack |
+| Log 10 MB | 260 ms | 161 + send | send only | **50% of data already sent** by pack end |
+| Repeat 10 MB | 222 ms | 104 + send | send only | output is ~330B, instant send |
+
+**Streaming advantages**:
+- **First byte out in < 100 ms** — receiver starts getting data immediately
+- **Constant memory** — processes frame-by-frame (default 64 MB), no full-file buffering
+- **Pipeline-friendly** — `cat data | mshzip pack -i - -o - | curl -T - ...`
+- **4 GB+ files supported** — 64-bit origBytes header, multi-frame architecture
+
+### Parallel Multi-File Processing
+
+| Files | 1 Worker | 4 Workers | Speedup |
+|------:|---------:|----------:|--------:|
+| 4 x 1 MB | 75 ms | 42 ms | **1.8x** |
+| 8 x 1 MB | 150 ms | 68 ms | **2.2x** |
+| 10 x 1 MB (10 MB throughput) | — | 68 ms | **147 MB/s** |
+
 ### Compression by Data Type (50MB, chunk=128B, gzip)
 
 | Data Type | Input | Output | Ratio | Pack Speed | Unpack Speed |
