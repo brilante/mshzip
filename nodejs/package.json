@@ -1,6 +1,6 @@
 {
   "name": "msh-zip",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Fixed-chunk dedup + entropy compression utility (MSH1 binary format)",
   "main": "lib/index.js",
   "bin": {
@@ -31,7 +31,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/brilante33/mshzip.git"
+    "url": "https://github.com/brilante/mshzip.git"
   },
   "engines": {
     "node": ">=18.0.0"
