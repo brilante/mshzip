@@ -5,11 +5,43 @@
 A tool that removes duplicates using SHA-256 hash-based deduplication on data with repetitive patterns, then applies gzip entropy compression.
 It shares the MSH1 binary format, and the Node.js and Python implementations are 100% cross-compatible.
 
-```
-Input 100MB (repetitive pattern) →  1.4KB (100.0% compression, 694 MB/s)
-Input  50MB (log file)           →  9.0MB ( 82.0% compression,  56 MB/s)
-Input  50MB (JSON)               →  7.4MB ( 85.1% compression,  57 MB/s)
-```
+## Benchmark Results
+
+> Node.js 221 PASS + Python 253 PASS = **474 tests all passed**
+
+### Compression by Data Type (50MB, chunk=128B, gzip)
+
+| Data Type | Input | Output | Ratio | Pack Speed | Unpack Speed |
+|-----------|------:|-------:|------:|-----------:|-------------:|
+| Repetitive pattern | 50 MB | 2.7 KB | **100.0%** | 95.6 MB/s | 1,263 MB/s |
+| All zeros | 50 MB | 1.8 KB | **100.0%** | 98.8 MB/s | 2,137 MB/s |
+| CSV | 50 MB | 6.0 MB | **88.0%** | 60.3 MB/s | 290 MB/s |
+| JSON | 50 MB | 7.4 MB | **85.1%** | 58.8 MB/s | 301 MB/s |
+| Log files | 50 MB | 9.0 MB | **82.0%** | 57.2 MB/s | 280 MB/s |
+| Binary struct | 50 MB | 15.9 MB | **68.3%** | 51.1 MB/s | 262 MB/s |
+| Mixed text | 50 MB | 22.7 MB | **54.7%** | 42.8 MB/s | 226 MB/s |
+| Random binary | 10 MB | 10.2 MB | -1.6% | 35.2 MB/s | 415 MB/s |
+
+### Speed by Chunk Size (1MB repeat, gzip)
+
+| Chunk Size | Ratio | Pack Speed | Pack Time |
+|-----------:|------:|-----------:|----------:|
+| 4096 B | 99.9% | **1,237 MB/s** | 0.8 ms |
+| 2048 B | 100.0% | 980 MB/s | 1.0 ms |
+| 1024 B | 100.0% | 703 MB/s | 1.4 ms |
+| 512 B | 100.0% | 395 MB/s | 2.5 ms |
+| 256 B | 100.0% | 237 MB/s | 4.2 ms |
+| 128 B | 100.0% | 76 MB/s | 13.1 ms |
+| 64 B | 100.0% | 65 MB/s | 15.4 ms |
+| 8 B | 99.9% | 7 MB/s | 151.6 ms |
+
+### Large File Performance (gzip, chunk=1024B)
+
+| Input | Output | Ratio | Pack Speed | Pack Time |
+|------:|-------:|------:|-----------:|----------:|
+| 100 MB (repeat) | 1,005 B | **100.0%** | **684 MB/s** | 146 ms |
+| 50 MB (repeat) | 587 B | **100.0%** | **647 MB/s** | 77 ms |
+| 50 MB (log) | 8.3 MB | **83.5%** | 183 MB/s | 273 ms |
 
 ---
 
