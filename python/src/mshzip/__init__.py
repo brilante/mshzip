@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from .packer import Packer
 from .unpacker import Unpacker
+from .dict_store import DictStore
 from .stream import PackStream, UnpackStream, pack_stream, unpack_stream
 from . import constants
 from . import varint
@@ -14,15 +15,15 @@ def pack(data: bytes | bytearray, **opts) -> bytes:
     return packer.pack(data)
 
 
-def unpack(data: bytes | bytearray) -> bytes:
+def unpack(data: bytes | bytearray, **opts) -> bytes:
     'Decompress data (simple API).'
-    unpacker = Unpacker()
+    unpacker = Unpacker(**opts)
     return unpacker.unpack(data)
 
 
 __all__ = [
     'pack', 'unpack',
-    'Packer', 'Unpacker',
+    'Packer', 'Unpacker', 'DictStore',
     'PackStream', 'UnpackStream',
     'pack_stream', 'unpack_stream',
     'constants', 'varint',

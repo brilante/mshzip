@@ -11,6 +11,7 @@ const {
   AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
 } = require('./constants');
 const varint = require('./varint');
+const { DictStore } = require('./dict-store');
 
 /**
  * Compress file/stream to MSH format (pack)
@@ -35,6 +36,10 @@ class Packer {
    * @param {string|boolean} [opts.hierDedup='auto'] - 계층적 Dedup: 'auto' | true | false
    * @param {number} [opts.subChunkSize=32] - 2차 청크 크기 (바이트)
    * @param {number[]} [opts.subChunkSizes] - N단계 서브청크 크기 배열 (예: [32, 8] → 3단계)
+   * @param {DictStore} [opts.dictStore] - 외부 영구 딕셔너리 (DictStore 인스턴스)
+   * @param {boolean} [opts.useDict=false] - DictStore 자동 사용 여부
+   * @param {string} [opts.dictDir] - DictStore 디렉토리 (useDict=true 시)
+   * @param {number} [opts.maxDictSize] - 최대 딕셔너리 크기
    */
   constructor(opts = {}) {
     const rawChunk = opts.chunkSize !== undefined ? opts.chunkSize : DEFAULT_CHUNK_SIZE;
@@ -79,6 +84,18 @@ class Packer {
     this.dictIndex = new Map();
     // Global chunk array (index -> chunk data)
     this.dictChunks = [];
+
+    // 외부 딕셔너리
+    this._dictStore = opts.dictStore || null;
+    this._useDict = !!opts.useDict;
+    this._baseDictCount = 0; // 외부 딕셔너리에서 로드된 엔트리 수
+
+    if (this._useDict && !this._dictStore) {
+      this._dictStore = new DictStore({
+        dictDir: opts.dictDir,
+        maxDictSize: opts.maxDictSize,
+      });
+    }
   }
 
   /**
@@ -92,6 +109,9 @@ class Packer {
       this.chunkSize = this._detectChunkSize(input);
       this._autoDetect = false;
     }
+
+    // 외부 딕셔너리 로드
+    this._loadExternalDict();
 
     const frames = [];
     let offset = 0;
@@ -109,7 +129,42 @@ class Packer {
       frames.push(this._buildFrame(input, 0, 0));
     }
 
+    // 외부 딕셔너리 저장
+    this._saveExternalDict();
+
     return Buffer.concat(frames);
+  }
+
+  /**
+   * 외부 딕셔너리 로드 (DictStore 사용 시)
+   */
+  _loadExternalDict() {
+    if (!this._dictStore) return;
+    if (this._dictStore.isOverLimit(this.chunkSize)) {
+      // 크기 초과 → self-contained 모드 (딕셔너리 미사용)
+      this._dictStore = null;
+      this._useDict = false;
+      return;
+    }
+
+    const loaded = this._dictStore.load(this.chunkSize);
+    if (loaded.entryCount > 0) {
+      this.dictIndex = loaded.dictIndex;
+      this.dictChunks = loaded.dictChunks;
+    }
+    this._baseDictCount = loaded.entryCount;
+  }
+
+  /**
+   * 외부 딕셔너리 저장 (DictStore 사용 시)
+   */
+  _saveExternalDict() {
+    if (!this._dictStore) return;
+    if (this.dictChunks.length > this._baseDictCount) {
+      this._dictStore.save(
+        this.chunkSize, this.dictIndex, this.dictChunks, this._baseDictCount
+      );
+    }
   }
 
   /**
@@ -235,9 +290,11 @@ class Packer {
     const compressedPayload = this._compress(rawPayload);
 
     // Build frame header
+    const useExternalDict = this._baseDictCount > 0;
     const flags = (this.useCRC ? FLAG.CRC32 : 0)
       | (useHier ? FLAG.HIERDEDUP : 0)
-      | (useMultilevel ? FLAG.MULTILEVEL : 0);
+      | (useMultilevel ? FLAG.MULTILEVEL : 0)
+      | (useExternalDict ? FLAG.EXTERNAL_DICT : 0);
     const header = Buffer.alloc(FRAME_HEADER_SIZE);
     let off = 0;
 
@@ -253,15 +310,24 @@ class Packer {
     header.writeUInt32LE(dictEntriesInFrame, off); off += 4;
     header.writeUInt32LE(seqCount, off); off += 4;
 
+    const parts = [header];
+
+    // EXTERNAL_DICT 메타데이터: baseDictCount (4B)
+    if (useExternalDict) {
+      const baseDictBuf = Buffer.alloc(4);
+      baseDictBuf.writeUInt32LE(this._baseDictCount, 0);
+      parts.push(baseDictBuf);
+    }
+
     // Compressed payload size (4 bytes)
     const payloadSizeBuf = Buffer.alloc(4);
     payloadSizeBuf.writeUInt32LE(compressedPayload.length, 0);
 
-    const parts = [header, payloadSizeBuf, compressedPayload];
+    parts.push(payloadSizeBuf, compressedPayload);
 
-    // CRC32 (optional)
+    // CRC32 (optional) — 전체 프레임 데이터(CRC 제외)에 대해 계산
     if (this.useCRC) {
-      const crc = this._crc32(Buffer.concat([header, payloadSizeBuf, compressedPayload]));
+      const crc = this._crc32(Buffer.concat(parts));
       const crcBuf = Buffer.alloc(4);
       crcBuf.writeUInt32LE(crc, 0);
       parts.push(crcBuf);

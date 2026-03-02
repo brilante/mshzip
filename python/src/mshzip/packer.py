@@ -15,6 +15,7 @@ from .constants import (
     MIN_CHUNK_SIZE, MAX_CHUNK_SIZE,
     AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
 )
+from .dict_store import DictStore
 
 
 class Packer:
@@ -28,6 +29,10 @@ class Packer:
         crc: bool = False,
         hier_dedup: str | bool = 'auto',
         sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
+        dict_store: DictStore | None = None,
+        use_dict: bool = False,
+        dict_dir: str | None = None,
+        max_dict_size: int | None = None,
     ) -> None:
         self._auto_detect = (chunk_size == 'auto')
         self.chunk_size: int = AUTO_FALLBACK_CHUNK_SIZE if self._auto_detect else int(chunk_size)
@@ -57,6 +62,17 @@ class Packer:
         # Global chunk array: index -> chunk data(bytes)
         self.dict_chunks: list[bytes] = []
 
+        # 외부 딕셔너리
+        self._dict_store = dict_store
+        self._use_dict = use_dict
+        self._base_dict_count = 0
+
+        if self._use_dict and not self._dict_store:
+            self._dict_store = DictStore(
+                dict_dir=dict_dir,
+                max_dict_size=max_dict_size,
+            )
+
     def pack(self, data: bytes | bytearray | memoryview) -> bytes:
         'Compress buffer input to MSH format.'
         if isinstance(data, memoryview):
@@ -68,6 +84,10 @@ class Packer:
         if self._auto_detect and len(input_view) > 0:
             self.chunk_size = self._detect_chunk_size(bytes(input_view))
             self._auto_detect = False
+
+        # 외부 딕셔너리 로드
+        self._load_external_dict()
+
         frames: list[bytes] = []
         offset = 0
         total_len = len(input_view)
@@ -83,7 +103,35 @@ class Packer:
             frame = self._build_frame(memoryview(b''), 0, 0)
             frames.append(frame)
 
+        # 외부 딕셔너리 저장
+        self._save_external_dict()
+
         return b''.join(frames)
+
+    def _load_external_dict(self) -> None:
+        '외부 딕셔너리 로드 (DictStore 사용 시).'
+        if not self._dict_store:
+            return
+        if self._dict_store.is_over_limit(self.chunk_size):
+            self._dict_store = None
+            self._use_dict = False
+            return
+
+        loaded = self._dict_store.load(self.chunk_size)
+        if loaded['entry_count'] > 0:
+            self.dict_index = loaded['dict_index']
+            self.dict_chunks = loaded['dict_chunks']
+        self._base_dict_count = loaded['entry_count']
+
+    def _save_external_dict(self) -> None:
+        '외부 딕셔너리 저장 (DictStore 사용 시).'
+        if not self._dict_store:
+            return
+        if len(self.dict_chunks) > self._base_dict_count:
+            self._dict_store.save(
+                self.chunk_size, self.dict_index, self.dict_chunks,
+                self._base_dict_count,
+            )
 
     def _build_frame(
         self,
@@ -157,7 +205,12 @@ class Packer:
         compressed_payload = self._compress(raw_payload)
 
         # Build frame header (32 bytes)
-        flags = (Flag.CRC32 if self.use_crc else 0) | (Flag.HIERDEDUP if use_hier else 0)
+        use_external_dict = self._base_dict_count > 0
+        flags = (
+            (Flag.CRC32 if self.use_crc else 0)
+            | (Flag.HIERDEDUP if use_hier else 0)
+            | (Flag.EXTERNAL_DICT if use_external_dict else 0)
+        )
         header = bytearray(FRAME_HEADER_SIZE)
         off = 0
         header[off:off + 4] = MAGIC; off += 4
@@ -173,14 +226,19 @@ class Packer:
 
         header_bytes = bytes(header)
 
+        parts: list[bytes] = [header_bytes]
+
+        # EXTERNAL_DICT 메타데이터: baseDictCount (4B)
+        if use_external_dict:
+            parts.append(struct.pack('<I', self._base_dict_count))
+
         # Compressed payload size (4 bytes LE)
         payload_size_buf = struct.pack('<I', len(compressed_payload))
+        parts.extend([payload_size_buf, compressed_payload])
 
-        parts = [header_bytes, payload_size_buf, compressed_payload]
-
-        # CRC32 (optional)
+        # CRC32 (optional) — 전체 프레임 데이터(CRC 제외)에 대해 계산
         if self.use_crc:
-            crc_data = header_bytes + payload_size_buf + compressed_payload
+            crc_data = b''.join(parts)
             crc_val = zlib.crc32(crc_data) & 0xFFFFFFFF
             parts.append(struct.pack('<I', crc_val))
 

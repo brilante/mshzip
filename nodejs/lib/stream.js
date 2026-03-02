@@ -40,6 +40,10 @@ class PackStream extends Transform {
       crc: !!opts.crc,
       hierDedup: opts.hierDedup !== undefined ? opts.hierDedup : 'auto',
       subChunkSize: opts.subChunkSize,
+      useDict: !!opts.useDict,
+      dictStore: opts.dictStore,
+      dictDir: opts.dictDir,
+      maxDictSize: opts.maxDictSize,
     });
     this._frameLimit = this._packer.frameLimit;
     this._pending = Buffer.alloc(0);
@@ -136,9 +140,12 @@ class PackStream extends Transform {
  *   input.pipe(new UnpackStream()).pipe(output)
  */
 class UnpackStream extends Transform {
-  constructor() {
+  constructor(opts = {}) {
     super();
-    this._unpacker = new Unpacker();
+    this._unpacker = new Unpacker({
+      dictStore: opts.dictStore,
+      dictDir: opts.dictDir,
+    });
     this._buf = Buffer.alloc(0);
     this._totalBytesIn = 0;
     this._totalBytesOut = 0;

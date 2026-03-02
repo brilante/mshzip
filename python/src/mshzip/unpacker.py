@@ -10,13 +10,20 @@ from .constants import (
     MAGIC, Codec, Flag, KNOWN_FLAGS,
     FRAME_HEADER_SIZE,
 )
+from .dict_store import DictStore
 
 
 class Unpacker:
     'Restore MSH format data to original.'
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        dict_store: DictStore | None = None,
+        dict_dir: str | None = None,
+    ) -> None:
         self.dict: list[bytes] = []
+        self._dict_store = dict_store
+        self._dict_dir = dict_dir
 
     def unpack(self, data: bytes | bytearray | memoryview) -> bytes:
         'Restore MSH data to original.'
@@ -73,6 +80,13 @@ class Unpacker:
         seq_count = struct.unpack_from('<I', buf, off)[0]; off += 4
 
         has_hier_dedup = (flags & Flag.HIERDEDUP) != 0
+        has_external_dict = (flags & Flag.EXTERNAL_DICT) != 0
+
+        # EXTERNAL_DICT: baseDictCount 읽기 + 외부 딕셔너리 로드
+        base_dict_count = 0
+        if has_external_dict:
+            base_dict_count = struct.unpack_from('<I', buf, off)[0]; off += 4
+            self._load_external_dict(chunk_size, base_dict_count)
 
         # Compressed payload size
         payload_size = struct.unpack_from('<I', buf, off)[0]; off += 4
@@ -152,6 +166,22 @@ class Unpacker:
             restored_data = b''
 
         return (restored_data, off - start_offset)
+
+    def _load_external_dict(self, chunk_size: int, base_dict_count: int) -> None:
+        '외부 딕셔너리 로드 (EXTERNAL_DICT 프레임 처리 시).'
+        if len(self.dict) >= base_dict_count:
+            return
+
+        store = self._dict_store or DictStore(dict_dir=self._dict_dir)
+        loaded = store.load(chunk_size)
+
+        if loaded['entry_count'] < base_dict_count:
+            raise ValueError(
+                f'외부 딕셔너리 엔트리 부족: {loaded["entry_count"]} < {base_dict_count}. '
+                f'dict-{chunk_size}.mshdict 파일이 손상되었거나 버전이 불일치합니다.'
+            )
+
+        self.dict = loaded['dict_chunks'][:base_dict_count]
 
     @staticmethod
     def _decompress(data: bytes, codec_id: int) -> bytes:

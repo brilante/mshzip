@@ -6,6 +6,7 @@ const {
   FRAME_HEADER_SIZE,
 } = require('./constants');
 const varint = require('./varint');
+const { DictStore } = require('./dict-store');
 
 /**
  * Restore MSH format data to original (unpack)
@@ -19,9 +20,16 @@ const varint = require('./varint');
  */
 
 class Unpacker {
-  constructor() {
+  /**
+   * @param {Object} [opts]
+   * @param {DictStore} [opts.dictStore] - 외부 딕셔너리 (DictStore 인스턴스)
+   * @param {string} [opts.dictDir] - DictStore 디렉토리
+   */
+  constructor(opts = {}) {
     // Global dictionary: accumulated across frames
     this.dict = [];
+    this._dictStore = opts.dictStore || null;
+    this._dictDir = opts.dictDir || null;
   }
 
   /**
@@ -83,6 +91,14 @@ class Unpacker {
     const seqCount = input.readUInt32LE(off); off += 4;
 
     const hasHierDedup = (flags & FLAG.HIERDEDUP) !== 0;
+    const hasExternalDict = (flags & FLAG.EXTERNAL_DICT) !== 0;
+
+    // EXTERNAL_DICT: baseDictCount 읽기 + 외부 딕셔너리 로드
+    let baseDictCount = 0;
+    if (hasExternalDict) {
+      baseDictCount = input.readUInt32LE(off); off += 4;
+      this._loadExternalDict(chunkSize, baseDictCount);
+    }
 
     // Compressed payload size
     const payloadSize = input.readUInt32LE(off); off += 4;
@@ -238,6 +254,30 @@ class Unpacker {
       data,
       bytesConsumed: off - startOffset,
     };
+  }
+
+  /**
+   * 외부 딕셔너리 로드 (EXTERNAL_DICT 프레임 처리 시)
+   */
+  _loadExternalDict(chunkSize, baseDictCount) {
+    // 이미 dict에 충분한 엔트리가 있으면 스킵 (멀티프레임 시)
+    if (this.dict.length >= baseDictCount) return;
+
+    const store = this._dictStore || new DictStore({
+      dictDir: this._dictDir,
+    });
+
+    const loaded = store.load(chunkSize);
+
+    if (loaded.entryCount < baseDictCount) {
+      throw new Error(
+        `외부 딕셔너리 엔트리 부족: ${loaded.entryCount} < ${baseDictCount}. ` +
+        `dict-${chunkSize}.mshdict 파일이 손상되었거나 버전이 불일치합니다.`
+      );
+    }
+
+    // 외부 딕셔너리 엔트리를 dict에 로드
+    this.dict = loaded.dictChunks.slice(0, baseDictCount);
   }
 
   /**

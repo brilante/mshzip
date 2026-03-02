@@ -34,10 +34,11 @@ const FLAG = {
   CRC32: 0x0001,
   HIERDEDUP: 0x0002, // 계층적 Dedup 적용됨
   MULTILEVEL: 0x0004, // N단계 계층적 Dedup (3단계 이상)
+  EXTERNAL_DICT: 0x0008, // 외부 영구 딕셔너리 참조
 };
 
 // 알려진 모든 플래그 비트 마스크 (하위 호환성 검증용)
-const KNOWN_FLAGS = FLAG.CRC32 | FLAG.HIERDEDUP | FLAG.MULTILEVEL;
+const KNOWN_FLAGS = FLAG.CRC32 | FLAG.HIERDEDUP | FLAG.MULTILEVEL | FLAG.EXTERNAL_DICT;
 
 // 최대 계층적 Dedup 단계 수
 const MAX_HIER_LEVELS = 4;
@@ -58,6 +59,14 @@ const MAX_CHUNK_SIZE = 16 * 1024 * 1024; // 16MB
 
 // Hierarchical dedup defaults
 const DEFAULT_SUB_CHUNK_SIZE = 32; // 2차 청크 크기 (바이트)
+
+// ── MSHD (영구 딕셔너리 파일) 상수 ──
+const MSHD_MAGIC = Buffer.from('MSHD');
+const MSHD_VERSION = 1;
+// MSHD 헤더: magic(4) + version(2) + chunkSize(4) + entryCount(4) = 14 bytes
+const MSHD_HEADER_SIZE = 14;
+// 딕셔너리 엔트리: sha256(32) + chunk(chunkSize)
+const MSHD_HASH_SIZE = 32; // SHA-256
 
 // Auto chunk size detection
 const AUTO_DETECT_CANDIDATES = [32, 64, 128, 256, 512, 1024, 2048, 4096];
@@ -85,4 +94,8 @@ module.exports = {
   AUTO_DETECT_SAMPLE_LIMIT,
   AUTO_DETECT_STREAM_MIN,
   AUTO_FALLBACK_CHUNK_SIZE,
+  MSHD_MAGIC,
+  MSHD_VERSION,
+  MSHD_HEADER_SIZE,
+  MSHD_HASH_SIZE,
 };

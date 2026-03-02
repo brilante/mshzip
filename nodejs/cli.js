@@ -34,6 +34,12 @@ async function main() {
     case 'multi':
       await handleMulti(args.slice(1));
       break;
+    case 'dict-init':
+      handleDictInit(args.slice(1));
+      break;
+    case 'dict-info':
+      handleDictInfo(args.slice(1));
+      break;
     default:
       console.error(`Unknown command: ${command}`);
       printUsage();
@@ -51,11 +57,13 @@ function printUsage() {
 mshzip - Fixed-chunk dedup + entropy compression
 
 Usage:
-  mshzip pack   -i <input> -o <output> [options]
-  mshzip unpack -i <input> -o <output>
-  mshzip info   -i <file>
-  mshzip multi  pack   <files...> --out-dir <dir> [--workers N] [options]
-  mshzip multi  unpack <files...> --out-dir <dir> [--workers N]
+  mshzip pack      -i <input> -o <output> [options]
+  mshzip unpack    -i <input> -o <output> [options]
+  mshzip info      -i <file>
+  mshzip dict-init --chunk <N> [--dict-dir <path>]
+  mshzip dict-info --chunk <N> [--dict-dir <path>]
+  mshzip multi     pack   <files...> --out-dir <dir> [--workers N] [options]
+  mshzip multi     unpack <files...> --out-dir <dir> [--workers N]
 
 pack options:
   -i <path>      Input file path (- for stdin)
@@ -66,11 +74,14 @@ pack options:
   --crc          Append CRC32 checksum
   --hier-dedup <auto|true|false>  Hierarchical dedup (default: auto)
   --sub-chunk <N> Sub-chunk size for hier-dedup (default: 32)
+  --dict-dir <path> Dictionary directory (default: ~/.mshzip/)
+  --no-dict      Disable external dictionary
   --verbose      Verbose output
 
 unpack options:
   -i <path>      Input .msh file path (- for stdin)
   -o <path>      Output file path (- for stdout)
+  --dict-dir <path> Dictionary directory (for EXTERNAL_DICT frames)
 
 multi options:
   --out-dir <dir>   Output directory (auto-created)
@@ -80,11 +91,21 @@ multi options:
 info options:
   -i <path>      Display frame info of .msh file
 
+dict-init options:
+  --chunk <N>    Chunk size for dictionary
+  --dict-dir <path> Dictionary directory (default: ~/.mshzip/)
+
+dict-info options:
+  --chunk <N>    Chunk size to query
+  --dict-dir <path> Dictionary directory (default: ~/.mshzip/)
+
 Examples:
   mshzip pack -i data.bin -o data.msh --chunk 128 --codec gzip
   mshzip unpack -i data.msh -o data.bin
   mshzip pack -i - -o - --chunk 1024 < input.log > output.msh
   mshzip info -i data.msh
+  mshzip dict-init --chunk 128
+  mshzip dict-info --chunk 128
   mshzip multi pack f1.bin f2.log --out-dir ./compressed --workers 4
   mshzip multi unpack f1.msh f2.msh --out-dir ./restored
 `);
@@ -110,6 +131,8 @@ function parseArgs(argv) {
         break;
       }
       case '--sub-chunk': opts.subChunkSize = parseInt(argv[++i], 10); break;
+      case '--dict-dir': opts.dictDir = argv[++i]; break;
+      case '--no-dict': opts.noDict = true; break;
       case '--verbose': opts.verbose = true; break;
     }
   }
@@ -151,6 +174,8 @@ async function handlePack(argv) {
     crc: !!opts.crc,
     hierDedup: opts.hierDedup !== undefined ? opts.hierDedup : 'auto',
     subChunkSize: opts.subChunkSize,
+    useDict: !opts.noDict && !!opts.dictDir,
+    dictDir: opts.dictDir,
   });
 
   await pipeline(inputStream, ps, outputStream);
@@ -192,7 +217,9 @@ async function handleUnpack(argv) {
     ? process.stdout
     : fs.createWriteStream(opts.output);
 
-  const us = new UnpackStream();
+  const us = new UnpackStream({
+    dictDir: opts.dictDir,
+  });
   await pipeline(inputStream, us, outputStream);
 
   const elapsed = Date.now() - startTime;
@@ -311,6 +338,56 @@ async function handleMulti(argv) {
   console.error(`\n  Total: ${formatSize(totalIn)} → ${formatSize(totalOut)}`);
   console.error(`  Pass: ${passCount}, Fail: ${failCount}`);
   console.error(`  Time: ${elapsed}ms (${speed} MB/s)`);
+}
+
+/**
+ * dict-init: 빈 딕셔너리 파일 생성
+ */
+function handleDictInit(argv) {
+  const opts = parseArgs(argv);
+  const chunkSize = opts.chunkSize;
+
+  if (!chunkSize || chunkSize === 'auto') {
+    console.error('Error: --chunk <N> is required (numeric).');
+    process.exit(2);
+  }
+
+  const { DictStore } = require('./lib/dict-store');
+  const store = new DictStore({ dictDir: opts.dictDir });
+  const filePath = store.init(chunkSize);
+  console.log(`Dictionary initialized: ${filePath}`);
+  console.log(`  Chunk size: ${chunkSize}B`);
+  console.log(`  Directory: ${store.dir}`);
+}
+
+/**
+ * dict-info: 딕셔너리 정보 조회
+ */
+function handleDictInfo(argv) {
+  const opts = parseArgs(argv);
+  const chunkSize = opts.chunkSize;
+
+  if (!chunkSize || chunkSize === 'auto') {
+    console.error('Error: --chunk <N> is required (numeric).');
+    process.exit(2);
+  }
+
+  const { DictStore } = require('./lib/dict-store');
+  const store = new DictStore({ dictDir: opts.dictDir });
+  const info = store.info(chunkSize);
+
+  if (!info.exists) {
+    console.log(`Dictionary not found: ${info.path}`);
+    console.log('Run "mshzip dict-init --chunk <N>" to create one.');
+    return;
+  }
+
+  console.log(`Dictionary: ${info.path}`);
+  console.log(`  Chunk size: ${info.chunkSize}B`);
+  console.log(`  Entries: ${info.entryCount}`);
+  console.log(`  File size: ${formatSize(info.size)}`);
+  console.log(`  Max size: ${formatSize(info.maxSize)}`);
+  console.log(`  Over limit: ${info.overLimit ? 'YES (fallback to self-contained)' : 'no'}`);
 }
 
 function handleInfo(argv) {

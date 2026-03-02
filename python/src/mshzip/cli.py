@@ -37,16 +37,36 @@ def main() -> None:
                         help='hierarchical dedup: auto|true|false (default: auto)')
     p_pack.add_argument('--sub-chunk', type=int, default=32,
                         help='sub-chunk size for hier-dedup (default: 32)')
+    p_pack.add_argument('--dict-dir', default=None,
+                        help='dictionary directory (default: ~/.mshzip/)')
+    p_pack.add_argument('--no-dict', action='store_true',
+                        help='disable external dictionary')
     p_pack.add_argument('--verbose', action='store_true')
 
     # unpack
     p_unpack = subparsers.add_parser('unpack', help='decompress')
     p_unpack.add_argument('-i', required=True)
     p_unpack.add_argument('-o', required=True)
+    p_unpack.add_argument('--dict-dir', default=None,
+                        help='dictionary directory (for EXTERNAL_DICT frames)')
 
     # info
     p_info = subparsers.add_parser('info', help='file info')
     p_info.add_argument('-i', required=True)
+
+    # dict-init
+    p_dinit = subparsers.add_parser('dict-init', help='initialize dictionary')
+    p_dinit.add_argument('--chunk', type=int, required=True,
+                         help='chunk size for dictionary')
+    p_dinit.add_argument('--dict-dir', default=None,
+                         help='dictionary directory (default: ~/.mshzip/)')
+
+    # dict-info
+    p_dinfo = subparsers.add_parser('dict-info', help='dictionary info')
+    p_dinfo.add_argument('--chunk', type=int, required=True,
+                         help='chunk size to query')
+    p_dinfo.add_argument('--dict-dir', default=None,
+                         help='dictionary directory (default: ~/.mshzip/)')
 
     # multi
     p_multi = subparsers.add_parser('multi', help='multi-file parallel')
@@ -76,6 +96,10 @@ def main() -> None:
         _handle_unpack(args)
     elif args.command == 'info':
         _handle_info(args)
+    elif args.command == 'dict-init':
+        _handle_dict_init(args)
+    elif args.command == 'dict-info':
+        _handle_dict_info(args)
     elif args.command == 'multi':
         _handle_multi(args)
 
@@ -176,6 +200,36 @@ def _handle_unpack(args) -> None:
         print(f'  Compressed: {_fmt(comp_size)}', file=sys.stderr)
         print(f'  Restored: {_fmt(orig_size)}', file=sys.stderr)
         print(f'  Time: {elapsed:.0f}ms ({speed} MB/s)', file=sys.stderr)
+
+
+def _handle_dict_init(args) -> None:
+    'Initialize empty dictionary file.'
+    from .dict_store import DictStore
+    store = DictStore(dict_dir=args.dict_dir)
+    file_path = store.init(args.chunk)
+    print(f'Dictionary initialized: {file_path}')
+    print(f'  Chunk size: {args.chunk}B')
+    print(f'  Directory: {store.dir}')
+
+
+def _handle_dict_info(args) -> None:
+    'Print dictionary info.'
+    from .dict_store import DictStore
+    store = DictStore(dict_dir=args.dict_dir)
+    info = store.info(args.chunk)
+
+    if not info['exists']:
+        print(f'Dictionary not found: {info["path"]}')
+        print('Run "mshzip dict-init --chunk <N>" to create one.')
+        return
+
+    print(f'Dictionary: {info["path"]}')
+    print(f'  Chunk size: {info["chunk_size"]}B')
+    print(f'  Entries: {info["entry_count"]}')
+    print(f'  File size: {_fmt(info["size"])}')
+    print(f'  Max size: {_fmt(info["max_size"])}')
+    over = 'YES (fallback to self-contained)' if info['over_limit'] else 'no'
+    print(f'  Over limit: {over}')
 
 
 def _handle_info(args) -> None:

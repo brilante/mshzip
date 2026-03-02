@@ -3,6 +3,7 @@
 const { Packer } = require('./packer');
 const { Unpacker } = require('./unpacker');
 const { PackStream, UnpackStream, packStream, unpackStream } = require('./stream');
+const { DictStore } = require('./dict-store');
 const constants = require('./constants');
 const varint = require('./varint');
 
@@ -24,16 +25,18 @@ function pack(input, opts = {}) {
 /**
  * Decompress data
  * @param {Buffer} input
+ * @param {Object} [opts] - { dictStore, dictDir }
  * @returns {Buffer}
  */
-function unpack(input) {
-  const unpacker = new Unpacker();
+function unpack(input, opts = {}) {
+  const unpacker = new Unpacker(opts);
   return unpacker.unpack(input);
 }
 
 module.exports = {
   Packer,
   Unpacker,
+  DictStore,
   pack,
   unpack,
   PackStream,
