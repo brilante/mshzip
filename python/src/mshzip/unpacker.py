@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import gzip
+import math
 import struct
 
 from . import varint
 from .constants import (
-    MAGIC, Codec, Flag,
+    MAGIC, Codec, Flag, KNOWN_FLAGS,
     FRAME_HEADER_SIZE,
 )
 
@@ -53,6 +54,15 @@ class Unpacker:
         off = offset + 4  # after magic
         version = struct.unpack_from('<H', buf, off)[0]; off += 2
         flags = struct.unpack_from('<H', buf, off)[0]; off += 2
+
+        # 알 수 없는 flags 방어적 에러 (하위 호환성)
+        unknown_flags = flags & ~KNOWN_FLAGS
+        if unknown_flags:
+            raise ValueError(
+                f'Unsupported flags: 0x{unknown_flags:04x}. '
+                'This file requires a newer version of mshzip.'
+            )
+
         chunk_size = struct.unpack_from('<I', buf, off)[0]; off += 4
         codec_id = buf[off]; off += 1
         off += 3  # padding
@@ -61,6 +71,8 @@ class Unpacker:
         orig_bytes = orig_bytes_hi * 0x100000000 + orig_bytes_lo
         dict_entries = struct.unpack_from('<I', buf, off)[0]; off += 4
         seq_count = struct.unpack_from('<I', buf, off)[0]; off += 4
+
+        has_hier_dedup = (flags & Flag.HIERDEDUP) != 0
 
         # Compressed payload size
         payload_size = struct.unpack_from('<I', buf, off)[0]; off += 4
@@ -79,10 +91,48 @@ class Unpacker:
 
         # Parse dict section
         payload_off = 0
-        for _ in range(dict_entries):
-            chunk = bytes(raw_payload[payload_off:payload_off + chunk_size])
-            self.dict.append(chunk)
-            payload_off += chunk_size
+
+        if has_hier_dedup and dict_entries > 0:
+            # ── 계층적 Dedup 복원: Dict2 + Seq2 → Dict1 ──
+
+            # Hier Header (8B)
+            sub_chunk_size = struct.unpack_from('<I', raw_payload, payload_off)[0]
+            payload_off += 4
+            dict2_entries = struct.unpack_from('<I', raw_payload, payload_off)[0]
+            payload_off += 4
+
+            # Dict2 Section
+            dict2: list[bytes] = []
+            for _ in range(dict2_entries):
+                dict2.append(bytes(raw_payload[payload_off:payload_off + sub_chunk_size]))
+                payload_off += sub_chunk_size
+
+            # Seq2 Section → Dict1 복원
+            sub_chunks_per_chunk = math.ceil(chunk_size / sub_chunk_size)
+            seq2_count = dict_entries * sub_chunks_per_chunk
+            seq2_indices, seq2_bytes = varint.decode_array(
+                raw_payload, payload_off, seq2_count
+            )
+            payload_off += seq2_bytes
+
+            # 서브청크 재조립 → Dict1 복원
+            for i in range(dict_entries):
+                parts: list[bytes] = []
+                for j in range(sub_chunks_per_chunk):
+                    idx = seq2_indices[i * sub_chunks_per_chunk + j]
+                    if idx >= len(dict2):
+                        raise ValueError(
+                            f'Dict2 index out of range: {idx} >= {len(dict2)}'
+                        )
+                    parts.append(dict2[idx])
+                restored = b''.join(parts)[:chunk_size]
+                self.dict.append(restored)
+        else:
+            # ── 기존 복원 ──
+            for _ in range(dict_entries):
+                chunk = bytes(raw_payload[payload_off:payload_off + chunk_size])
+                self.dict.append(chunk)
+                payload_off += chunk_size
 
         # Parse sequence section
         if seq_count > 0 and orig_bytes > 0:

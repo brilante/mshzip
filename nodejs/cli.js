@@ -64,6 +64,8 @@ pack options:
   --frame <N>    Max bytes per frame (default: ${DEFAULT_FRAME_LIMIT})
   --codec <type> Codec: gzip | none (default: ${DEFAULT_CODEC})
   --crc          Append CRC32 checksum
+  --hier-dedup <auto|true|false>  Hierarchical dedup (default: auto)
+  --sub-chunk <N> Sub-chunk size for hier-dedup (default: 32)
   --verbose      Verbose output
 
 unpack options:
@@ -102,6 +104,12 @@ function parseArgs(argv) {
       case '--frame': opts.frameLimit = parseInt(argv[++i], 10); break;
       case '--codec': opts.codec = argv[++i]; break;
       case '--crc': opts.crc = true; break;
+      case '--hier-dedup': {
+        const val = argv[++i];
+        opts.hierDedup = val === 'true' ? true : val === 'false' ? false : val;
+        break;
+      }
+      case '--sub-chunk': opts.subChunkSize = parseInt(argv[++i], 10); break;
       case '--verbose': opts.verbose = true; break;
     }
   }
@@ -141,6 +149,8 @@ async function handlePack(argv) {
     frameLimit: opts.frameLimit || DEFAULT_FRAME_LIMIT,
     codec: opts.codec || DEFAULT_CODEC,
     crc: !!opts.crc,
+    hierDedup: opts.hierDedup !== undefined ? opts.hierDedup : 'auto',
+    subChunkSize: opts.subChunkSize,
   });
 
   await pipeline(inputStream, ps, outputStream);
@@ -223,6 +233,12 @@ async function handleMulti(argv) {
       case '--frame': opts.frameLimit = parseInt(rest[++i], 10); break;
       case '--codec': opts.codec = rest[++i]; break;
       case '--crc': opts.crc = true; break;
+      case '--hier-dedup': {
+        const val = rest[++i];
+        opts.hierDedup = val === 'true' ? true : val === 'false' ? false : val;
+        break;
+      }
+      case '--sub-chunk': opts.subChunkSize = parseInt(rest[++i], 10); break;
       case '--verbose': opts.verbose = true; break;
       default: files.push(rest[i]); break;
     }
@@ -259,6 +275,8 @@ async function handleMulti(argv) {
         frameLimit: opts.frameLimit || DEFAULT_FRAME_LIMIT,
         codec: opts.codec || DEFAULT_CODEC,
         crc: !!opts.crc,
+        hierDedup: opts.hierDedup !== undefined ? opts.hierDedup : 'auto',
+        subChunkSize: opts.subChunkSize,
       },
     };
   });

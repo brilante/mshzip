@@ -9,53 +9,36 @@
 **Fixed-chunk SHA-256 deduplication + gzip entropy compression.**
 Node.js and Python share the MSH1 binary format — 100% cross-compatible.
 
-> 530 tests passed (Node.js 253 + Python 253 + Stress 56)
+> 1,874 benchmark tests passed (530 unit + 1,344 integration)
 
 ---
 
-## Why mshzip?
+## When to Use mshzip
 
-Standard compressors (gzip, zstd) use a sliding window (typically 32 KB) to find redundancy. Any repeated pattern beyond that window is invisible to them.
+mshzip excels at compressing data with **repeated patterns beyond gzip's 32 KB sliding window**. If your data contains duplicate chunks anywhere in the file — not just within a 32 KB neighborhood — mshzip will find and eliminate them.
 
-```
-gzip:     Input ──→ Sliding window compression (32KB) ──→ Output
-mshzip:   Input ──→ Fixed-chunk split ──→ SHA-256 global dedup ──→ gzip ──→ Output
-```
+### Decision Guide
 
-mshzip deduplicates across the **entire file** before compressing. This two-stage approach captures repetition that sliding-window compressors miss entirely.
+| Your Data | Use mshzip? | Expected Compression | Network Speedup |
+|-----------|:-----------:|:--------------------:|:---------------:|
+| Server logs, CSV exports | **Yes** | **89%** | **8x** at 10 Mbps |
+| Config copies, templates | **Yes** | **100%** | **143x** at 10 Mbps |
+| JSON datasets, repeated schemas | **Yes** | **85%+** | **5x** at 50 Mbps |
+| Cross-platform data pipelines | **Yes** | Node.js ↔ Python identical output | — |
+| Random / encrypted binary | No | -0.8% (slight expansion) | Slower than raw |
+| Already compressed (mp4, zip, jpg) | No | -1~2% overhead | Slower than raw |
+| 1 Gbps+ LAN transfers | No | CPU cost > network savings | < 1x |
 
-### mshzip vs gzip — Measured Compression
+### Bandwidth Guide (20 MB log data, measured)
 
-| Data Type | mshzip | gzip | Advantage |
-|-----------|:------:|:----:|:---------:|
-| Repeated patterns (config copies, templates) | **100%** | ~60% | **+40%** |
-| CSV (same schema, many rows) | **88%** | ~70% | **+18%** |
-| JSON (repeated key names) | **85%** | ~65% | **+20%** |
-| Server logs (structured, timestamped) | **82%** | ~65% | **+17%** |
-| Mixed text (HTML, source code) | 55% | ~50% | +5% |
-| Random binary | -1.6% | -0.1% | No benefit |
+| Bandwidth | mshzip Total | Raw Transfer | Speedup | Verdict |
+|----------:|:------------:|:------------:|:-------:|---------|
+| 10 Mbps | 2.1 s | 16.8 s | **8.0x** | Highly effective |
+| 50 Mbps | 611 ms | 3.4 s | **5.5x** | Effective |
+| 100 Mbps | 425 ms | 1.7 s | **4.0x** | Effective |
+| 1 Gbps | 256 ms | 168 ms | 0.65x | Not recommended |
 
-### mshzip vs Alternatives
-
-| Tool | Strength | Weakness | vs mshzip |
-|------|----------|----------|-----------|
-| **gzip** | Universal, everywhere | 32 KB window limit | mshzip +15~40% on repetitive data |
-| **zstd** | Best ratio/speed balance | No deduplication | zstd wins general-purpose; mshzip wins on repetitive data |
-| **rsync** | Network-level dedup | Both-side install, file-level | mshzip is single-file, app-level |
-| **ZFS dedup** | Block-level dedup | Filesystem-bound, high RAM | mshzip is portable, app-level |
-
-### When to Use
-
-- Server logs, CSV exports, JSON datasets — backup or transfer
-- Data pipelines with repeating schemas at high volume
-- Cross-platform workflows needing the same format on Node.js and Python
-- Bandwidth-constrained transfers (≤100 Mbps) of GB-scale data
-
-### When NOT to Use
-
-- Media files (mp4, jpg, mp3) — already compressed, -1~-2% overhead
-- Encrypted or random binary — no patterns to deduplicate
-- 10 Gbps+ LAN — CPU pack/unpack time exceeds raw transfer time
+> All numbers from 1,344 automated benchmarks across 54 algorithm combinations, 4 data types, and 3 file sizes. See [Benchmarks](#benchmarks) for full results.
 
 ---
 
@@ -73,49 +56,65 @@ pip install mshzip
 
 ### Node.js
 
-```bash
-# Pack / Unpack
-node cli.js pack -i data.bin -o data.msh
-node cli.js unpack -i data.msh -o data.bin
+```javascript
+const { pack, unpack } = require('msh-zip');
 
-# File info
-node cli.js info -i data.msh
+// Compress
+const compressed = pack(Buffer.from(data));
+// Decompress
+const original = unpack(compressed);
 
-# Parallel processing
-node cli.js multi pack *.log --out-dir ./compressed --workers 4
-
-# Streaming (stdin/stdout)
-cat data.bin | node cli.js pack -i - -o - > data.msh
-
-# Run tests
-npm test
+// With options
+const compressed2 = pack(data, {
+  chunkSize: 256,   // 'auto' | 8 ~ 16MB (default: 'auto')
+  codec: 'gzip',    // 'gzip' | 'none'
+  crc: true,        // CRC32 integrity check
+});
 ```
 
 ### Python
 
+```python
+import mshzip
+
+# Compress
+compressed = mshzip.pack(data)
+# Decompress
+original = mshzip.unpack(compressed)
+
+# With options
+compressed2 = mshzip.pack(data,
+    chunk_size=256,   # 'auto' | 8 ~ 16MB (default: 'auto')
+    codec='gzip',     # 'gzip' | 'none'
+    crc=True,         # CRC32 integrity check
+)
+```
+
+### CLI
+
 ```bash
-# Pack / Unpack
+# Node.js
+node cli.js pack -i data.bin -o data.msh
+node cli.js unpack -i data.msh -o data.bin
+node cli.js info -i data.msh
+
+# Python
 mshzip pack -i data.bin -o data.msh
 mshzip unpack -i data.msh -o data.bin
-
-# File info
 mshzip info -i data.msh
 
-# Parallel processing
-mshzip multi pack file1.bin file2.bin --out-dir ./compressed --workers 4
+# Parallel batch
+mshzip multi pack *.log --out-dir ./compressed --workers 4
 
 # Streaming (stdin/stdout)
 cat data.bin | mshzip pack -i - -o - > data.msh
-
-# Run tests
-cd python && pytest
 ```
 
 ### CLI Options
 
 ```
 mshzip pack -i <input> -o <output> [options]
-  --chunk <N|auto>  Chunk size in bytes or auto (default: auto)
+  --chunk <N|auto>  Chunk size in bytes (default: auto)
   --frame <N>       Max bytes per frame (default: 64MB)
   --codec <type>    gzip | none (default: gzip)
   --crc             Enable CRC32 checksum
@@ -128,6 +127,71 @@ mshzip multi pack|unpack <files...> --out-dir <dir> [--workers N]
 
 ---
 
+## Benchmarks
+
+### Compression by Data Type
+
+Measured with `chunkSize=256` (optimal), gzip codec.
+
+| Data Type | 1 MB | 5 MB | 20 MB | Ratio | Speed |
+|-----------|-----:|-----:|------:|:-----:|------:|
+| Repeated patterns | 128 B | 202 B | 470 B | **100%** | 187 MB/s |
+| Shared sub-patterns | 211 B | 288 B | 556 B | **100%** | 193 MB/s |
+| Server logs | 118 KB | 579 KB | 2.2 MB | **89%** | 111 MB/s |
+| Random binary | 1.01 MB | 5.04 MB | 20.2 MB | -0.8% | 42 MB/s |
+
+> 648 benchmark tests (Section 20). Ratio = `(1 - compressed/original) × 100`.
+
+### Network Transfer: mshzip + Send vs Raw Send
+
+Total time = pack + network transfer + unpack. Measured on 20 MB data.
+
+**Log Data (89% compression):**
+
+| | 10 Mbps | 50 Mbps | 100 Mbps | 1 Gbps |
+|-|--------:|--------:|---------:|-------:|
+| Raw | 16.8 s | 3.4 s | 1.7 s | 168 ms |
+| mshzip | **2.1 s** | **611 ms** | **425 ms** | 256 ms |
+| Speedup | **8.0x** | **5.5x** | **4.0x** | 0.65x |
+
+**Repeated Patterns (100% compression):**
+
+| | 10 Mbps | 50 Mbps | 100 Mbps | 1 Gbps |
+|-|--------:|--------:|---------:|-------:|
+| Raw | 16.8 s | 3.4 s | 1.7 s | 168 ms |
+| mshzip | **118 ms** | **117 ms** | **117 ms** | **117 ms** |
+| Speedup | **143x** | **29x** | **14x** | **1.4x** |
+
+> 2,592 network simulation results (648 tests × 4 bandwidths).
+
+### Why flat Dedup Wins Over Hierarchical Dedup
+
+We tested 54 algorithm combinations across 1,344 benchmarks: 4 flat, 14 two-level, and 36 three-level hierarchical dedup configurations.
+
+**Result: flat(256) wins every category.**
+
+| Metric | flat (1-level) | 2-level | 3-level |
+|--------|:---------:|:-------:|:-------:|
+| Log compression ratio | **86.5%** | 83.1% | 79.9% |
+| Log pack speed | **54 MB/s** | 12 MB/s | 6 MB/s |
+| Repeat compression | 100% | 100% | 100% |
+| Tests run | 48 | 168 | 432 |
+
+Hierarchical dedup introduces multi-level dictionary overhead (headers + sub-chunk indices) that exceeds the savings from sub-chunk deduplication. The simpler single-level approach produces smaller output at higher speed.
+
+### How It Compares
+
+| Tool | Approach | Repeated Data | General Data | Dedup |
+|------|----------|:------------:|:------------:|:-----:|
+| **mshzip** | Chunk dedup + gzip | **89~100%** | 55% | **Global** |
+| gzip | Sliding window (32 KB) | 60% | **55%** | Local only |
+| zstd | Dictionary + window | 70% | **65%** | Local only |
+| rsync | File-level delta | N/A | N/A | File-level |
+
+mshzip wins on repetitive data because it deduplicates across the **entire file**, not just within a 32 KB window.
+
+---
+
 ## API
 
 ### Node.js
@@ -135,33 +199,25 @@ mshzip multi pack|unpack <files...> --out-dir <dir> [--workers N]
 ```javascript
 const { pack, unpack } = require('msh-zip');
 
-// Simple
-const compressed = pack(Buffer.from('hello world'.repeat(100)));
-const restored = unpack(compressed);
+// Buffer API
+const compressed = pack(buffer, options?);
+const original = unpack(compressed);
 
-// With options
-const compressed2 = pack(data, {
-  chunkSize: 256,     // 'auto' | 8 ~ 16MB
-  frameLimit: 64 * 1024 * 1024,
-  codec: 'gzip',      // 'gzip' | 'none'
-  crc: true
-});
-
-// Streaming
+// Streaming API
 const { PackStream, UnpackStream } = require('msh-zip');
 const { pipeline } = require('stream/promises');
 
-const ps = new PackStream({ chunkSize: 128, codec: 'gzip' });
-await pipeline(fs.createReadStream('data.bin'), ps, fs.createWriteStream('data.msh'));
+const ps = new PackStream({ chunkSize: 256, codec: 'gzip' });
+await pipeline(inputStream, ps, outputStream);
 console.log(ps.stats);  // { bytesIn, bytesOut, frameCount, dictSize, chunkSize }
 
-// Parallel
+// Parallel API
 const { WorkerPool } = require('msh-zip/lib/parallel');
 const pool = new WorkerPool(4);
 await pool.init();
 await pool.runAll([
   { type: 'pack', inputPath: 'a.bin', outputPath: 'a.msh' },
-  { type: 'pack', inputPath: 'b.bin', outputPath: 'b.msh' },
+  { type: 'unpack', inputPath: 'b.msh', outputPath: 'b.bin' },
 ]);
 pool.destroy();
 ```
@@ -171,20 +227,12 @@ pool.destroy();
 ```python
 import mshzip
 
-# Simple
-compressed = mshzip.pack(b'hello world' * 100)
-restored = mshzip.unpack(compressed)
+# Buffer API
+compressed = mshzip.pack(data, chunk_size=256, codec='gzip', crc=False)
+original = mshzip.unpack(compressed)
 
-# With options
-compressed2 = mshzip.pack(data,
-    chunk_size=256,     # 'auto' | 8 ~ 16MB
-    frame_limit=64 * 1024 * 1024,
-    codec='gzip',       # 'gzip' | 'none'
-    crc=True
-)
-
-# Streaming
-from mshzip import PackStream, pack_stream
+# Streaming API
+from mshzip import PackStream
 
 ps = PackStream(chunk_size=256)
 for frame in ps.feed(data_chunk):
@@ -193,162 +241,69 @@ for frame in ps.flush():
     output.write(frame)
 
 # File I/O
-with open('input.bin', 'rb') as inp, open('output.msh', 'wb') as out:
-    stats = pack_stream(inp, out, chunk_size=256, codec='gzip')
+from mshzip import pack_stream
+stats = pack_stream(input_file, output_file, chunk_size=256)
 
-# Parallel
+# Parallel API
 from mshzip.parallel import WorkerPool, Task
 pool = WorkerPool(num_workers=4)
 pool.run_all([
     Task(type='pack', input_path='a.bin', output_path='a.msh'),
-    Task(type='unpack', input_path='b.msh', output_path='b.bin'),
 ])
 pool.shutdown()
 ```
 
----
+### Options
 
-## Benchmarks
+| Option | Node.js | Python | Default | Description |
+|--------|---------|--------|:-------:|-------------|
+| Chunk size | `chunkSize` | `chunk_size` | `'auto'` | Bytes per chunk (8 ~ 16 MB) |
+| Frame limit | `frameLimit` | `frame_limit` | 64 MB | Max input bytes per frame |
+| Codec | `codec` | `codec` | `'gzip'` | `'gzip'` or `'none'` |
+| CRC32 | `crc` | `crc` | `false` | Per-frame integrity check |
 
-### Compression by Data Type (50 MB, chunk=128B, gzip)
-
-| Data Type | Output | Ratio | Pack Speed | Unpack Speed |
-|-----------|-------:|------:|-----------:|-------------:|
-| Repetitive pattern | 2.7 KB | **100.0%** | 95 MB/s | 1,276 MB/s |
-| All zeros | 1.8 KB | **100.0%** | 98 MB/s | 2,119 MB/s |
-| Single byte (0x42) | 1.8 KB | **100.0%** | 100 MB/s | 2,079 MB/s |
-| CSV | 6.0 MB | **88.0%** | 61 MB/s | 286 MB/s |
-| JSON | 7.4 MB | **85.1%** | 60 MB/s | 302 MB/s |
-| Log files | 9.0 MB | **82.0%** | 56 MB/s | 274 MB/s |
-| Binary struct | 15.9 MB | **68.2%** | 52 MB/s | 251 MB/s |
-| Mixed text | 22.7 MB | **54.7%** | 44 MB/s | 228 MB/s |
-| Random binary (10 MB) | 10.2 MB | -1.6% | 35 MB/s | 441 MB/s |
-
-### Speed by Chunk Size (1 MB repeat, gzip)
-
-| Chunk Size | Ratio | Pack Speed | Pack Time |
-|-----------:|------:|-----------:|----------:|
-| 4096 B | 99.9% | **1,177 MB/s** | 0.8 ms |
-| 1024 B | 100.0% | 680 MB/s | 1.5 ms |
-| 256 B | 100.0% | 215 MB/s | 4.6 ms |
-| 128 B | 100.0% | 70 MB/s | 14.2 ms |
-| 8 B | 99.9% | 6 MB/s | 156.0 ms |
-
-### Large File Performance (gzip, chunk=1024B)
-
-| Input | Output | Ratio | Pack Speed | Pack Time |
-|------:|-------:|------:|-----------:|----------:|
-| 100 MB (repeat) | 1,005 B | **100.0%** | **691 MB/s** | 145 ms |
-| 50 MB (repeat) | 587 B | **100.0%** | **645 MB/s** | 78 ms |
-| 50 MB (log) | 8.3 MB | **83.5%** | 189 MB/s | 264 ms |
-
-### Transfer Time — Raw vs mshzip
-
-> Formula: `mshzip total = pack time + (compressed size / network speed) + unpack time`
-
-**1 GB Log File (84.8% compression)**
-
-| Method | 10 Mbps | 100 Mbps | 1 Gbps |
-|--------|--------:|--------:|-------:|
-| Raw transfer | 14.3m | 1.4m | 8.6s |
-| mshzip + transfer | 3.4m | 1.4m | 1.2m |
-| Speedup | **4.2x** | ~1x | 0.11x |
-
-**10 GB Repetitive Data (100% compression)**
-
-| Method | 10 Mbps | 100 Mbps | 1 Gbps |
-|--------|--------:|--------:|-------:|
-| Raw transfer | 2.4h | 14.3m | 1.4m |
-| mshzip + transfer | 1.4m | 1.4m | 1.4m |
-| Speedup | **105x** | **10.6x** | **1.06x** |
-
-### Streaming
-
-```
-Producer → PackStream → Network → UnpackStream → Consumer
-           (frame-by-frame, no full-file buffering)
-```
-
-| Data | Streaming | Buffered | Notes |
-|------|----------:|---------:|-------|
-| Log 1 MB | 89 ms | 80 ms + send | ~1x (negligible overhead) |
-| Log 10 MB | 318 ms | 172 ms + send | 50% already sent by pack end |
-| Repeat 10 MB | 222 ms | 106 ms + send | Output ~330B, instant send |
-
-### Parallel Multi-File
-
-| Files | 1 Worker | 4 Workers | Speedup |
-|------:|---------:|----------:|--------:|
-| 4 x 1 MB | 73 ms | 40 ms | **1.8x** |
-| 10 x 1 MB | — | 67 ms | **149 MB/s** |
+> Auto chunk detection samples the first 1 MB and selects the size that minimizes `(unique_chunks × chunk_size) + (total_chunks × varint_bytes)`.
 
 ---
 
 ## How It Works
 
-### Pack
-
 ```
 Input data
-  │
-  ├─ 1. Auto chunk size detection (1MB sampling)
-  │     Candidates: [32, 64, 128, 256, 512, 1024, 2048, 4096]B
-  │     Cost = (unique chunks × chunk size) + (total chunks × varint bytes)
-  │     → Select minimum cost
-  │
-  ├─ 2. Split into fixed-size chunks (last chunk 0x00-padded)
-  │
-  ├─ 3. SHA-256 hash each chunk → deduplication
-  │     New chunk     → add to dictionary (assign global index)
-  │     Existing chunk → reference existing index
-  │
-  ├─ 4. Frame generation (split at frameLimit, default 64MB)
-  │     Dictionary section: new chunks in this frame
-  │     Sequence section:   varint-encoded index array
-  │
-  ├─ 5. gzip compress payload (level=1, speed-optimized)
-  │
-  └─ 6. Output: Header(32B) + PayloadSize(4B) + Payload [+ CRC32(4B)]
-```
-
-### Unpack
-
-```
-MSH1 file
-  │
-  ├─ 1. Verify magic number 'MSH1'
-  ├─ 2. Parse frame header (32B)
-  ├─ 3. gzip decompress payload
-  ├─ 4. Extract dictionary chunks → accumulate in global dictionary
-  ├─ 5. Decode varint sequence → index array
-  ├─ 6. Index → chunk lookup → reassemble in order
-  └─ 7. Trim by origBytes (remove padding)
+  |
+  +-- 1. Auto chunk size detection (1 MB sampling)
+  |     Candidates: [32, 64, 128, 256, 512, 1024, 2048, 4096] bytes
+  |     Select: minimum cost = (unique × chunk_size) + (total × varint_bytes)
+  |
+  +-- 2. Split into fixed-size chunks (last chunk zero-padded)
+  |
+  +-- 3. SHA-256 hash each chunk -> deduplicate
+  |     New chunk     -> add to dictionary (assign global index)
+  |     Duplicate     -> reference existing index
+  |
+  +-- 4. Frame assembly (split at frameLimit, default 64 MB)
+  |     Dictionary section: new unique chunks
+  |     Sequence section:   LEB128 varint index array
+  |
+  +-- 5. gzip compress payload (level 1, speed-optimized)
+  |
+  +-- 6. Output: Header (32 B) + PayloadSize (4 B) + Payload [+ CRC32 (4 B)]
 ```
 
 ### Example
 
 ```
-640B input (chunkSize=128B)
-  → 5 chunks: [A, B, A, A, C]  (A appears 3 times)
-  → Dictionary: 3 unique × 128B = 384B
-  → Sequence: [0, 1, 0, 0, 2] = 5 bytes (varint)
-  → gzip → compressed output
+640 B input (chunkSize = 128)
+  -> 5 chunks: [A, B, A, A, C]  (A appears 3 times)
+  -> Dictionary: 3 unique x 128 B = 384 B
+  -> Sequence: [0, 1, 0, 0, 2] = 5 bytes (varint)
+  -> gzip -> compressed output
 
-100MB repetitive pattern
-  → 781,250 chunks, ~10 unique
-  → Dictionary: 1,280B + Sequence: ~781KB → gzip → ~1.4KB
-  → 99.9999% compression
+20 MB repetitive data (chunkSize = 256)
+  -> 81,920 chunks, ~2 unique
+  -> Dictionary: 512 B + Sequence: ~82 KB -> gzip -> 470 B
+  -> 100% compression ratio
 ```
-
-### Auto Chunk Detection
-
-| Data Type | Auto-selected | Reason |
-|-----------|:------------:|--------|
-| 10B pattern repeat | 128B | Small pattern → small chunks maximize dedup |
-| 256B pattern repeat | 256B | Pattern size match → optimal 1:1 mapping |
-| Log files | 256B | Log lines ~200B → captures structural repetition |
-| JSON documents | 512B | Repeats at JSON object granularity |
-| Random binary | 2048B | Dedup impossible → large chunks minimize overhead |
 
 ---
 
@@ -359,9 +314,9 @@ Full specification: [spec/FORMAT.md](spec/FORMAT.md)
 ### Frame Layout
 
 ```
-┌──────────────────┬───────────────┬─────────────────────┬────────────┐
-│ Frame Header 32B │ PayloadSize 4B│ Compressed Payload   │ CRC32 4B   │
-└──────────────────┴───────────────┴─────────────────────┴────────────┘
++------------------+---------------+---------------------+------------+
+| Frame Header 32B | PayloadSize 4B| Compressed Payload  | CRC32 4B   |
++------------------+---------------+---------------------+------------+
 ```
 
 ### Frame Header (32 bytes, Little-Endian)
@@ -371,72 +326,59 @@ Full specification: [spec/FORMAT.md](spec/FORMAT.md)
 | 0 | 4 | magic | `MSH1` (0x4D534831) |
 | 4 | 2 | version | Format version (1) |
 | 6 | 2 | flags | Bit flags (0x0001 = CRC32) |
-| 8 | 4 | chunkSize | Chunk size (8B ~ 16MB) |
+| 8 | 4 | chunkSize | Chunk size in bytes (8 B ~ 16 MB) |
 | 12 | 1 | codecId | 0 = none, 1 = gzip |
-| 13 | 3 | padding | Reserved (0x000000) |
-| 16 | 8 | origBytes | Original size (uint64, split Lo+Hi) |
-| 24 | 4 | dictEntries | New dictionary entries in frame |
+| 13 | 3 | reserved | 0x000000 |
+| 16 | 8 | origBytes | Original data size (uint64) |
+| 24 | 4 | dictEntries | New dictionary entries in this frame |
 | 28 | 4 | seqCount | Sequence index count |
 
 ### Payload (after decompression)
 
 ```
-[Dictionary: dictEntries × chunkSize bytes] [Sequence: seqCount × uvarint indices]
+[Dictionary: dictEntries x chunkSize bytes] [Sequence: seqCount x LEB128 varint]
 ```
 
-### Multi-frame
+### Multi-Frame
 
 ```
-┌──────────┬──────────┬─────┬──────────┐
-│ Frame #0 │ Frame #1 │ ... │ Frame #N │
-└──────────┴──────────┴─────┴──────────┘
-  • Split at frameLimit (default 64MB)
-  • Dictionary accumulates across frames (global)
-  • 64-bit origBytes supports 4GB+ files
++----------+----------+-----+----------+
+| Frame #0 | Frame #1 | ... | Frame #N |
++----------+----------+-----+----------+
 ```
+
+- Split at `frameLimit` (default 64 MB input per frame)
+- Dictionary accumulates across frames
+- 64-bit `origBytes` supports files > 4 GB
 
 ---
 
-## Cross-compatibility
+## Cross-Compatibility
 
-Node.js and Python produce byte-identical MSH1 files. The `spec/test-vectors/` directory contains 12 test vectors for verification.
+Node.js and Python produce **byte-identical** MSH1 files. The `spec/test-vectors/` directory contains 12 test vectors for verification.
 
 ```bash
-# Generate vectors (Node.js)
-cd spec && node generate-vectors.js
+# Node.js compress -> Python decompress
+node cli.js pack -i data.bin -o data.msh
+mshzip unpack -i data.msh -o restored.bin
 
-# Verify (Python)
-cd python && pytest tests/test_compat.py -v
+# Python compress -> Node.js decompress
+mshzip pack -i data.bin -o data.msh
+node cli.js unpack -i data.msh -o restored.bin
 ```
 
 | Vector | Original | MSH | Purpose |
 |--------|:--------:|:---:|---------|
-| empty | 0B | 36B | Empty input edge case |
-| single-byte | 1B | 60B | Minimal input |
-| boundary-127 / 128 / 129 | 127~129B | 61~64B | Chunk boundary ±1 |
-| small-repeat | 1KB | 323B | Repetitive pattern dedup |
-| multi-frame | 512B | 499B | Multi-frame (chunk=32, frame=128) |
-| crc32 | 300B | 85B | CRC32 enabled |
-| codec-none | 420B | 552B | Uncompressed codec |
-| large-chunk | 8KB | 91B | Large chunk (4096B) |
-| text-data | 1.3KB | 96B | Text data |
-| binary-random | 2KB | 2.1KB | Random binary overhead check |
-
----
-
-## Key Features
-
-| Feature | Description |
-|---------|-------------|
-| **SHA-256 Dedup** | Fixed-chunk hash-based deduplication across entire file |
-| **Auto Chunk Detection** | 1MB sampling → selects optimal chunk size (8~4096B) |
-| **Streaming** | Node.js Transform Stream / Python Generator — frame-by-frame, constant memory |
-| **Parallel Processing** | Node.js Worker Threads / Python ProcessPoolExecutor |
-| **Multi-frame** | Dictionary accumulates across frames; 64-bit origBytes (4GB+ files) |
-| **CRC32** | Optional per-frame integrity verification |
-| **Cross-compatible** | Node.js ↔ Python MSH1 files 100% interchangeable |
-| **CLI** | 4 commands: `pack` / `unpack` / `info` / `multi` (identical in both) |
-| **Pipe-friendly** | stdin/stdout with `-i -` / `-o -` |
+| empty | 0 B | 36 B | Empty input edge case |
+| single-byte | 1 B | 60 B | Minimal input |
+| boundary-127/128/129 | 127~129 B | 61~64 B | Chunk boundary edge cases |
+| small-repeat | 1 KB | 323 B | Repetitive pattern dedup |
+| multi-frame | 512 B | 499 B | Multi-frame with small frames |
+| crc32 | 300 B | 85 B | CRC32 verification |
+| codec-none | 420 B | 552 B | Uncompressed codec |
+| large-chunk | 8 KB | 91 B | Large chunk (4096 B) |
+| text-data | 1.3 KB | 96 B | Text data compression |
+| binary-random | 2 KB | 2.1 KB | Random binary overhead check |
 
 ---
 
@@ -444,51 +386,33 @@ cd python && pytest tests/test_compat.py -v
 
 ```
 mshzip/
-├── spec/                           # MSH1 format spec + test vectors
-│   ├── FORMAT.md
-│   ├── generate-vectors.js
-│   └── test-vectors/               # 12 .bin + .msh pairs
-│
-├── nodejs/                         # Node.js implementation
-│   ├── cli.js                      # CLI (pack/unpack/info/multi)
-│   ├── lib/                        # Core (7 modules)
-│   │   ├── index.js                # Exports
-│   │   ├── constants.js            # MSH1 constants
-│   │   ├── packer.js               # SHA-256 dedup + frame assembly
-│   │   ├── unpacker.js             # Frame parsing + dict accumulation
-│   │   ├── stream.js               # PackStream / UnpackStream
-│   │   ├── varint.js               # LEB128 uvarint
-│   │   └── parallel.js             # Worker Thread pool
-│   ├── test/benchmark.js           # 221 tests
-│   └── package.json
-│
-├── python/                         # Python implementation
-│   ├── src/mshzip/                 # Core (8 modules)
-│   │   ├── __init__.py             # Public API
-│   │   ├── constants.py            # MSH1 constants
-│   │   ├── packer.py               # SHA-256 dedup + frame assembly
-│   │   ├── unpacker.py             # Frame parsing + dict accumulation
-│   │   ├── stream.py               # Generator-based streaming
-│   │   ├── varint.py               # LEB128 uvarint
-│   │   ├── parallel.py             # ProcessPoolExecutor
-│   │   └── cli.py                  # CLI entry point
-│   ├── tests/                      # 253 pytest tests
-│   └── pyproject.toml
-│
-└── .github/workflows/ci.yml        # CI: test + lint + docker
++-- spec/                    # MSH1 format spec + 12 test vectors
++-- nodejs/                  # Node.js implementation
+|   +-- cli.js               # CLI: pack / unpack / info / multi
+|   +-- lib/
+|   |   +-- index.js         # Public API exports
+|   |   +-- packer.js        # SHA-256 dedup + frame assembly
+|   |   +-- unpacker.js      # Frame parsing + reconstruction
+|   |   +-- stream.js        # PackStream / UnpackStream
+|   |   +-- parallel.js      # Worker Thread pool
+|   |   +-- varint.js        # LEB128 unsigned varint
+|   |   +-- constants.js     # MSH1 constants
+|   +-- test/benchmark.js    # 253 tests
+|   +-- package.json
+|
++-- python/                  # Python implementation
+|   +-- src/mshzip/
+|   |   +-- __init__.py      # Public API exports
+|   |   +-- packer.py        # SHA-256 dedup + frame assembly
+|   |   +-- unpacker.py      # Frame parsing + reconstruction
+|   |   +-- stream.py        # Generator-based streaming
+|   |   +-- parallel.py      # ProcessPoolExecutor pool
+|   |   +-- varint.py        # LEB128 unsigned varint
+|   |   +-- constants.py     # MSH1 constants
+|   |   +-- cli.py           # CLI entry point
+|   +-- tests/               # 253 pytest tests
+|   +-- pyproject.toml
 ```
-
-### Module Roles
-
-| Module | Node.js | Python | Role |
-|--------|---------|--------|------|
-| constants | `lib/constants.js` | `constants.py` | Magic, header size, defaults, codec IDs |
-| varint | `lib/varint.js` | `varint.py` | LEB128 variable integer codec |
-| packer | `lib/packer.js` | `packer.py` | SHA-256 dictionary, chunk split, frame assembly |
-| unpacker | `lib/unpacker.js` | `unpacker.py` | Frame parse, dict accumulation, index→chunk |
-| stream | `lib/stream.js` | `stream.py` | Transform Stream / Generator |
-| parallel | `lib/parallel.js` | `parallel.py` | Worker Threads / ProcessPoolExecutor |
-| cli | `cli.js` | `cli.py` | 4 commands: pack / unpack / info / multi |
 
 ---
 
@@ -496,9 +420,9 @@ mshzip/
 
 | Constant | Value | Description |
 |----------|:-----:|-------------|
-| `DEFAULT_CHUNK_SIZE` | auto | Auto detection (fallback: 128B) |
+| `DEFAULT_CHUNK_SIZE` | auto | Auto detection (fallback: 128 B) |
 | `DEFAULT_FRAME_LIMIT` | 64 MB | Max input bytes per frame |
-| `DEFAULT_CODEC` | gzip | gzip level=1 (speed-optimized) |
+| `DEFAULT_CODEC` | gzip | gzip level 1 (speed-optimized) |
 | `MIN_CHUNK_SIZE` | 8 B | Minimum chunk size |
 | `MAX_CHUNK_SIZE` | 16 MB | Maximum chunk size |
 
@@ -506,23 +430,11 @@ mshzip/
 
 ## Limitations
 
-1. **Dictionary memory** — Random data with many unique chunks: memory ≈ original size
-2. **Pre-compressed data** — mp4, zip, jpg: no dedup effect (-1~-2% overhead)
-3. **Codecs** — Only gzip (level=1) and none
-4. **No cross-file dictionary** — Each file has independent dictionary in parallel mode
-5. **V8 Map limit** — Auto chunk-size increase needed past ~16.77M chunks (5GB+ in Node.js)
-
----
-
-## Publishing
-
-```bash
-# npm
-cd nodejs && npm pack          # → msh-zip-1.0.2.tgz
-
-# PyPI
-cd python && uv build          # → dist/mshzip-1.0.1.tar.gz
-```
+1. **Dictionary memory** — Random data with many unique chunks: memory approaches original size
+2. **Pre-compressed data** — mp4, zip, jpg produce -1~2% overhead (slight expansion)
+3. **Codecs** — Only gzip (level 1) and none; no zstd or lz4
+4. **No cross-file dictionary** — Each file has an independent dictionary in parallel mode
+5. **High-speed networks** — At 1 Gbps+, CPU pack/unpack time exceeds network transfer savings
 
 ---
 

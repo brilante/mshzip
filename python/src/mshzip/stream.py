@@ -8,6 +8,7 @@ from .unpacker import Unpacker
 from .constants import (
     MAGIC, Flag, FRAME_HEADER_SIZE,
     DEFAULT_CHUNK_SIZE, DEFAULT_FRAME_LIMIT, DEFAULT_CODEC,
+    DEFAULT_SUB_CHUNK_SIZE,
     AUTO_DETECT_STREAM_MIN,
 )
 
@@ -21,6 +22,8 @@ class PackStream:
         frame_limit: int = DEFAULT_FRAME_LIMIT,
         codec: str = DEFAULT_CODEC,
         crc: bool = False,
+        hier_dedup: str | bool = 'auto',
+        sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
     ) -> None:
         self._auto_mode = (chunk_size == 'auto')
         self._detected = not self._auto_mode
@@ -30,6 +33,8 @@ class PackStream:
             frame_limit=frame_limit,
             codec=codec,
             crc=crc,
+            hier_dedup=hier_dedup,
+            sub_chunk_size=sub_chunk_size,
         )
         self._frame_limit = self._packer.frame_limit
         self._pending = bytearray()
@@ -169,6 +174,8 @@ def pack_stream(
     frame_limit: int = DEFAULT_FRAME_LIMIT,
     codec: str = DEFAULT_CODEC,
     crc: bool = False,
+    hier_dedup: str | bool = 'auto',
+    sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
     read_size: int = 65536,
 ) -> dict:
     'Stream-based compression convenience function. Returns stats dict.'
@@ -177,6 +184,8 @@ def pack_stream(
         frame_limit=frame_limit,
         codec=codec,
         crc=crc,
+        hier_dedup=hier_dedup,
+        sub_chunk_size=sub_chunk_size,
     )
 
     while True:

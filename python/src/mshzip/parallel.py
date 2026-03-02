@@ -10,7 +10,7 @@ from typing import Literal
 
 from .packer import Packer
 from .unpacker import Unpacker
-from .constants import DEFAULT_CHUNK_SIZE, DEFAULT_FRAME_LIMIT, DEFAULT_CODEC
+from .constants import DEFAULT_CHUNK_SIZE, DEFAULT_FRAME_LIMIT, DEFAULT_CODEC, DEFAULT_SUB_CHUNK_SIZE
 
 
 @dataclass
@@ -34,6 +34,8 @@ class Task:
     frame_limit: int = DEFAULT_FRAME_LIMIT
     codec: str = DEFAULT_CODEC
     crc: bool = False
+    hier_dedup: str | bool = 'auto'
+    sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE
 
 
 def _worker_fn(task: Task) -> TaskResult:
@@ -48,6 +50,8 @@ def _worker_fn(task: Task) -> TaskResult:
                 frame_limit=task.frame_limit,
                 codec=task.codec,
                 crc=task.crc,
+                hier_dedup=task.hier_dedup,
+                sub_chunk_size=task.sub_chunk_size,
             )
             output_data = packer.pack(input_data)
             Path(task.output_path).write_bytes(output_data)

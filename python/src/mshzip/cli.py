@@ -33,6 +33,10 @@ def main() -> None:
     p_pack.add_argument('--frame', type=int, default=DEFAULT_FRAME_LIMIT)
     p_pack.add_argument('--codec', default=DEFAULT_CODEC)
     p_pack.add_argument('--crc', action='store_true')
+    p_pack.add_argument('--hier-dedup', default='auto',
+                        help='hierarchical dedup: auto|true|false (default: auto)')
+    p_pack.add_argument('--sub-chunk', type=int, default=32,
+                        help='sub-chunk size for hier-dedup (default: 32)')
     p_pack.add_argument('--verbose', action='store_true')
 
     # unpack
@@ -54,6 +58,10 @@ def main() -> None:
     p_multi.add_argument('--frame', type=int, default=DEFAULT_FRAME_LIMIT)
     p_multi.add_argument('--codec', default=DEFAULT_CODEC)
     p_multi.add_argument('--crc', action='store_true')
+    p_multi.add_argument('--hier-dedup', default='auto',
+                        help='hierarchical dedup: auto|true|false (default: auto)')
+    p_multi.add_argument('--sub-chunk', type=int, default=32,
+                        help='sub-chunk size for hier-dedup (default: 32)')
     p_multi.add_argument('--verbose', action='store_true')
 
     args = parser.parse_args()
@@ -90,6 +98,10 @@ def _handle_pack(args) -> None:
     inp = sys.stdin.buffer if args.i == '-' else open(args.i, 'rb')
     out = sys.stdout.buffer if args.o == '-' else open(args.o, 'wb')
 
+    raw_hd = getattr(args, 'hier_dedup', 'auto')
+    hier_dedup = True if raw_hd == 'true' else False if raw_hd == 'false' else raw_hd
+    sub_chunk_size = getattr(args, 'sub_chunk', 32)
+
     try:
         stats = pack_stream(
             inp, out,
@@ -97,6 +109,8 @@ def _handle_pack(args) -> None:
             frame_limit=args.frame,
             codec=args.codec,
             crc=args.crc,
+            hier_dedup=hier_dedup,
+            sub_chunk_size=sub_chunk_size,
         )
     finally:
         if args.i != '-':
@@ -245,6 +259,8 @@ def _handle_multi(args) -> None:
             )
         raw_cs = args.chunk
         cs_val = raw_cs if raw_cs == 'auto' else int(raw_cs)
+        raw_hd = getattr(args, 'hier_dedup', 'auto')
+        hd_val = True if raw_hd == 'true' else False if raw_hd == 'false' else raw_hd
         tasks.append(Task(
             type=args.subcmd,
             input_path=str(Path(f).resolve()),
@@ -253,6 +269,8 @@ def _handle_multi(args) -> None:
             frame_limit=args.frame,
             codec=args.codec,
             crc=args.crc,
+            hier_dedup=hd_val,
+            sub_chunk_size=getattr(args, 'sub_chunk', 32),
         ))
 
     pool = WorkerPool(args.workers)

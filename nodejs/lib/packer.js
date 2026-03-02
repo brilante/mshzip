@@ -6,7 +6,8 @@ const {
   MAGIC, VERSION, CODEC, CODEC_NAME, FLAG,
   FRAME_HEADER_SIZE,
   DEFAULT_CHUNK_SIZE, DEFAULT_FRAME_LIMIT, DEFAULT_CODEC,
-  MIN_CHUNK_SIZE, MAX_CHUNK_SIZE,
+  DEFAULT_SUB_CHUNK_SIZE,
+  MIN_CHUNK_SIZE, MAX_CHUNK_SIZE, MAX_HIER_LEVELS,
   AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
 } = require('./constants');
 const varint = require('./varint');
@@ -31,6 +32,9 @@ class Packer {
    * @param {number} [opts.frameLimit=67108864] - Max input bytes per frame
    * @param {string} [opts.codec='gzip'] - 'gzip' | 'none'
    * @param {boolean} [opts.crc=false] - Whether to append CRC32 checksum
+   * @param {string|boolean} [opts.hierDedup='auto'] - 계층적 Dedup: 'auto' | true | false
+   * @param {number} [opts.subChunkSize=32] - 2차 청크 크기 (바이트)
+   * @param {number[]} [opts.subChunkSizes] - N단계 서브청크 크기 배열 (예: [32, 8] → 3단계)
    */
   constructor(opts = {}) {
     const rawChunk = opts.chunkSize !== undefined ? opts.chunkSize : DEFAULT_CHUNK_SIZE;
@@ -42,6 +46,18 @@ class Packer {
     this.codecId = CODEC_NAME[this.codecName];
     this.useCRC = !!opts.crc;
 
+    // 계층적 Dedup 옵션
+    this.hierDedup = opts.hierDedup !== undefined ? opts.hierDedup : 'auto';
+
+    // N단계 지원: subChunkSizes 배열 또는 단일 subChunkSize
+    if (opts.subChunkSizes && Array.isArray(opts.subChunkSizes)) {
+      this.subChunkSizes = opts.subChunkSizes;
+      this.subChunkSize = opts.subChunkSizes[0];
+    } else {
+      this.subChunkSize = opts.subChunkSize || DEFAULT_SUB_CHUNK_SIZE;
+      this.subChunkSizes = [this.subChunkSize];
+    }
+
     if (!this._autoDetect) {
       if (this.chunkSize < MIN_CHUNK_SIZE || this.chunkSize > MAX_CHUNK_SIZE) {
         throw new Error(`Chunk size out of range: ${MIN_CHUNK_SIZE}~${MAX_CHUNK_SIZE}`);
@@ -49,6 +65,14 @@ class Packer {
     }
     if (this.codecId === undefined) {
       throw new Error(`Unsupported codec: ${this.codecName}`);
+    }
+    for (const scs of this.subChunkSizes) {
+      if (scs < MIN_CHUNK_SIZE) {
+        throw new Error(`Sub-chunk size too small: ${scs} (min: ${MIN_CHUNK_SIZE})`);
+      }
+    }
+    if (this.subChunkSizes.length > MAX_HIER_LEVELS) {
+      throw new Error(`Too many hier levels: ${this.subChunkSizes.length} (max: ${MAX_HIER_LEVELS})`);
     }
 
     // Global dictionary: hash -> global index
@@ -128,21 +152,92 @@ class Packer {
     const dictEntriesInFrame = newChunks.length;
     const seqCount = seqIndices.length;
 
-    // Payload layout: [dict section] + [sequence section]
-    const dictSection = dictEntriesInFrame > 0
+    // Dict1 (1차 사전)
+    const dict1 = dictEntriesInFrame > 0
       ? Buffer.concat(newChunks)
       : Buffer.alloc(0);
-    const seqSection = seqCount > 0
-      ? varint.encodeArray(seqIndices)
-      : Buffer.alloc(0);
 
-    const rawPayload = Buffer.concat([dictSection, seqSection]);
+    // 계층적 Dedup 판단 및 적용
+    let rawPayload;
+    let useHier = false;
+    let useMultilevel = false;
+
+    if (dict1.length > 0 && this.hierDedup !== false) {
+      const shouldApply = this.hierDedup === true
+        || this._shouldApplyHierDedup(dict1, this.subChunkSize);
+
+      if (shouldApply) {
+        useHier = true;
+
+        if (this.subChunkSizes.length === 1) {
+          // ── 기존 2단계 형식 (하위 호환) ──
+          const { dict2, seq2Indices, dict2Entries } =
+            this._buildHierDict(dict1, this.subChunkSize);
+
+          const hierHeader = Buffer.alloc(8);
+          hierHeader.writeUInt32LE(this.subChunkSize, 0);
+          hierHeader.writeUInt32LE(dict2Entries, 4);
+
+          const seq2Section = varint.encodeArray(seq2Indices);
+          const seq1Section = seqCount > 0
+            ? varint.encodeArray(seqIndices)
+            : Buffer.alloc(0);
+
+          rawPayload = Buffer.concat([hierHeader, dict2, seq2Section, seq1Section]);
+        } else {
+          // ── N단계 (3단계 이상) ──
+          useMultilevel = true;
+
+          let currentDict = dict1;
+          const allSeqs = [];
+          const levelDescs = [];
+
+          for (const subSize of this.subChunkSizes) {
+            const { dict2, seq2Indices, dict2Entries } =
+              this._buildHierDict(currentDict, subSize);
+            allSeqs.push(seq2Indices);
+            levelDescs.push({ subChunkSize: subSize, dictEntries: dict2Entries });
+            currentDict = dict2;
+          }
+
+          // HierHeader: hierLevels(1B) + reserved(3B) + [subChunkSize(4B) + dictEntries(4B)] × levels
+          const hierLevels = this.subChunkSizes.length;
+          const headerSize = 4 + hierLevels * 8;
+          const hierHeader = Buffer.alloc(headerSize);
+          hierHeader.writeUInt8(hierLevels, 0);
+          for (let i = 0; i < hierLevels; i++) {
+            hierHeader.writeUInt32LE(levelDescs[i].subChunkSize, 4 + i * 8);
+            hierHeader.writeUInt32LE(levelDescs[i].dictEntries, 4 + i * 8 + 4);
+          }
+
+          // Payload: [HierHeader][finalDict][seqN..seq2 역순][seq1]
+          const payloadParts = [hierHeader, currentDict];
+          for (let i = allSeqs.length - 1; i >= 0; i--) {
+            payloadParts.push(varint.encodeArray(allSeqs[i]));
+          }
+          if (seqCount > 0) {
+            payloadParts.push(varint.encodeArray(seqIndices));
+          }
+
+          rawPayload = Buffer.concat(payloadParts);
+        }
+      }
+    }
+
+    if (!useHier) {
+      const seqSection = seqCount > 0
+        ? varint.encodeArray(seqIndices)
+        : Buffer.alloc(0);
+      rawPayload = Buffer.concat([dict1, seqSection]);
+    }
 
     // Entropy compression
     const compressedPayload = this._compress(rawPayload);
 
     // Build frame header
-    const flags = this.useCRC ? FLAG.CRC32 : 0;
+    const flags = (this.useCRC ? FLAG.CRC32 : 0)
+      | (useHier ? FLAG.HIERDEDUP : 0)
+      | (useMultilevel ? FLAG.MULTILEVEL : 0);
     const header = Buffer.alloc(FRAME_HEADER_SIZE);
     let off = 0;
 
@@ -241,6 +336,90 @@ class Packer {
     }
 
     return bestCs;
+  }
+
+  /**
+   * Dict1을 subChunkSize로 재분할하여 2차 중복 제거 수행 (프레임 로컬)
+   * @param {Buffer} dict1 - 1차 사전 (newChunks concat)
+   * @param {number} subChunkSize - 2차 청크 크기
+   * @returns {{ dict2: Buffer, seq2Indices: number[], dict2Entries: number }}
+   */
+  _buildHierDict(dict1, subChunkSize) {
+    const dict2Index = new Map();
+    const dict2Chunks = [];
+    const seq2Indices = [];
+
+    let pos = 0;
+    while (pos < dict1.length) {
+      const subEnd = Math.min(pos + subChunkSize, dict1.length);
+      let subChunk = dict1.slice(pos, subEnd);
+
+      // 마지막 서브청크 패딩
+      if (subChunk.length < subChunkSize) {
+        const padded = Buffer.alloc(subChunkSize, 0);
+        subChunk.copy(padded);
+        subChunk = padded;
+      }
+
+      const hash = crypto.createHash('sha256').update(subChunk).digest('hex');
+
+      let idx = dict2Index.get(hash);
+      if (idx === undefined) {
+        idx = dict2Chunks.length;
+        dict2Index.set(hash, idx);
+        dict2Chunks.push(subChunk);
+      }
+
+      seq2Indices.push(idx);
+      pos = subEnd;
+    }
+
+    return {
+      dict2: dict2Chunks.length > 0 ? Buffer.concat(dict2Chunks) : Buffer.alloc(0),
+      seq2Indices,
+      dict2Entries: dict2Chunks.length,
+    };
+  }
+
+  /**
+   * 2차 pass 적용 여부 자동 판단
+   * 손익분기: dupRatio > varintBytes / subChunkSize (안전 마진 ×1.2)
+   * @param {Buffer} dict1 - 1차 사전
+   * @param {number} subChunkSize - 2차 청크 크기
+   * @returns {boolean}
+   */
+  _shouldApplyHierDedup(dict1, subChunkSize) {
+    // 최소 크기: 서브청크 4개 미만이면 의미 없음
+    if (dict1.length < subChunkSize * 4) return false;
+
+    // 샘플링 (최대 32KB)
+    const sampleLimit = Math.min(dict1.length, 32 * 1024);
+    const sample = dict1.slice(0, sampleLimit);
+    const hashes = new Set();
+    let totalSubChunks = 0;
+
+    let pos = 0;
+    while (pos < sample.length) {
+      const subEnd = Math.min(pos + subChunkSize, sample.length);
+      let subChunk = sample.slice(pos, subEnd);
+
+      if (subChunk.length < subChunkSize) {
+        const padded = Buffer.alloc(subChunkSize, 0);
+        subChunk.copy(padded);
+        subChunk = padded;
+      }
+
+      hashes.add(crypto.createHash('sha256').update(subChunk).digest('hex'));
+      totalSubChunks++;
+      pos = subEnd;
+    }
+
+    const dupRatio = 1 - (hashes.size / totalSubChunks);
+    const avgVarint = hashes.size <= 127 ? 1 : hashes.size <= 16383 ? 2 : 3;
+    const breakEven = avgVarint / subChunkSize;
+
+    // 안전 마진 20%
+    return dupRatio > breakEven * 1.2;
   }
 
   /**

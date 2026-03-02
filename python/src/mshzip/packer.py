@@ -11,6 +11,7 @@ from .constants import (
     MAGIC, VERSION, Codec, CODEC_NAME, Flag,
     FRAME_HEADER_SIZE,
     DEFAULT_CHUNK_SIZE, DEFAULT_FRAME_LIMIT, DEFAULT_CODEC,
+    DEFAULT_SUB_CHUNK_SIZE,
     MIN_CHUNK_SIZE, MAX_CHUNK_SIZE,
     AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
 )
@@ -25,6 +26,8 @@ class Packer:
         frame_limit: int = DEFAULT_FRAME_LIMIT,
         codec: str = DEFAULT_CODEC,
         crc: bool = False,
+        hier_dedup: str | bool = 'auto',
+        sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
     ) -> None:
         self._auto_detect = (chunk_size == 'auto')
         self.chunk_size: int = AUTO_FALLBACK_CHUNK_SIZE if self._auto_detect else int(chunk_size)
@@ -33,6 +36,10 @@ class Packer:
         self.codec_id = CODEC_NAME.get(codec)
         self.use_crc = crc
 
+        # 계층적 Dedup 옵션
+        self.hier_dedup = hier_dedup
+        self.sub_chunk_size = sub_chunk_size
+
         if not self._auto_detect:
             if not (MIN_CHUNK_SIZE <= self.chunk_size <= MAX_CHUNK_SIZE):
                 raise ValueError(
@@ -40,6 +47,10 @@ class Packer:
                 )
         if self.codec_id is None:
             raise ValueError(f'Unsupported codec: {codec}')
+        if self.sub_chunk_size < MIN_CHUNK_SIZE:
+            raise ValueError(
+                f'Sub-chunk size too small: {self.sub_chunk_size} (min: {MIN_CHUNK_SIZE})'
+            )
 
         # Global dict: hash(str) -> global index(int)
         self.dict_index: dict[str, int] = {}
@@ -111,16 +122,42 @@ class Packer:
         dict_entries_in_frame = len(new_chunks)
         seq_count = len(seq_indices)
 
-        # Payload layout: [dict section] + [sequence section]
-        dict_section = b''.join(new_chunks) if new_chunks else b''
-        seq_section = varint.encode_array(seq_indices) if seq_indices else b''
-        raw_payload = dict_section + seq_section
+        # Dict1 (1차 사전)
+        dict1 = b''.join(new_chunks) if new_chunks else b''
+
+        # 계층적 Dedup 판단 및 적용
+        use_hier = False
+
+        if dict1 and self.hier_dedup is not False:
+            should_apply = (
+                self.hier_dedup is True
+                or self._should_apply_hier_dedup(dict1, self.sub_chunk_size)
+            )
+
+            if should_apply:
+                use_hier = True
+                dict2_data, seq2_indices, dict2_entries = self._build_hier_dict(
+                    dict1, self.sub_chunk_size
+                )
+
+                # Hier Header (8바이트): sub_chunk_size(4B) + dict2_entries(4B)
+                hier_header = struct.pack('<II', self.sub_chunk_size, dict2_entries)
+
+                dict2_section = dict2_data
+                seq2_section = varint.encode_array(seq2_indices)
+                seq1_section = varint.encode_array(seq_indices) if seq_indices else b''
+
+                raw_payload = hier_header + dict2_section + seq2_section + seq1_section
+
+        if not use_hier:
+            seq_section = varint.encode_array(seq_indices) if seq_indices else b''
+            raw_payload = dict1 + seq_section
 
         # Entropy compression
         compressed_payload = self._compress(raw_payload)
 
         # Build frame header (32 bytes)
-        flags = Flag.CRC32 if self.use_crc else 0
+        flags = (Flag.CRC32 if self.use_crc else 0) | (Flag.HIERDEDUP if use_hier else 0)
         header = bytearray(FRAME_HEADER_SIZE)
         off = 0
         header[off:off + 4] = MAGIC; off += 4
@@ -189,6 +226,74 @@ class Packer:
                 best_cs = cs
 
         return best_cs
+
+    def _build_hier_dict(
+        self,
+        dict1: bytes,
+        sub_chunk_size: int,
+    ) -> tuple[bytes, list[int], int]:
+        'Dict1을 sub_chunk_size로 재분할하여 2차 중복 제거 수행 (프레임 로컬).'
+        dict2_index: dict[str, int] = {}
+        dict2_chunks: list[bytes] = []
+        seq2_indices: list[int] = []
+
+        pos = 0
+        while pos < len(dict1):
+            sub_end = min(pos + sub_chunk_size, len(dict1))
+            sub_chunk = dict1[pos:sub_end]
+
+            # 마지막 서브청크 패딩
+            if len(sub_chunk) < sub_chunk_size:
+                sub_chunk = sub_chunk + b'\x00' * (sub_chunk_size - len(sub_chunk))
+
+            h = hashlib.sha256(sub_chunk).hexdigest()
+
+            idx = dict2_index.get(h)
+            if idx is None:
+                idx = len(dict2_chunks)
+                dict2_index[h] = idx
+                dict2_chunks.append(sub_chunk)
+
+            seq2_indices.append(idx)
+            pos = sub_end
+
+        dict2_data = b''.join(dict2_chunks) if dict2_chunks else b''
+        return (dict2_data, seq2_indices, len(dict2_chunks))
+
+    def _should_apply_hier_dedup(
+        self,
+        dict1: bytes,
+        sub_chunk_size: int,
+    ) -> bool:
+        '2차 pass 적용 여부 자동 판단. 손익분기: dupRatio > varintBytes / subChunkSize × 1.2'
+        # 최소 크기: 서브청크 4개 미만이면 의미 없음
+        if len(dict1) < sub_chunk_size * 4:
+            return False
+
+        # 샘플링 (최대 32KB)
+        sample_limit = min(len(dict1), 32 * 1024)
+        sample = dict1[:sample_limit]
+        hashes: set[str] = set()
+        total_sub_chunks = 0
+
+        pos = 0
+        while pos < len(sample):
+            sub_end = min(pos + sub_chunk_size, len(sample))
+            sub_chunk = sample[pos:sub_end]
+
+            if len(sub_chunk) < sub_chunk_size:
+                sub_chunk = sub_chunk + b'\x00' * (sub_chunk_size - len(sub_chunk))
+
+            hashes.add(hashlib.sha256(sub_chunk).hexdigest())
+            total_sub_chunks += 1
+            pos = sub_end
+
+        dup_ratio = 1 - (len(hashes) / total_sub_chunks)
+        avg_varint = 1 if len(hashes) <= 127 else 2 if len(hashes) <= 16383 else 3
+        break_even = avg_varint / sub_chunk_size
+
+        # 안전 마진 20%
+        return dup_ratio > break_even * 1.2
 
     def _compress(self, data: bytes) -> bytes:
         'Compress payload.'

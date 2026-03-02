@@ -1,6 +1,6 @@
 {
   "name": "msh-zip",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Fixed-chunk dedup + entropy compression utility (MSH1 binary format)",
   "main": "lib/index.js",
   "bin": {

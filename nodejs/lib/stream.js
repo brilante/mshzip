@@ -38,6 +38,8 @@ class PackStream extends Transform {
       frameLimit: opts.frameLimit || DEFAULT_FRAME_LIMIT,
       codec: opts.codec || DEFAULT_CODEC,
       crc: !!opts.crc,
+      hierDedup: opts.hierDedup !== undefined ? opts.hierDedup : 'auto',
+      subChunkSize: opts.subChunkSize,
     });
     this._frameLimit = this._packer.frameLimit;
     this._pending = Buffer.alloc(0);

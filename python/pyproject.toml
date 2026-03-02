@@ -1,6 +1,6 @@
 [project]
 name = "mshzip"
-version = "1.0.1"
+version = "1.0.2"
 description = "Fixed-chunk dedup + entropy compression utility (MSH1 binary format)"
 readme = "README.md"
 license = { text = "MIT" }

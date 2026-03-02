@@ -29,6 +29,10 @@ CODEC_ID_TO_NAME: dict[int, str] = {
 # Flag bits
 class Flag:
     CRC32: int = 0x0001
+    HIERDEDUP: int = 0x0002  # 계층적 Dedup 적용됨
+
+# 알려진 모든 플래그 비트 마스크 (하위 호환성 검증용)
+KNOWN_FLAGS: int = Flag.CRC32 | Flag.HIERDEDUP
 
 
 # Frame header size (fixed 32 bytes)
@@ -44,6 +48,9 @@ DEFAULT_CODEC: str = 'gzip'
 # Chunk size range
 MIN_CHUNK_SIZE: int = 8
 MAX_CHUNK_SIZE: int = 16 * 1024 * 1024  # 16MB
+
+# Hierarchical dedup defaults
+DEFAULT_SUB_CHUNK_SIZE: int = 32  # 2차 청크 크기 (바이트)
 
 # Auto chunk size detection
 AUTO_DETECT_CANDIDATES: list[int] = [32, 64, 128, 256, 512, 1024, 2048, 4096]
