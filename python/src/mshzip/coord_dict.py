@@ -7,13 +7,17 @@ from concurrent.futures import ThreadPoolExecutor
 
 from . import hamming
 from . import reed_solomon as rs
+from .constants import (
+    COORDDICT_EXTRA_HEADER_SIZE,
+    COORDDICT_BITS_PER_AXIS,
+    COORDDICT_RS_GROUP_SIZE,
+)
 
-BITS_PER_AXIS = 1024
-BYTES_PER_AXIS = 128       # 1024 / 8
-HAMMING_BYTES = 130         # ceil(1035 / 8)
-RS_GROUP_SIZE = 8
-COORDDICT_EXTRA_HEADER_SIZE = 8
-MIN_CHUNKS_FOR_PARALLEL = 4  # 이 이상일 때만 병렬화
+BITS_PER_AXIS = COORDDICT_BITS_PER_AXIS
+BYTES_PER_AXIS = BITS_PER_AXIS // 8   # 128
+HAMMING_BYTES = 130                     # ceil(1035 / 8)
+RS_GROUP_SIZE = COORDDICT_RS_GROUP_SIZE
+MIN_CHUNKS_FOR_PARALLEL = 4
 
 
 class CoordDictPacker:

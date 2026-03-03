@@ -10,12 +10,16 @@
 const os = require('os');
 const hamming = require('./hamming');
 const rs = require('./reed-solomon');
+const {
+  COORDDICT_EXTRA_HEADER_SIZE,
+  COORDDICT_BITS_PER_AXIS,
+  COORDDICT_RS_GROUP_SIZE,
+} = require('./constants');
 
-const BITS_PER_AXIS = 1024;
-const BYTES_PER_AXIS = 128;      // 1024 / 8
-const HAMMING_BYTES = 130;        // ceil(1035 / 8)
-const RS_GROUP_SIZE = 8;
-const COORDDICT_EXTRA_HEADER_SIZE = 8;
+const BITS_PER_AXIS = COORDDICT_BITS_PER_AXIS;
+const BYTES_PER_AXIS = BITS_PER_AXIS / 8;    // 128
+const HAMMING_BYTES = 130;                     // ceil(1035 / 8)
+const RS_GROUP_SIZE = COORDDICT_RS_GROUP_SIZE;
 
 class CoordDictPacker {
   /**

@@ -16,14 +16,14 @@ from . import bit_reader
 
 def pack(data: bytes | bytearray, **opts) -> bytes:
     'Compress data (simple API).'
-    packer = Packer(**opts)
-    return packer.pack(data)
+    with Packer(**opts) as p:
+        return p.pack(data)
 
 
 def unpack(data: bytes | bytearray, **opts) -> bytes:
     'Decompress data (simple API).'
-    unpacker = Unpacker(**opts)
-    return unpacker.unpack(data)
+    with Unpacker(**opts) as u:
+        return u.unpack(data)
 
 
 __all__ = [

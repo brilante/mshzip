@@ -59,6 +59,12 @@ class PackStream extends Transform {
   /**
    * auto mode: detect optimal chunk size when enough data is buffered
    */
+  _getBuildFn() {
+    if (this._packer._coordDictActive) return this._packer._buildCoordDictFrame.bind(this._packer);
+    if (this._packer._bitDictActive) return this._packer._buildBitDictFrame.bind(this._packer);
+    return this._packer._buildFrame.bind(this._packer);
+  }
+
   _tryAutoDetect() {
     if (this._detected) return;
     if (this._pending.length >= AUTO_DETECT_STREAM_MIN) {
@@ -78,11 +84,7 @@ class PackStream extends Transform {
 
       // Only emit frames when detection is complete (or in fixed mode)
       if (this._detected) {
-        const buildFn = this._packer._coordDictActive
-          ? this._packer._buildCoordDictFrame.bind(this._packer)
-          : this._packer._bitDictActive
-            ? this._packer._buildBitDictFrame.bind(this._packer)
-            : this._packer._buildFrame.bind(this._packer);
+        const buildFn = this._getBuildFn();
         while (this._pending.length >= this._frameLimit) {
           const slice = this._pending.slice(0, this._frameLimit);
           const frame = buildFn(slice, 0, slice.length);
@@ -108,11 +110,7 @@ class PackStream extends Transform {
         this._detected = true;
       }
 
-      const buildFn = this._packer._coordDictActive
-        ? this._packer._buildCoordDictFrame.bind(this._packer)
-        : this._packer._bitDictActive
-          ? this._packer._buildBitDictFrame.bind(this._packer)
-          : this._packer._buildFrame.bind(this._packer);
+      const buildFn = this._getBuildFn();
       if (this._pending.length > 0) {
         const frame = buildFn(this._pending, 0, this._pending.length);
         this._totalBytesOut += frame.length;

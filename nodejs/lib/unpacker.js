@@ -33,6 +33,7 @@ class Unpacker {
     this.dict = [];
     this._dictStore = opts.dictStore || null;
     this._dictDir = opts.dictDir || null;
+    this._coordDictUnpacker = null;
   }
 
   /**
@@ -153,9 +154,11 @@ class Unpacker {
     if (hasCoordDict) {
       let data;
       if (seqCount > 0 && origBytes > 0) {
-        const { CoordDictUnpacker } = require('./coord-dict');
-        const cdu = new CoordDictUnpacker();
-        data = cdu.decode(rawPayload, coordDimensions, coordRsAxes, seqCount, origBytes);
+        if (!this._coordDictUnpacker) {
+          const { CoordDictUnpacker } = require('./coord-dict');
+          this._coordDictUnpacker = new CoordDictUnpacker();
+        }
+        data = this._coordDictUnpacker.decode(rawPayload, coordDimensions, coordRsAxes, seqCount, origBytes);
       } else {
         data = Buffer.alloc(0);
       }

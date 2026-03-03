@@ -27,10 +27,13 @@ class Unpacker:
         self.dict: list[bytes] = []
         self._dict_store = dict_store
         self._dict_dir = dict_dir
+        self._coord_dict_unpacker = None
 
     def close(self) -> None:
         """리소스 정리."""
-        pass
+        if self._coord_dict_unpacker is not None:
+            self._coord_dict_unpacker.close()
+            self._coord_dict_unpacker = None
 
     def __enter__(self):
         return self
@@ -144,9 +147,10 @@ class Unpacker:
         # ── COORDDICT 모드 ──
         if has_coord_dict:
             if seq_count > 0 and orig_bytes > 0:
-                from .coord_dict import CoordDictUnpacker
-                cdu = CoordDictUnpacker()
-                restored_data = cdu.decode(
+                if self._coord_dict_unpacker is None:
+                    from .coord_dict import CoordDictUnpacker
+                    self._coord_dict_unpacker = CoordDictUnpacker()
+                restored_data = self._coord_dict_unpacker.decode(
                     raw_payload, coord_dimensions, coord_rs_axes, seq_count, orig_bytes
                 )
             else:

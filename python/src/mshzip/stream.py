@@ -50,6 +50,14 @@ class PackStream:
         self._total_bytes_out = 0
         self._frame_count = 0
 
+    def _get_build_fn(self):
+        '모드에 따른 프레임 빌드 함수 반환.'
+        if self._packer._coord_dict_active:
+            return self._packer._build_coord_dict_frame
+        if self._packer._bit_dict_active:
+            return self._packer._build_bit_dict_frame
+        return self._packer._build_frame
+
     def _try_auto_detect(self) -> None:
         'Auto mode: detect optimal chunk size when enough data is buffered.'
         if self._detected:
@@ -69,13 +77,7 @@ class PackStream:
 
         # Emit frames only when detection is complete (or fixed mode)
         if self._detected:
-            build_fn = (
-                self._packer._build_coord_dict_frame
-                if self._packer._coord_dict_active
-                else self._packer._build_bit_dict_frame
-                if self._packer._bit_dict_active
-                else self._packer._build_frame
-            )
+            build_fn = self._get_build_fn()
             while len(self._pending) >= self._frame_limit:
                 slice_data = bytes(self._pending[:self._frame_limit])
                 needs_bytes = self._packer._bit_dict_active or self._packer._coord_dict_active
@@ -96,13 +98,7 @@ class PackStream:
             self._packer._auto_detect = False
             self._detected = True
 
-        build_fn = (
-            self._packer._build_coord_dict_frame
-            if self._packer._coord_dict_active
-            else self._packer._build_bit_dict_frame
-            if self._packer._bit_dict_active
-            else self._packer._build_frame
-        )
+        build_fn = self._get_build_fn()
         needs_bytes = self._packer._bit_dict_active or self._packer._coord_dict_active
         if self._pending:
             pending_bytes = bytes(self._pending)
@@ -243,6 +239,7 @@ def pack_stream(
     for frame in ps.flush():
         output_stream.write(frame)
 
+    ps._packer.close()
     return ps.stats
 
 

@@ -87,12 +87,8 @@ def find_gcc() -> list[str] | None:
   for compiler in ['gcc', 'cc']:
     if shutil.which(compiler):
       omp_flag = ['-fopenmp'] if _has_openmp(compiler) else []
-      if sys.platform == 'win32':
-        return [compiler, '-O2'] + omp_flag + ['-shared', '-o', str(OUTPUT), str(SRC_FILE)]
-      elif sys.platform == 'darwin':
-        return [compiler, '-O2'] + omp_flag + ['-fPIC', '-shared', '-o', str(OUTPUT), str(SRC_FILE)]
-      else:
-        return [compiler, '-O2'] + omp_flag + ['-fPIC', '-shared', '-o', str(OUTPUT), str(SRC_FILE)]
+      fpic = [] if sys.platform == 'win32' else ['-fPIC']
+      return [compiler, '-O2'] + omp_flag + fpic + ['-shared', '-o', str(OUTPUT), str(SRC_FILE)]
   return None
 
 
