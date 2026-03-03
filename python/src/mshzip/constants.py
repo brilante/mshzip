@@ -32,9 +32,11 @@ class Flag:
     HIERDEDUP: int = 0x0002  # 계층적 Dedup 적용됨
     MULTILEVEL: int = 0x0004  # N단계 계층적 Dedup (3단계 이상)
     EXTERNAL_DICT: int = 0x0008  # 외부 영구 딕셔너리 참조
+    BITDICT: int = 0x0010  # N비트 전수 사전 모드
+    COORDDICT: int = 0x0020  # XD 좌표 사전 모드
 
 # 알려진 모든 플래그 비트 마스크 (하위 호환성 검증용)
-KNOWN_FLAGS: int = Flag.CRC32 | Flag.HIERDEDUP | Flag.MULTILEVEL | Flag.EXTERNAL_DICT
+KNOWN_FLAGS: int = Flag.CRC32 | Flag.HIERDEDUP | Flag.MULTILEVEL | Flag.EXTERNAL_DICT | Flag.BITDICT | Flag.COORDDICT
 
 
 # Frame header size (fixed 32 bytes)
@@ -64,6 +66,19 @@ MSHD_VERSION: int = 1
 MSHD_HEADER_SIZE: int = 14
 # 딕셔너리 엔트리: sha256(32) + chunk(chunkSize)
 MSHD_HASH_SIZE: int = 32  # SHA-256
+
+# BitDict (N비트 전수 사전) 상수
+DEFAULT_BIT_DEPTH: int = 18
+MIN_BIT_DEPTH: int = 8
+MAX_BIT_DEPTH: int = 32
+PRACTICAL_MAX_BIT_DEPTH: int = 24
+BITDICT_EXTRA_HEADER_SIZE: int = 2  # bitDepth uint16 LE
+
+# CoordDict (XD 좌표 사전) 상수
+COORDDICT_EXTRA_HEADER_SIZE: int = 8
+COORDDICT_BITS_PER_AXIS: int = 1024
+COORDDICT_HAMMING_BITS: int = 11
+COORDDICT_RS_GROUP_SIZE: int = 8
 
 # Auto chunk size detection
 AUTO_DETECT_CANDIDATES: list[int] = [32, 64, 128, 256, 512, 1024, 2048, 4096]

@@ -24,6 +24,10 @@ class PackStream:
         crc: bool = False,
         hier_dedup: str | bool = 'auto',
         sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
+        bit_depth: int | None = None,
+        strict_bit_dict: bool = False,
+        coord_dict: bool = False,
+        dimensions: int | None = None,
     ) -> None:
         self._auto_mode = (chunk_size == 'auto')
         self._detected = not self._auto_mode
@@ -35,6 +39,10 @@ class PackStream:
             crc=crc,
             hier_dedup=hier_dedup,
             sub_chunk_size=sub_chunk_size,
+            bit_depth=bit_depth,
+            strict_bit_dict=strict_bit_dict,
+            coord_dict=coord_dict,
+            dimensions=dimensions,
         )
         self._frame_limit = self._packer.frame_limit
         self._pending = bytearray()
@@ -61,10 +69,19 @@ class PackStream:
 
         # Emit frames only when detection is complete (or fixed mode)
         if self._detected:
+            build_fn = (
+                self._packer._build_coord_dict_frame
+                if self._packer._coord_dict_active
+                else self._packer._build_bit_dict_frame
+                if self._packer._bit_dict_active
+                else self._packer._build_frame
+            )
             while len(self._pending) >= self._frame_limit:
                 slice_data = bytes(self._pending[:self._frame_limit])
-                frame = self._packer._build_frame(
-                    memoryview(slice_data), 0, len(slice_data),
+                needs_bytes = self._packer._bit_dict_active or self._packer._coord_dict_active
+                frame = build_fn(
+                    slice_data if needs_bytes else memoryview(slice_data),
+                    0, len(slice_data),
                 )
                 self._total_bytes_out += len(frame)
                 self._frame_count += 1
@@ -79,16 +96,28 @@ class PackStream:
             self._packer._auto_detect = False
             self._detected = True
 
+        build_fn = (
+            self._packer._build_coord_dict_frame
+            if self._packer._coord_dict_active
+            else self._packer._build_bit_dict_frame
+            if self._packer._bit_dict_active
+            else self._packer._build_frame
+        )
+        needs_bytes = self._packer._bit_dict_active or self._packer._coord_dict_active
         if self._pending:
             pending_bytes = bytes(self._pending)
-            frame = self._packer._build_frame(
-                memoryview(pending_bytes), 0, len(pending_bytes),
+            frame = build_fn(
+                pending_bytes if needs_bytes else memoryview(pending_bytes),
+                0, len(pending_bytes),
             )
             self._total_bytes_out += len(frame)
             self._frame_count += 1
             yield frame
         elif self._frame_count == 0:
-            frame = self._packer._build_frame(memoryview(b''), 0, 0)
+            frame = build_fn(
+                b'' if needs_bytes else memoryview(b''),
+                0, 0,
+            )
             self._total_bytes_out += len(frame)
             self._frame_count += 1
             yield frame
@@ -130,13 +159,23 @@ class UnpackStream:
 
             flags = int.from_bytes(self._buf[6:8], 'little')
             has_crc = (flags & Flag.CRC32) != 0
+            has_bit_dict = (flags & Flag.BITDICT) != 0
+            has_external_dict = (flags & Flag.EXTERNAL_DICT) != 0
+            has_coord_dict = (flags & Flag.COORDDICT) != 0
+
+            # 추가 헤더 크기: COORDDICT(8B) | BITDICT(2B) | EXTERNAL_DICT(4B) | 기본(0B)
+            extra_header = 8 if has_coord_dict else (2 if has_bit_dict else (4 if has_external_dict else 0))
+            payload_offset = FRAME_HEADER_SIZE + extra_header
+
+            if len(self._buf) < payload_offset + 4:
+                break
 
             payload_size = int.from_bytes(
-                self._buf[FRAME_HEADER_SIZE:FRAME_HEADER_SIZE + 4], 'little',
+                self._buf[payload_offset:payload_offset + 4], 'little',
             )
 
             total_frame_size = (
-                FRAME_HEADER_SIZE + 4 + payload_size + (4 if has_crc else 0)
+                payload_offset + 4 + payload_size + (4 if has_crc else 0)
             )
 
             if len(self._buf) < total_frame_size:
@@ -176,6 +215,9 @@ def pack_stream(
     crc: bool = False,
     hier_dedup: str | bool = 'auto',
     sub_chunk_size: int = DEFAULT_SUB_CHUNK_SIZE,
+    bit_depth: int | None = None,
+    coord_dict: bool = False,
+    dimensions: int | None = None,
     read_size: int = 65536,
 ) -> dict:
     'Stream-based compression convenience function. Returns stats dict.'
@@ -186,6 +228,9 @@ def pack_stream(
         crc=crc,
         hier_dedup=hier_dedup,
         sub_chunk_size=sub_chunk_size,
+        bit_depth=bit_depth,
+        coord_dict=coord_dict,
+        dimensions=dimensions,
     )
 
     while True:

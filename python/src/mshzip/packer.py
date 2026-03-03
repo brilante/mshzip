@@ -6,6 +6,8 @@ import hashlib
 import struct
 import zlib
 
+import sys
+
 from . import varint
 from .constants import (
     MAGIC, VERSION, Codec, CODEC_NAME, Flag,
@@ -14,8 +16,12 @@ from .constants import (
     DEFAULT_SUB_CHUNK_SIZE,
     MIN_CHUNK_SIZE, MAX_CHUNK_SIZE,
     AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
+    BITDICT_EXTRA_HEADER_SIZE,
+    COORDDICT_EXTRA_HEADER_SIZE,
 )
 from .dict_store import DictStore
+from .bit_dict import BitDict
+from .bit_reader import read_all_chunks
 
 
 class Packer:
@@ -33,6 +39,10 @@ class Packer:
         use_dict: bool = False,
         dict_dir: str | None = None,
         max_dict_size: int | None = None,
+        bit_depth: int | None = None,
+        strict_bit_dict: bool = False,
+        coord_dict: bool = False,
+        dimensions: int | None = None,
     ) -> None:
         self._auto_detect = (chunk_size == 'auto')
         self.chunk_size: int = AUTO_FALLBACK_CHUNK_SIZE if self._auto_detect else int(chunk_size)
@@ -73,12 +83,68 @@ class Packer:
                 max_dict_size=max_dict_size,
             )
 
+        # CoordDict (XD 좌표 사전) 옵션
+        self.coord_dict = coord_dict
+        self._coord_dict_active = False
+        self._coord_dimensions = dimensions
+
+        if self.coord_dict:
+            if bit_depth:
+                raise ValueError('COORDDICT는 BITDICT와 동시 사용 불가')
+            from .coord_dict import CoordDictPacker
+            self._coord_dict_packer = CoordDictPacker(dimensions=self._coord_dimensions)
+            self._coord_dict_active = True
+
+        # BitDict (N비트 전수 사전) 옵션
+        self.bit_depth: int | None = bit_depth
+        self._bit_dict_active = False
+
+        if self.bit_depth is not None:
+            bd = BitDict(
+                dict_dir=dict_dir,
+                max_mem_bytes=max_dict_size,
+            )
+            if bd.is_over_limit(self.bit_depth):
+                if strict_bit_dict:
+                    raise MemoryError(
+                        f'BitDict 메모리 초과: bit_depth={self.bit_depth}, '
+                        f'필요={bd.estimate_mem_bytes(self.bit_depth)} > '
+                        f'한계={bd.max_mem_bytes}'
+                    )
+                sys.stderr.write(
+                    f'[mshzip] BitDict 메모리 초과 (bit_depth={self.bit_depth}), '
+                    f'기존 모드로 폴백\n'
+                )
+                self.bit_depth = None
+            else:
+                bd.load(self.bit_depth)
+                self._bit_dict_active = True
+
+    def close(self) -> None:
+        """리소스 정리 (ThreadPoolExecutor 등)."""
+        if self._coord_dict_active and hasattr(self, '_coord_dict_packer'):
+            self._coord_dict_packer.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
     def pack(self, data: bytes | bytearray | memoryview) -> bytes:
         'Compress buffer input to MSH format.'
         if isinstance(data, memoryview):
             input_view = data
         else:
             input_view = memoryview(data) if data else memoryview(b'')
+
+        # CoordDict 모드: 별도 경로
+        if self._coord_dict_active:
+            return self._pack_coord_dict(bytes(input_view))
+
+        # BitDict 모드: 별도 경로
+        if self._bit_dict_active:
+            return self._pack_bit_dict(bytes(input_view))
 
         # auto mode: detect optimal chunk size on first call
         if self._auto_detect and len(input_view) > 0:
@@ -237,6 +303,151 @@ class Packer:
         parts.extend([payload_size_buf, compressed_payload])
 
         # CRC32 (optional) — 전체 프레임 데이터(CRC 제외)에 대해 계산
+        if self.use_crc:
+            crc_data = b''.join(parts)
+            crc_val = zlib.crc32(crc_data) & 0xFFFFFFFF
+            parts.append(struct.pack('<I', crc_val))
+
+        return b''.join(parts)
+
+    def _pack_coord_dict(self, data: bytes) -> bytes:
+        """CoordDict 모드 Pack."""
+        frames: list[bytes] = []
+        offset = 0
+        total_len = len(data)
+
+        while offset < total_len:
+            frame_end = min(offset + self.frame_limit, total_len)
+            frame = self._build_coord_dict_frame(data, offset, frame_end)
+            frames.append(frame)
+            offset = frame_end
+
+        if not frames:
+            frames.append(self._build_coord_dict_frame(b'', 0, 0))
+
+        return b''.join(frames)
+
+    def _build_coord_dict_frame(self, data: bytes, start: int, end: int) -> bytes:
+        """CoordDict 프레임 빌드."""
+        import math
+        orig_bytes = end - start
+        packer = self._coord_dict_packer
+        D = packer.dimensions
+        rs_axes = packer.rs_axes
+
+        seq_count = 0
+        if orig_bytes > 0:
+            data_slice = data[start:end]
+            encoded, seq_count = packer.encode(data_slice)
+            compressed_payload = self._compress(encoded)
+        else:
+            compressed_payload = b''
+
+        # 프레임 헤더 (32B)
+        flags = (Flag.CRC32 if self.use_crc else 0) | Flag.COORDDICT
+        chunk_size_field = D * 128
+
+        header = bytearray(FRAME_HEADER_SIZE)
+        off = 0
+        header[off:off + 4] = MAGIC; off += 4
+        struct.pack_into('<H', header, off, VERSION); off += 2
+        struct.pack_into('<H', header, off, flags); off += 2
+        struct.pack_into('<I', header, off, chunk_size_field); off += 4
+        header[off] = self.codec_id; off += 1
+        off += 3
+        struct.pack_into('<I', header, off, orig_bytes & 0xFFFFFFFF); off += 4
+        struct.pack_into('<I', header, off, orig_bytes >> 32); off += 4
+        struct.pack_into('<I', header, off, 0); off += 4  # dictEntries = 0
+        struct.pack_into('<I', header, off, seq_count); off += 4
+
+        parts: list[bytes] = [bytes(header)]
+
+        # CoordDict Extra Header (8B)
+        extra = struct.pack('<HHBBxx', D, 1024, 11, rs_axes)
+        parts.append(extra)
+
+        # payloadSize (4B) + payload
+        parts.append(struct.pack('<I', len(compressed_payload)))
+        parts.append(compressed_payload)
+
+        # CRC32
+        if self.use_crc:
+            crc_data = b''.join(parts)
+            crc_val = zlib.crc32(crc_data) & 0xFFFFFFFF
+            parts.append(struct.pack('<I', crc_val))
+
+        return b''.join(parts)
+
+    def _pack_bit_dict(self, data: bytes) -> bytes:
+        """BitDict 모드 Pack: N비트 전수 사전."""
+        frames: list[bytes] = []
+        offset = 0
+        total_len = len(data)
+
+        while offset < total_len:
+            frame_end = min(offset + self.frame_limit, total_len)
+            frame = self._build_bit_dict_frame(data, offset, frame_end)
+            frames.append(frame)
+            offset = frame_end
+
+        # Empty input
+        if not frames:
+            frames.append(self._build_bit_dict_frame(b'', 0, 0))
+
+        return b''.join(frames)
+
+    def _build_bit_dict_frame(self, data: bytes, start: int, end: int) -> bytes:
+        """BitDict 프레임 빌드."""
+        orig_bytes = end - start
+        data_slice = data[start:end]
+
+        # N비트씩 읽기 -> 인덱스 배열 (나머지 비트를 위해 패딩)
+        seq_indices: list[int] = []
+        if orig_bytes > 0:
+            total_bits = orig_bytes * 8
+            padded_chunks = -(-total_bits // self.bit_depth)  # ceil division
+            padded_bit_len = padded_chunks * self.bit_depth
+            padded_byte_len = -(-padded_bit_len // 8)  # ceil division
+
+            padded_slice = data_slice
+            if padded_byte_len > orig_bytes:
+                padded_slice = data_slice + b'\x00' * (padded_byte_len - orig_bytes)
+
+            seq_indices, _ = read_all_chunks(padded_slice, self.bit_depth)
+
+        seq_count = len(seq_indices)
+
+        # varint 인코딩 -> gzip 압축
+        seq_section = varint.encode_array(seq_indices) if seq_count > 0 else b''
+        compressed_payload = self._compress(seq_section)
+
+        # 프레임 헤더
+        flags = (Flag.CRC32 if self.use_crc else 0) | Flag.BITDICT
+        chunk_size_field = (self.bit_depth + 7) // 8  # 바이트 호환
+
+        header = bytearray(FRAME_HEADER_SIZE)
+        off = 0
+        header[off:off + 4] = MAGIC; off += 4
+        struct.pack_into('<H', header, off, VERSION); off += 2
+        struct.pack_into('<H', header, off, flags); off += 2
+        struct.pack_into('<I', header, off, chunk_size_field); off += 4
+        header[off] = self.codec_id; off += 1
+        off += 3  # padding
+        struct.pack_into('<I', header, off, orig_bytes & 0xFFFFFFFF); off += 4
+        struct.pack_into('<I', header, off, orig_bytes >> 32); off += 4
+        struct.pack_into('<I', header, off, 0); off += 4  # dictEntries = 0
+        struct.pack_into('<I', header, off, seq_count); off += 4
+
+        parts: list[bytes] = [bytes(header)]
+
+        # BITDICT 추가 헤더: bitDepth (2B)
+        parts.append(struct.pack('<H', self.bit_depth))
+
+        # payloadSize (4B) + 압축 페이로드
+        parts.append(struct.pack('<I', len(compressed_payload)))
+        parts.append(compressed_payload)
+
+        # CRC32 (선택)
         if self.use_crc:
             crc_data = b''.join(parts)
             crc_val = zlib.crc32(crc_data) & 0xFFFFFFFF

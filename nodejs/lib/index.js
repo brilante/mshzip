@@ -4,6 +4,11 @@ const { Packer } = require('./packer');
 const { Unpacker } = require('./unpacker');
 const { PackStream, UnpackStream, packStream, unpackStream } = require('./stream');
 const { DictStore } = require('./dict-store');
+const { BitDict } = require('./bit-dict');
+const { CoordDictPacker, CoordDictUnpacker } = require('./coord-dict');
+const hamming = require('./hamming');
+const reedSolomon = require('./reed-solomon');
+const bitReader = require('./bit-reader');
 const constants = require('./constants');
 const varint = require('./varint');
 
@@ -37,6 +42,12 @@ module.exports = {
   Packer,
   Unpacker,
   DictStore,
+  BitDict,
+  CoordDictPacker,
+  CoordDictUnpacker,
+  hamming,
+  reedSolomon,
+  bitReader,
   pack,
   unpack,
   PackStream,

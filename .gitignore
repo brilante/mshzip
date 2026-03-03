@@ -37,12 +37,35 @@ build/
 # Ralph
 .ralph/
 
+# 영구 사전
+*.mshdict
+*.msbd
+
+# C 네이티브 빌드 산출물
+*.dll
+*.so
+*.dylib
+*.obj
+*.exp
+_build_omp.bat
+
 # 테스트 임시 파일
 demo-test-results.json
 nodejs/test.txt
 
 # npm lock
 nodejs/package-lock.json
+
+# 설계 문서
+think*.md
+
+# 벤치마크 산출물
+benchmarks/results.db
+benchmarks/hamming_c.c
+
+# 루트 벤치마크 의존성 (npm 패키지는 nodejs/ 내)
+/package.json
+/package-lock.json
 
 # 내부 문서 / 데모
 배포.md

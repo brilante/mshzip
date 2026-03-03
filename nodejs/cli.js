@@ -40,6 +40,15 @@ async function main() {
     case 'dict-info':
       handleDictInfo(args.slice(1));
       break;
+    case 'dict-gen':
+      handleDictGen(args.slice(1));
+      break;
+    case 'bitdict-info':
+      handleBitDictInfo(args.slice(1));
+      break;
+    case 'coorddict-info':
+      handleCoordDictInfo(args.slice(1));
+      break;
     default:
       console.error(`Unknown command: ${command}`);
       printUsage();
@@ -62,6 +71,9 @@ Usage:
   mshzip info      -i <file>
   mshzip dict-init --chunk <N> [--dict-dir <path>]
   mshzip dict-info --chunk <N> [--dict-dir <path>]
+  mshzip dict-gen  --bit-depth <N> [--dict-dir <path>]
+  mshzip bitdict-info --bit-depth <N> [--dict-dir <path>]
+  mshzip coorddict-info [--dimensions <N>]
   mshzip multi     pack   <files...> --out-dir <dir> [--workers N] [options]
   mshzip multi     unpack <files...> --out-dir <dir> [--workers N]
 
@@ -76,6 +88,10 @@ pack options:
   --sub-chunk <N> Sub-chunk size for hier-dedup (default: 32)
   --dict-dir <path> Dictionary directory (default: ~/.mshzip/)
   --no-dict      Disable external dictionary
+  --bit-depth <N> N-bit exhaustive dictionary mode (8~32)
+  --strict-bitdict  Error instead of fallback on memory overflow
+  --coord-dict   CoordDict XD coordinate dictionary mode
+  --dimensions <N> Dimensions for CoordDict (default: CPU cores)
   --verbose      Verbose output
 
 unpack options:
@@ -133,6 +149,10 @@ function parseArgs(argv) {
       case '--sub-chunk': opts.subChunkSize = parseInt(argv[++i], 10); break;
       case '--dict-dir': opts.dictDir = argv[++i]; break;
       case '--no-dict': opts.noDict = true; break;
+      case '--bit-depth': opts.bitDepth = parseInt(argv[++i], 10); break;
+      case '--strict-bitdict': opts.strictBitDict = true; break;
+      case '--coord-dict': opts.coordDict = true; break;
+      case '--dimensions': opts.dimensions = parseInt(argv[++i], 10); break;
       case '--verbose': opts.verbose = true; break;
     }
   }
@@ -176,6 +196,10 @@ async function handlePack(argv) {
     subChunkSize: opts.subChunkSize,
     useDict: !opts.noDict && !!opts.dictDir,
     dictDir: opts.dictDir,
+    bitDepth: opts.bitDepth || null,
+    strictBitDict: !!opts.strictBitDict,
+    coordDict: !!opts.coordDict,
+    dimensions: opts.dimensions,
   });
 
   await pipeline(inputStream, ps, outputStream);
@@ -390,6 +414,84 @@ function handleDictInfo(argv) {
   console.log(`  Over limit: ${info.overLimit ? 'YES (fallback to self-contained)' : 'no'}`);
 }
 
+/**
+ * dict-gen: BitDict MSBD 사전 파일 생성
+ */
+function handleDictGen(argv) {
+  const opts = parseArgs(argv);
+  const bitDepth = opts.bitDepth;
+
+  if (!bitDepth) {
+    console.error('Error: --bit-depth <N> is required.');
+    process.exit(2);
+  }
+  if (bitDepth < 1 || bitDepth > 32) {
+    console.error('Error: --bit-depth range: 1~32');
+    process.exit(2);
+  }
+
+  const { BitDict } = require('./lib/bit-dict');
+  const bd = new BitDict({ dictDir: opts.dictDir });
+  const filePath = bd.generate(bitDepth);
+  const info = bd.info(bitDepth);
+  console.log(`BitDict generated: ${filePath}`);
+  console.log(`  Bit depth: ${bitDepth}`);
+  console.log(`  Patterns: ${info.patternCount.toLocaleString()}`);
+  console.log(`  Estimated memory: ${info.estimatedMemMB}MB`);
+  console.log(`  Over limit: ${info.isOverLimit ? 'YES (will fallback)' : 'no'}`);
+}
+
+/**
+ * bitdict-info: BitDict 사전 정보 조회
+ */
+function handleBitDictInfo(argv) {
+  const opts = parseArgs(argv);
+  const bitDepth = opts.bitDepth;
+
+  if (!bitDepth) {
+    console.error('Error: --bit-depth <N> is required.');
+    process.exit(2);
+  }
+
+  const { BitDict } = require('./lib/bit-dict');
+  const bd = new BitDict({ dictDir: opts.dictDir });
+  const info = bd.info(bitDepth);
+
+  if (!info.exists) {
+    console.log(`BitDict not found: ${info.path}`);
+    console.log('Run "mshzip dict-gen --bit-depth <N>" to create one.');
+  } else {
+    console.log(`BitDict: ${info.path}`);
+  }
+  console.log(`  Bit depth: ${info.bitDepth}`);
+  console.log(`  Patterns: ${info.patternCount.toLocaleString()}`);
+  console.log(`  Estimated memory: ${info.estimatedMemMB}MB`);
+  console.log(`  Over limit: ${info.isOverLimit ? 'YES (will fallback)' : 'no'}`);
+}
+
+/**
+ * coorddict-info: CoordDict 구성 정보
+ */
+function handleCoordDictInfo(argv) {
+  const opts = parseArgs(argv);
+  const D = opts.dimensions || os.cpus().length;
+  const rsAxes = Math.ceil(D / 8);
+  const totalAxes = D + rsAxes;
+  const chunkData = D * 128;
+  const chunkEncoded = totalAxes * 130;
+  const overhead = ((chunkEncoded - chunkData) / chunkData * 100).toFixed(1);
+
+  console.log('CoordDict Configuration:');
+  console.log(`  CPU cores detected: ${os.cpus().length}`);
+  console.log(`  Dimensions: ${D}${opts.dimensions ? ' (manual)' : ''}`);
+  console.log(`  Bits per axis: 1024  (128 bytes)`);
+  console.log(`  Hamming: (1035, 1024) SEC`);
+  console.log(`  RS parity: XOR (group=8), ${rsAxes} parity axis${rsAxes > 1 ? 'es' : ''}`);
+  console.log(`  Chunk data: ${chunkData}B`);
+  console.log(`  Chunk encoded: ${chunkEncoded}B`);
+  console.log(`  ECC overhead: ${overhead}%`);
+}
+
 function handleInfo(argv) {
   const opts = parseArgs(argv);
 
@@ -428,14 +530,50 @@ function handleInfo(argv) {
     const origBytes = origHi * 0x100000000 + origLo;
     const dictEntries = input.readUInt32LE(off); off += 4;
     const seqCount = input.readUInt32LE(off); off += 4;
-    const payloadSize = input.readUInt32LE(off); off += 4;
 
     const hasCRC = (flags & FLAG.CRC32) !== 0;
-    const frameSize = FRAME_HEADER_SIZE + 4 + payloadSize + (hasCRC ? 4 : 0);
+    const hasBitDict = (flags & FLAG.BITDICT) !== 0;
+    const hasExternalDict = (flags & FLAG.EXTERNAL_DICT) !== 0;
+    const hasCoordDict = (flags & FLAG.COORDDICT) !== 0;
+
+    // 추가 헤더 읽기
+    let bitDepth = 0;
+    let coordDims = 0, coordBpa = 0, coordHamming = 0, coordRsAxes = 0;
+    if (hasCoordDict) {
+      coordDims = input.readUInt16LE(off); off += 2;
+      coordBpa = input.readUInt16LE(off); off += 2;
+      coordHamming = input.readUInt8(off); off += 1;
+      coordRsAxes = input.readUInt8(off); off += 1;
+      off += 2; // reserved
+    }
+    if (hasBitDict) {
+      bitDepth = input.readUInt16LE(off); off += 2;
+    }
+    if (hasExternalDict) {
+      off += 4; // baseDictCount 스킵
+    }
+
+    const payloadSize = input.readUInt32LE(off); off += 4;
+
+    const extraHeader = hasCoordDict ? 8 : (hasBitDict ? 2 : (hasExternalDict ? 4 : 0));
+    const frameSize = FRAME_HEADER_SIZE + extraHeader + 4 + payloadSize + (hasCRC ? 4 : 0);
 
     console.log(`Frame #${frameNo}:`);
     console.log(`  Version: ${version}, Codec: ${CODEC_ID_TO_NAME[codecId] || codecId}`);
-    console.log(`  Chunk size: ${chunkSize}B`);
+    if (hasCoordDict) {
+      const flagNames = ['COORDDICT'];
+      if (hasCRC) flagNames.push('CRC32');
+      console.log(`  Flags: ${flagNames.join(' ')}`);
+      console.log(`  Mode: CoordDict (dimensions: ${coordDims}, RS axes: ${coordRsAxes})`);
+      console.log(`  Chunk size: ${chunkSize}B (data), ${(coordDims + coordRsAxes) * 130}B (encoded)`);
+      console.log(`  Bits per axis: ${coordBpa}`);
+      console.log(`  Hamming: (1035, 1024) SEC, ${coordHamming} parity bits`);
+      console.log(`  RS parity: XOR, group=8`);
+    } else if (hasBitDict) {
+      console.log(`  Mode: BITDICT (bit depth: ${bitDepth})`);
+    } else {
+      console.log(`  Chunk size: ${chunkSize}B`);
+    }
     console.log(`  Original bytes: ${formatSize(origBytes)}`);
     console.log(`  New dict entries: ${dictEntries}`);
     console.log(`  Sequence count: ${seqCount}`);

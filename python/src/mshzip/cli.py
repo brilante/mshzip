@@ -41,6 +41,14 @@ def main() -> None:
                         help='dictionary directory (default: ~/.mshzip/)')
     p_pack.add_argument('--no-dict', action='store_true',
                         help='disable external dictionary')
+    p_pack.add_argument('--bit-depth', type=int, default=None,
+                        help='N-bit exhaustive dictionary mode (8~32)')
+    p_pack.add_argument('--strict-bitdict', action='store_true',
+                        help='error instead of fallback on memory overflow')
+    p_pack.add_argument('--coord-dict', action='store_true',
+                        help='CoordDict XD coordinate dictionary mode')
+    p_pack.add_argument('--dimensions', type=int, default=None,
+                        help='dimensions for CoordDict (default: CPU cores)')
     p_pack.add_argument('--verbose', action='store_true')
 
     # unpack
@@ -67,6 +75,25 @@ def main() -> None:
                          help='chunk size to query')
     p_dinfo.add_argument('--dict-dir', default=None,
                          help='dictionary directory (default: ~/.mshzip/)')
+
+    # dict-gen (BitDict)
+    p_dgen = subparsers.add_parser('dict-gen', help='generate BitDict MSBD file')
+    p_dgen.add_argument('--bit-depth', type=int, required=True,
+                        help='bit depth (1~32)')
+    p_dgen.add_argument('--dict-dir', default=None,
+                        help='dictionary directory (default: ~/.mshzip/)')
+
+    # bitdict-info
+    p_bdinfo = subparsers.add_parser('bitdict-info', help='BitDict info')
+    p_bdinfo.add_argument('--bit-depth', type=int, required=True,
+                          help='bit depth to query')
+    p_bdinfo.add_argument('--dict-dir', default=None,
+                          help='dictionary directory (default: ~/.mshzip/)')
+
+    # coorddict-info
+    p_cdinfo = subparsers.add_parser('coorddict-info', help='CoordDict config info')
+    p_cdinfo.add_argument('--dimensions', type=int, default=None,
+                          help='dimensions (default: CPU cores)')
 
     # multi
     p_multi = subparsers.add_parser('multi', help='multi-file parallel')
@@ -100,6 +127,12 @@ def main() -> None:
         _handle_dict_init(args)
     elif args.command == 'dict-info':
         _handle_dict_info(args)
+    elif args.command == 'dict-gen':
+        _handle_dict_gen(args)
+    elif args.command == 'bitdict-info':
+        _handle_bitdict_info(args)
+    elif args.command == 'coorddict-info':
+        _handle_coorddict_info(args)
     elif args.command == 'multi':
         _handle_multi(args)
 
@@ -135,6 +168,9 @@ def _handle_pack(args) -> None:
             crc=args.crc,
             hier_dedup=hier_dedup,
             sub_chunk_size=sub_chunk_size,
+            bit_depth=getattr(args, 'bit_depth', None),
+            coord_dict=getattr(args, 'coord_dict', False),
+            dimensions=getattr(args, 'dimensions', None),
         )
     finally:
         if args.i != '-':
@@ -232,6 +268,59 @@ def _handle_dict_info(args) -> None:
     print(f'  Over limit: {over}')
 
 
+def _handle_dict_gen(args) -> None:
+    'Generate BitDict MSBD file.'
+    from .bit_dict import BitDict
+    bd = BitDict(dict_dir=args.dict_dir)
+    file_path = bd.generate(args.bit_depth)
+    info = bd.info(args.bit_depth)
+    print(f'BitDict generated: {file_path}')
+    print(f'  Bit depth: {args.bit_depth}')
+    print(f'  Patterns: {info["pattern_count"]:,}')
+    print(f'  Estimated memory: {info["estimated_mem_mb"]}MB')
+    over = 'YES (will fallback)' if info['is_over_limit'] else 'no'
+    print(f'  Over limit: {over}')
+
+
+def _handle_bitdict_info(args) -> None:
+    'Print BitDict info.'
+    from .bit_dict import BitDict
+    bd = BitDict(dict_dir=args.dict_dir)
+    info = bd.info(args.bit_depth)
+
+    if not info['exists']:
+        print(f'BitDict not found: {info["path"]}')
+        print('Run "mshzip dict-gen --bit-depth <N>" to create one.')
+    else:
+        print(f'BitDict: {info["path"]}')
+    print(f'  Bit depth: {info["bit_depth"]}')
+    print(f'  Patterns: {info["pattern_count"]:,}')
+    print(f'  Estimated memory: {info["estimated_mem_mb"]}MB')
+    over = 'YES (will fallback)' if info['is_over_limit'] else 'no'
+    print(f'  Over limit: {over}')
+
+
+def _handle_coorddict_info(args) -> None:
+    'Print CoordDict configuration info.'
+    import math
+    D = args.dimensions or os.cpu_count() or 4
+    rs_axes = math.ceil(D / 8)
+    total_axes = D + rs_axes
+    chunk_data = D * 128
+    chunk_encoded = total_axes * 130
+    overhead = (chunk_encoded - chunk_data) / chunk_data * 100
+
+    print('CoordDict Configuration:')
+    print(f'  CPU cores detected: {os.cpu_count()}')
+    print(f'  Dimensions: {D}{"" if args.dimensions else ""}')
+    print(f'  Bits per axis: 1024  (128 bytes)')
+    print(f'  Hamming: (1035, 1024) SEC')
+    print(f'  RS parity: XOR (group=8), {rs_axes} parity axis{"es" if rs_axes > 1 else ""}')
+    print(f'  Chunk data: {chunk_data}B')
+    print(f'  Chunk encoded: {chunk_encoded}B')
+    print(f'  ECC overhead: {overhead:.1f}%')
+
+
 def _handle_info(args) -> None:
     'Print MSH file frame info.'
     data = Path(args.i).read_bytes()
@@ -263,18 +352,51 @@ def _handle_info(args) -> None:
         orig_bytes = orig_hi * 0x100000000 + orig_lo
         dict_entries = struct.unpack_from('<I', data, off)[0]; off += 4
         seq_count = struct.unpack_from('<I', data, off)[0]; off += 4
-        payload_size = struct.unpack_from('<I', data, off)[0]; off += 4
 
         has_crc = (flags & Flag.CRC32) != 0
+        has_bit_dict = (flags & Flag.BITDICT) != 0
+        has_external_dict = (flags & Flag.EXTERNAL_DICT) != 0
+        has_coord_dict = (flags & Flag.COORDDICT) != 0
+
+        # 추가 헤더 읽기
+        bit_depth = 0
+        coord_dims = coord_bpa = coord_hamming = coord_rs = 0
+        if has_coord_dict:
+            coord_dims = struct.unpack_from('<H', data, off)[0]; off += 2
+            coord_bpa = struct.unpack_from('<H', data, off)[0]; off += 2
+            coord_hamming = data[off]; off += 1
+            coord_rs = data[off]; off += 1
+            off += 2  # reserved
+        if has_bit_dict:
+            bit_depth = struct.unpack_from('<H', data, off)[0]; off += 2
+        if has_external_dict:
+            off += 4  # baseDictCount 스킵
+
+        payload_size = struct.unpack_from('<I', data, off)[0]; off += 4
+
+        extra_header = 8 if has_coord_dict else (2 if has_bit_dict else (4 if has_external_dict else 0))
         frame_size = (
-            FRAME_HEADER_SIZE + 4 + payload_size + (4 if has_crc else 0)
+            FRAME_HEADER_SIZE + extra_header + 4 + payload_size + (4 if has_crc else 0)
         )
 
         codec_name = CODEC_ID_TO_NAME.get(codec_id, str(codec_id))
 
         print(f'Frame #{frame_no}:')
         print(f'  Version: {version}, Codec: {codec_name}')
-        print(f'  Chunk size: {chunk_size}B')
+        if has_coord_dict:
+            flag_names = ['COORDDICT']
+            if has_crc:
+                flag_names.append('CRC32')
+            print(f'  Flags: {" ".join(flag_names)}')
+            print(f'  Mode: CoordDict (dimensions: {coord_dims}, RS axes: {coord_rs})')
+            print(f'  Chunk size: {chunk_size}B (data), {(coord_dims + coord_rs) * 130}B (encoded)')
+            print(f'  Bits per axis: {coord_bpa}')
+            print(f'  Hamming: (1035, 1024) SEC, {coord_hamming} parity bits')
+            print(f'  RS parity: XOR, group=8')
+        elif has_bit_dict:
+            print(f'  Mode: BITDICT (bit depth: {bit_depth})')
+        else:
+            print(f'  Chunk size: {chunk_size}B')
         print(f'  Original bytes: {_fmt(orig_bytes)}')
         print(f'  New dict entries: {dict_entries}')
         print(f'  Sequence count: {seq_count}')

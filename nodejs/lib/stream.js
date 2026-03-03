@@ -44,6 +44,10 @@ class PackStream extends Transform {
       dictStore: opts.dictStore,
       dictDir: opts.dictDir,
       maxDictSize: opts.maxDictSize,
+      bitDepth: opts.bitDepth || null,
+      strictBitDict: !!opts.strictBitDict,
+      coordDict: !!opts.coordDict,
+      dimensions: opts.dimensions,
     });
     this._frameLimit = this._packer.frameLimit;
     this._pending = Buffer.alloc(0);
@@ -74,9 +78,14 @@ class PackStream extends Transform {
 
       // Only emit frames when detection is complete (or in fixed mode)
       if (this._detected) {
+        const buildFn = this._packer._coordDictActive
+          ? this._packer._buildCoordDictFrame.bind(this._packer)
+          : this._packer._bitDictActive
+            ? this._packer._buildBitDictFrame.bind(this._packer)
+            : this._packer._buildFrame.bind(this._packer);
         while (this._pending.length >= this._frameLimit) {
           const slice = this._pending.slice(0, this._frameLimit);
-          const frame = this._packer._buildFrame(slice, 0, slice.length);
+          const frame = buildFn(slice, 0, slice.length);
           this._totalBytesOut += frame.length;
           this._frameCount++;
           this.push(frame);
@@ -99,14 +108,19 @@ class PackStream extends Transform {
         this._detected = true;
       }
 
+      const buildFn = this._packer._coordDictActive
+        ? this._packer._buildCoordDictFrame.bind(this._packer)
+        : this._packer._bitDictActive
+          ? this._packer._buildBitDictFrame.bind(this._packer)
+          : this._packer._buildFrame.bind(this._packer);
       if (this._pending.length > 0) {
-        const frame = this._packer._buildFrame(this._pending, 0, this._pending.length);
+        const frame = buildFn(this._pending, 0, this._pending.length);
         this._totalBytesOut += frame.length;
         this._frameCount++;
         this.push(frame);
       } else if (this._frameCount === 0) {
         // Empty input -> one empty frame
-        const frame = this._packer._buildFrame(Buffer.alloc(0), 0, 0);
+        const frame = buildFn(Buffer.alloc(0), 0, 0);
         this._totalBytesOut += frame.length;
         this._frameCount++;
         this.push(frame);
@@ -168,15 +182,25 @@ class UnpackStream extends Transform {
           return;
         }
 
-        // Check CRC flag from flags
+        // Check flags for extra header fields
         const flags = this._buf.readUInt16LE(6);
         const hasCRC = (flags & FLAG.CRC32) !== 0;
+        const hasBitDict = (flags & FLAG.BITDICT) !== 0;
+        const hasExternalDict = (flags & FLAG.EXTERNAL_DICT) !== 0;
+        const hasCoordDict = (flags & FLAG.COORDDICT) !== 0;
+
+        // 추가 헤더 크기: COORDDICT(8B) | BITDICT(2B) | EXTERNAL_DICT(4B) | 기본(0B)
+        const extraHeader = hasCoordDict ? 8 : (hasBitDict ? 2 : (hasExternalDict ? 4 : 0));
+        const payloadOffset = FRAME_HEADER_SIZE + extraHeader;
+
+        // payloadSize 필드까지 데이터 필요
+        if (this._buf.length < payloadOffset + 4) break;
 
         // Read payloadSize
-        const payloadSize = this._buf.readUInt32LE(FRAME_HEADER_SIZE);
+        const payloadSize = this._buf.readUInt32LE(payloadOffset);
 
         // Calculate total frame size
-        const totalFrameSize = FRAME_HEADER_SIZE + 4 + payloadSize + (hasCRC ? 4 : 0);
+        const totalFrameSize = payloadOffset + 4 + payloadSize + (hasCRC ? 4 : 0);
 
         // Check if enough frame data is available
         if (this._buf.length < totalFrameSize) break;

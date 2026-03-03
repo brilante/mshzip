@@ -4,9 +4,14 @@ from __future__ import annotations
 from .packer import Packer
 from .unpacker import Unpacker
 from .dict_store import DictStore
+from .bit_dict import BitDict
+from .coord_dict import CoordDictPacker, CoordDictUnpacker
+from . import hamming
+from . import reed_solomon
 from .stream import PackStream, UnpackStream, pack_stream, unpack_stream
 from . import constants
 from . import varint
+from . import bit_reader
 
 
 def pack(data: bytes | bytearray, **opts) -> bytes:
@@ -23,10 +28,12 @@ def unpack(data: bytes | bytearray, **opts) -> bytes:
 
 __all__ = [
     'pack', 'unpack',
-    'Packer', 'Unpacker', 'DictStore',
+    'Packer', 'Unpacker', 'DictStore', 'BitDict',
+    'CoordDictPacker', 'CoordDictUnpacker',
+    'hamming', 'reed_solomon',
     'PackStream', 'UnpackStream',
     'pack_stream', 'unpack_stream',
-    'constants', 'varint',
+    'constants', 'varint', 'bit_reader',
 ]
 
-__version__ = '1.1.0'
+__version__ = '2.0.0'

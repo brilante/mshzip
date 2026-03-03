@@ -1,7 +1,7 @@
 {
   "name": "msh-zip",
-  "version": "1.1.0",
-  "description": "Fixed-chunk dedup + entropy compression utility (MSH1 binary format)",
+  "version": "2.0.0",
+  "description": "Fixed-chunk dedup + entropy compression with ECC protection and C native acceleration (MSH1 format)",
   "main": "lib/index.js",
   "bin": {
     "mshzip": "cli.js"
@@ -25,7 +25,12 @@
     "gzip",
     "streaming",
     "chunk",
-    "sha256"
+    "sha256",
+    "ecc",
+    "hamming",
+    "error-correction",
+    "coorddict",
+    "bitdict"
   ],
   "author": "brilante33",
   "license": "MIT",

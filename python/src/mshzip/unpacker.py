@@ -9,8 +9,11 @@ from . import varint
 from .constants import (
     MAGIC, Codec, Flag, KNOWN_FLAGS,
     FRAME_HEADER_SIZE,
+    BITDICT_EXTRA_HEADER_SIZE,
+    COORDDICT_EXTRA_HEADER_SIZE,
 )
 from .dict_store import DictStore
+from .bit_reader import write_all_chunks
 
 
 class Unpacker:
@@ -24,6 +27,16 @@ class Unpacker:
         self.dict: list[bytes] = []
         self._dict_store = dict_store
         self._dict_dir = dict_dir
+
+    def close(self) -> None:
+        """리소스 정리."""
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
     def unpack(self, data: bytes | bytearray | memoryview) -> bytes:
         'Restore MSH data to original.'
@@ -81,6 +94,31 @@ class Unpacker:
 
         has_hier_dedup = (flags & Flag.HIERDEDUP) != 0
         has_external_dict = (flags & Flag.EXTERNAL_DICT) != 0
+        has_bit_dict = (flags & Flag.BITDICT) != 0
+        has_coord_dict = (flags & Flag.COORDDICT) != 0
+
+        # COORDDICT 상호 배타 검증
+        if has_coord_dict and (flags & (Flag.BITDICT | Flag.HIERDEDUP | Flag.MULTILEVEL | Flag.EXTERNAL_DICT)):
+            raise ValueError('COORDDICT는 다른 모드와 동시 사용 불가')
+
+        # BITDICT와 HIERDEDUP/EXTERNAL_DICT 상호 배타 검증
+        if has_bit_dict and (flags & (Flag.HIERDEDUP | Flag.EXTERNAL_DICT)):
+            raise ValueError('BITDICT는 HIERDEDUP/EXTERNAL_DICT와 동시 사용 불가')
+
+        # COORDDICT: Extra Header 읽기
+        coord_dimensions = 0
+        coord_rs_axes = 0
+        if has_coord_dict:
+            coord_dimensions = struct.unpack_from('<H', buf, off)[0]; off += 2
+            off += 2  # bitsPerAxis skip
+            off += 1  # hammingBits skip
+            coord_rs_axes = buf[off]; off += 1
+            off += 2  # reserved
+
+        # BITDICT: bitDepth 읽기
+        bit_depth = 0
+        if has_bit_dict:
+            bit_depth = struct.unpack_from('<H', buf, off)[0]; off += BITDICT_EXTRA_HEADER_SIZE
 
         # EXTERNAL_DICT: baseDictCount 읽기 + 외부 딕셔너리 로드
         base_dict_count = 0
@@ -102,6 +140,28 @@ class Unpacker:
 
         # Decompress payload
         raw_payload = self._decompress(compressed_payload, codec_id)
+
+        # ── COORDDICT 모드 ──
+        if has_coord_dict:
+            if seq_count > 0 and orig_bytes > 0:
+                from .coord_dict import CoordDictUnpacker
+                cdu = CoordDictUnpacker()
+                restored_data = cdu.decode(
+                    raw_payload, coord_dimensions, coord_rs_axes, seq_count, orig_bytes
+                )
+            else:
+                restored_data = b''
+            return (restored_data, off - start_offset)
+
+        # ── BITDICT 모드: 사전 섹션 없이 바로 시퀀스 복원 ──
+        if has_bit_dict:
+            if seq_count > 0 and orig_bytes > 0:
+                indices, _ = varint.decode_array(raw_payload, 0, seq_count)
+                restored = write_all_chunks(indices, bit_depth)
+                restored_data = restored[:orig_bytes]
+            else:
+                restored_data = b''
+            return (restored_data, off - start_offset)
 
         # Parse dict section
         payload_off = 0

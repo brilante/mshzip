@@ -4,9 +4,12 @@ const zlib = require('zlib');
 const {
   MAGIC, CODEC, FLAG, KNOWN_FLAGS,
   FRAME_HEADER_SIZE,
+  BITDICT_EXTRA_HEADER_SIZE,
+  COORDDICT_EXTRA_HEADER_SIZE,
 } = require('./constants');
 const varint = require('./varint');
 const { DictStore } = require('./dict-store');
+const { writeAllChunks } = require('./bit-reader');
 
 /**
  * Restore MSH format data to original (unpack)
@@ -92,6 +95,34 @@ class Unpacker {
 
     const hasHierDedup = (flags & FLAG.HIERDEDUP) !== 0;
     const hasExternalDict = (flags & FLAG.EXTERNAL_DICT) !== 0;
+    const hasBitDict = (flags & FLAG.BITDICT) !== 0;
+    const hasCoordDict = (flags & FLAG.COORDDICT) !== 0;
+
+    // COORDDICT 상호 배타 검증
+    if (hasCoordDict && (flags & (FLAG.BITDICT | FLAG.HIERDEDUP | FLAG.MULTILEVEL | FLAG.EXTERNAL_DICT))) {
+      throw new Error('COORDDICT는 다른 모드와 동시 사용 불가');
+    }
+
+    // BITDICT와 HIERDEDUP/EXTERNAL_DICT 상호 배타 검증
+    if (hasBitDict && (flags & (FLAG.HIERDEDUP | FLAG.EXTERNAL_DICT))) {
+      throw new Error('BITDICT는 HIERDEDUP/EXTERNAL_DICT와 동시 사용 불가');
+    }
+
+    // COORDDICT: Extra Header 읽기
+    let coordDimensions = 0, coordRsAxes = 0;
+    if (hasCoordDict) {
+      coordDimensions = input.readUInt16LE(off); off += 2; // dimensions
+      off += 2; // bitsPerAxis (skip)
+      off += 1; // hammingBits (skip)
+      coordRsAxes = input.readUInt8(off); off += 1;        // rsAxes
+      off += 2; // reserved
+    }
+
+    // BITDICT: bitDepth 읽기
+    let bitDepth = 0;
+    if (hasBitDict) {
+      bitDepth = input.readUInt16LE(off); off += BITDICT_EXTRA_HEADER_SIZE;
+    }
 
     // EXTERNAL_DICT: baseDictCount 읽기 + 외부 딕셔너리 로드
     let baseDictCount = 0;
@@ -117,6 +148,32 @@ class Unpacker {
 
     // Decompress payload
     const rawPayload = this._decompress(compressedPayload, codecId);
+
+    // ── COORDDICT 모드 ──
+    if (hasCoordDict) {
+      let data;
+      if (seqCount > 0 && origBytes > 0) {
+        const { CoordDictUnpacker } = require('./coord-dict');
+        const cdu = new CoordDictUnpacker();
+        data = cdu.decode(rawPayload, coordDimensions, coordRsAxes, seqCount, origBytes);
+      } else {
+        data = Buffer.alloc(0);
+      }
+      return { data, bytesConsumed: off - startOffset };
+    }
+
+    // ── BITDICT 모드: 사전 섹션 없이 바로 시퀀스 복원 ──
+    if (hasBitDict) {
+      let data;
+      if (seqCount > 0 && origBytes > 0) {
+        const { values: indices } = varint.decodeArray(rawPayload, 0, seqCount);
+        const restored = writeAllChunks(indices, bitDepth);
+        data = restored.slice(0, origBytes);
+      } else {
+        data = Buffer.alloc(0);
+      }
+      return { data, bytesConsumed: off - startOffset };
+    }
 
     // Parse dict section
     let payloadOff = 0;

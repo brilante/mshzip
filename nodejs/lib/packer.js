@@ -9,9 +9,13 @@ const {
   DEFAULT_SUB_CHUNK_SIZE,
   MIN_CHUNK_SIZE, MAX_CHUNK_SIZE, MAX_HIER_LEVELS,
   AUTO_DETECT_CANDIDATES, AUTO_DETECT_SAMPLE_LIMIT, AUTO_FALLBACK_CHUNK_SIZE,
+  BITDICT_EXTRA_HEADER_SIZE,
+  COORDDICT_EXTRA_HEADER_SIZE,
 } = require('./constants');
 const varint = require('./varint');
 const { DictStore } = require('./dict-store');
+const { BitDict } = require('./bit-dict');
+const { readAllChunks, writeAllChunks } = require('./bit-reader');
 
 /**
  * Compress file/stream to MSH format (pack)
@@ -40,6 +44,10 @@ class Packer {
    * @param {boolean} [opts.useDict=false] - DictStore 자동 사용 여부
    * @param {string} [opts.dictDir] - DictStore 디렉토리 (useDict=true 시)
    * @param {number} [opts.maxDictSize] - 최대 딕셔너리 크기
+   * @param {number} [opts.bitDepth] - N비트 전수 사전 모드 (8~32)
+   * @param {boolean} [opts.strictBitDict=false] - true면 메모리 초과 시 에러 (false면 폴백)
+   * @param {boolean} [opts.coordDict=false] - CoordDict XD 좌표 사전 모드
+   * @param {number} [opts.dimensions] - CoordDict 차원 수 (기본: CPU 코어 수)
    */
   constructor(opts = {}) {
     const rawChunk = opts.chunkSize !== undefined ? opts.chunkSize : DEFAULT_CHUNK_SIZE;
@@ -96,6 +104,48 @@ class Packer {
         maxDictSize: opts.maxDictSize,
       });
     }
+
+    // CoordDict (XD 좌표 사전) 옵션
+    this.coordDict = !!opts.coordDict;
+    this._coordDictActive = false;
+    this._coordDimensions = opts.dimensions || null;
+
+    if (this.coordDict) {
+      // 상호 배타 검증
+      if (opts.bitDepth) {
+        throw new Error('COORDDICT는 BITDICT와 동시 사용 불가');
+      }
+      const { CoordDictPacker } = require('./coord-dict');
+      this._coordDictPacker = new CoordDictPacker({ dimensions: this._coordDimensions });
+      this._coordDictActive = true;
+    }
+
+    // BitDict (N비트 전수 사전) 옵션
+    this.bitDepth = opts.bitDepth || null;
+    this._bitDictActive = false;
+
+    if (this.bitDepth !== null) {
+      const bd = new BitDict({
+        dictDir: opts.dictDir,
+        maxMemBytes: opts.maxDictSize,
+      });
+      if (bd.isOverLimit(this.bitDepth)) {
+        if (opts.strictBitDict) {
+          throw new Error(
+            `BitDict 메모리 초과: bitDepth=${this.bitDepth}, ` +
+            `필요=${bd.estimateMemBytes(this.bitDepth)} > ` +
+            `한계=${bd.maxMemBytes}`
+          );
+        }
+        process.stderr.write(
+          `[mshzip] BitDict 메모리 초과 (bitDepth=${this.bitDepth}), 기존 모드로 폴백\n`
+        );
+        this.bitDepth = null;
+      } else {
+        bd.load(this.bitDepth);
+        this._bitDictActive = true;
+      }
+    }
   }
 
   /**
@@ -104,6 +154,16 @@ class Packer {
    * @returns {Buffer} - Compressed MSH data
    */
   pack(input) {
+    // CoordDict 모드: 별도 경로
+    if (this._coordDictActive) {
+      return this._packCoordDict(input);
+    }
+
+    // BitDict 모드: 별도 경로
+    if (this._bitDictActive) {
+      return this._packBitDict(input);
+    }
+
     // auto mode: detect optimal chunk size on first call
     if (this._autoDetect && input.length > 0) {
       this.chunkSize = this._detectChunkSize(input);
@@ -326,6 +386,196 @@ class Packer {
     parts.push(payloadSizeBuf, compressedPayload);
 
     // CRC32 (optional) — 전체 프레임 데이터(CRC 제외)에 대해 계산
+    if (this.useCRC) {
+      const crc = this._crc32(Buffer.concat(parts));
+      const crcBuf = Buffer.alloc(4);
+      crcBuf.writeUInt32LE(crc, 0);
+      parts.push(crcBuf);
+    }
+
+    return Buffer.concat(parts);
+  }
+
+  /**
+   * CoordDict 모드 Pack
+   * @param {Buffer} input
+   * @returns {Buffer}
+   */
+  _packCoordDict(input) {
+    const frames = [];
+    let offset = 0;
+    const totalLen = input.length;
+
+    while (offset < totalLen) {
+      const frameEnd = Math.min(offset + this.frameLimit, totalLen);
+      const frame = this._buildCoordDictFrame(input, offset, frameEnd);
+      frames.push(frame);
+      offset = frameEnd;
+    }
+
+    if (frames.length === 0) {
+      frames.push(this._buildCoordDictFrame(input, 0, 0));
+    }
+
+    return Buffer.concat(frames);
+  }
+
+  /**
+   * CoordDict 프레임 빌드
+   */
+  _buildCoordDictFrame(input, start, end) {
+    const origBytes = end - start;
+    const packer = this._coordDictPacker;
+    const D = packer.dimensions;
+    const rsAxes = packer.rsAxes;
+
+    let compressedPayload;
+    let seqCount = 0;
+
+    if (origBytes > 0) {
+      const slice = input.slice(start, end);
+      const { encoded, seqCount: sc } = packer.encode(slice);
+      seqCount = sc;
+      compressedPayload = this._compress(encoded);
+    } else {
+      compressedPayload = Buffer.alloc(0);
+    }
+
+    // 프레임 헤더 (32B)
+    const flags = (this.useCRC ? FLAG.CRC32 : 0) | FLAG.COORDDICT;
+    const chunkSizeField = D * 128; // 데이터 바이트 (ECC 미포함)
+
+    const header = Buffer.alloc(FRAME_HEADER_SIZE);
+    let off = 0;
+    MAGIC.copy(header, off); off += 4;
+    header.writeUInt16LE(VERSION, off); off += 2;
+    header.writeUInt16LE(flags, off); off += 2;
+    header.writeUInt32LE(chunkSizeField, off); off += 4;
+    header.writeUInt8(this.codecId, off); off += 1;
+    off += 3; // padding
+    header.writeUInt32LE(origBytes & 0xFFFFFFFF, off); off += 4;
+    header.writeUInt32LE(Math.floor(origBytes / 0x100000000), off); off += 4;
+    header.writeUInt32LE(0, off); off += 4; // dictEntries = 0
+    header.writeUInt32LE(seqCount, off); off += 4;
+
+    const parts = [header];
+
+    // CoordDict Extra Header (8B)
+    const extraBuf = Buffer.alloc(COORDDICT_EXTRA_HEADER_SIZE);
+    extraBuf.writeUInt16LE(D, 0);         // dimensions
+    extraBuf.writeUInt16LE(1024, 2);      // bitsPerAxis
+    extraBuf.writeUInt8(11, 4);           // hammingBits
+    extraBuf.writeUInt8(rsAxes, 5);       // rsAxes
+    extraBuf.writeUInt16LE(0, 6);         // reserved
+    parts.push(extraBuf);
+
+    // payloadSize (4B) + 압축 페이로드
+    const payloadSizeBuf = Buffer.alloc(4);
+    payloadSizeBuf.writeUInt32LE(compressedPayload.length, 0);
+    parts.push(payloadSizeBuf, compressedPayload);
+
+    // CRC32 (선택)
+    if (this.useCRC) {
+      const crc = this._crc32(Buffer.concat(parts));
+      const crcBuf = Buffer.alloc(4);
+      crcBuf.writeUInt32LE(crc, 0);
+      parts.push(crcBuf);
+    }
+
+    return Buffer.concat(parts);
+  }
+
+  /**
+   * BitDict 모드 Pack: N비트 전수 사전
+   * @param {Buffer} input
+   * @returns {Buffer}
+   */
+  _packBitDict(input) {
+    const frames = [];
+    let offset = 0;
+    const totalLen = input.length;
+
+    while (offset < totalLen) {
+      const frameEnd = Math.min(offset + this.frameLimit, totalLen);
+      const frame = this._buildBitDictFrame(input, offset, frameEnd);
+      frames.push(frame);
+      offset = frameEnd;
+    }
+
+    // Empty input
+    if (frames.length === 0) {
+      frames.push(this._buildBitDictFrame(input, 0, 0));
+    }
+
+    return Buffer.concat(frames);
+  }
+
+  /**
+   * BitDict 프레임 빌드
+   * @param {Buffer} input
+   * @param {number} start
+   * @param {number} end
+   * @returns {Buffer}
+   */
+  _buildBitDictFrame(input, start, end) {
+    const origBytes = end - start;
+    const slice = input.slice(start, end);
+
+    // N비트씩 읽기 → 인덱스 배열 (나머지 비트를 위해 패딩)
+    let seqIndices = [];
+    if (origBytes > 0) {
+      const totalBits = origBytes * 8;
+      const paddedChunks = Math.ceil(totalBits / this.bitDepth);
+      const paddedBitLen = paddedChunks * this.bitDepth;
+      const paddedByteLen = Math.ceil(paddedBitLen / 8);
+
+      let paddedSlice = slice;
+      if (paddedByteLen > origBytes) {
+        paddedSlice = Buffer.alloc(paddedByteLen, 0);
+        slice.copy(paddedSlice);
+      }
+      const result = readAllChunks(paddedSlice, this.bitDepth);
+      seqIndices = result.values;
+    }
+
+    const seqCount = seqIndices.length;
+
+    // varint 인코딩 → gzip 압축
+    const seqSection = seqCount > 0
+      ? varint.encodeArray(seqIndices)
+      : Buffer.alloc(0);
+    const compressedPayload = this._compress(seqSection);
+
+    // 프레임 헤더
+    const flags = (this.useCRC ? FLAG.CRC32 : 0) | FLAG.BITDICT;
+    const chunkSizeField = Math.ceil(this.bitDepth / 8); // 바이트 호환
+
+    const header = Buffer.alloc(FRAME_HEADER_SIZE);
+    let off = 0;
+    MAGIC.copy(header, off); off += 4;
+    header.writeUInt16LE(VERSION, off); off += 2;
+    header.writeUInt16LE(flags, off); off += 2;
+    header.writeUInt32LE(chunkSizeField, off); off += 4;
+    header.writeUInt8(this.codecId, off); off += 1;
+    off += 3; // padding
+    header.writeUInt32LE(origBytes & 0xFFFFFFFF, off); off += 4;
+    header.writeUInt32LE(Math.floor(origBytes / 0x100000000), off); off += 4;
+    header.writeUInt32LE(0, off); off += 4; // dictEntries = 0 (전수 사전)
+    header.writeUInt32LE(seqCount, off); off += 4;
+
+    const parts = [header];
+
+    // BITDICT 추가 헤더: bitDepth (2B)
+    const bitDepthBuf = Buffer.alloc(BITDICT_EXTRA_HEADER_SIZE);
+    bitDepthBuf.writeUInt16LE(this.bitDepth, 0);
+    parts.push(bitDepthBuf);
+
+    // payloadSize (4B) + 압축 페이로드
+    const payloadSizeBuf = Buffer.alloc(4);
+    payloadSizeBuf.writeUInt32LE(compressedPayload.length, 0);
+    parts.push(payloadSizeBuf, compressedPayload);
+
+    // CRC32 (선택)
     if (this.useCRC) {
       const crc = this._crc32(Buffer.concat(parts));
       const crcBuf = Buffer.alloc(4);
